@@ -1,0 +1,1315 @@
+===== Page 1 =====
+Hai-Jun Su
+Department of Mechanical Engineering,
+University of Maryland,
+Baltimore County,
+1000 Hilltop Circle,
+Baltimore, MD 21250
+e-mail: haijun@umbc.edu
+A Pseudorigid-Body 3R Model for
+Determining Large Deﬂection of
+Cantilever Beams Subject to Tip
+Loads
+In this paper , a pseudorigid-body (PRB) 3R model, which consists of four rigid links
+joined by three revolute joints and three torsion springs, is proposed for approximating
+the deﬂection of a cantilever beam subject to a general tip load. The large deﬂection
+beam equations are solved through numerical integration. A comprehensive atlas of the
+tip deﬂection for various load modes is obtained. A three-dimensional search routine has
+been developed to ﬁnd the optimal set of characteristic radius factors and spring stiffness
+of the PRB 3R model. Detailed error analysis has been done by comparing with the
+precomputed tip deﬂection atlas. Our results show that the approximation error is much
+less than that of the conventional PBR 1R model. To demonstrate the use of the PRB 3R
+model, a compliant four-bar linkage is studied and veriﬁed by a numerical example. The
+result shows a maximum tip deﬂection error of 1.2% compared with the ﬁnite element
+analysis model. The beneﬁts of the PRB 3R model include that (a) the model parameters
+are independent of external loads, (b) the approximation error is relatively small for even
+large deﬂection beams, and (c) the derived kinematic and static constraint equations are
+simpler to solve compared with the ﬁnite element model. /H20851DOI: 10.1115/1.3046148/H20852
+1 Introduction
+Compliant mechanisms /H208511/H20852with ﬂexible links that undergo
+large deﬂection have many potential advantages such as reduced
+part number, reduced wear, and reduced backlash and error. How-
+ever, the nonlinearity of large deﬂection beams often complicates
+analysis and design of compliant mechanisms and prevents its
+wide applications. One major difﬁculty comes from the fact that
+the tip load on the ﬂexible beams of a compliant mechanism,
+determined by the magnitude of force and moment as well as the
+force direction, can vary signiﬁcantly as the mechanism moves.
+The two extreme cases are when the load is force only /H20849or domi-
+nant/H20850and moment only /H20849or dominant /H20850.
+Parametric approximation for the beam tip deﬂection is critical
+for the design synthesis process. Several pseudorigid-body /H20849PRB/H20850
+models have been developed to approximate the tip deﬂection of
+ﬂexible beams for various loads. Howell and Midha /H208512/H20852proposed
+a PRB 1R model that consists of two rigid links joined at a pin
+joint and a torsion spring along the beam. Here R represents a
+revolute or pin joint. They found that the position of the pin joint
+is determined by the so-called “characteristic radius factor”
+/H9253,
+which is equal to 0.735 for moment only load /H208513/H20852and to 0.85 for
+force only load /H208512/H20852. And the equivalent spring stiffness K/H9008for
+these two extreme cases is about 1.51 and 2.65, respectively. If the
+load is a combined end force and end moment, /H9253and K/H9008will be
+anywhere between these two extreme cases. However, the ap-
+proximation error will be signiﬁcantly large when the tip slope
+angle is beyond a certain bound, e.g., 77 deg for vertical force
+loads. Therefore this model is not appropriate for the applications
+where the load on ﬂexible beams varies signiﬁcantly or where the
+load is completely unknown. It is also not suitable for applications
+where the mechanism undergoes exceptionally large deﬂection.
+To approximate tip deﬂection of initially straight cantilever
+beams subject to combined end force and moment, Saxena and
+Kramer /H208514/H20852modiﬁed the PRB 1R model by introducing two linear
+springs to restrain the change in characteristic radius factor
+/H9253for
+different load modes. Lyon et al. /H208515/H20852decomposed a ﬂexible beam
+into two segments, each of which is approximated by a PRB 1R
+model. However, the errors introduced by these two models are
+exceptionally large. On the other extreme, Saggere and Kota /H208516/H20852
+proposed a ﬁnite element model that evenly decomposes a ﬂexible
+beam into n /H113503 segments joined by n torsion springs of stiffness
+EI / l. This model is completely load independent and can accom-
+modate a wide range of loads. However, the approximation accu-
+racy is determined by the number of segments. The larger the
+number of segments n, the smaller the approximation error. Un-
+fortunately a large n can signiﬁcantly complicate the kinematic
+and static equations of compliant mechanisms and slow down the
+solution process.
+By compromising the PRB 1R model and the ﬁnite element
+model aforementioned, this paper proposes a new PRB 3R model
+for initially straight cantilever beams subject to a combined force
+and moment. The model is composed of three revolute joints, each
+accompanied by a torsion spring. The geometric parameters and
+spring stiffness are independent of external loads. Since the ana-
+lytical inverse and forward kinematics are readily available for 3R
+serial chains, the kinematic and static equations are relatively
+simple.
+The rest of this paper is organized as follows. In Sec. 2, large
+deﬂection equations of elastic beams are solved by numerical in-
+tegration in order to generate the complete data set for various end
+loads, which will be used to develop PRB models. Section 3 stud-
+ies the PRB 1R model for an elastic beam undergoing large de-
+ﬂection. In Sec. 4, a PRB 3R model for large deﬂection beams is
+proposed and analytical kinematics and static equations based on
+this model are derived. Section 5 studies an optimal PRB 3R
+model that minimizes the approximation error for a wide range of
+tip loads. Also in this section a detailed error analysis for various
+loads has been done. In Sec. 6, a numerical example is provided to
+demonstrate the beneﬁts of the model, and the result is compared
+Contributed by the Mechanisms and Robotics Committee of ASME for publica-
+t i o ni nt h eJOURNAL OF MECHANISMS AND ROBOTICS. Manuscript received April 8, 2008;
+ﬁnal manuscript received November 1, 2008; published online January 7, 2009.
+Review conducted by G. K. Ananthasuresh. Paper presented at the ASME 2008
+Design Engineering Technical Conferences and Computers and Information in Engi-
+neering Conference /H20849DETC2008/H20850, Brooklyn, NY , August 3–July 6, 2008.
+Journal of Mechanisms and Robotics MAY 2009, Vol. 1 / 021008-1Copyright © 2009 by ASME
+Downloaded from http://asmedigitalcollection.asme.org/mechanismsrobotics/article-pdf/1/2/021008/5627316/021008_1.pdf by Ohio State University | OSU user on 30 March 2026
+
+===== Page 2 =====
+with a ﬁnite element analysis /H20849FEA/H20850model. And lastly in Sec. 7,
+we discuss the limitation of this model when the approximation
+error may be large for some load conditions.
+2 Large Deﬂection Beam Equations
+Figure 1 shows an initially straight cantilever beam subject to a
+combined end force F0 and moment M0. The direction of the end
+force is denoted by angle /H9278. Parameters /H92580, a, and b are the tip
+slope angle and the horizontal and vertical tip deﬂections, respec-
+tively. The tip deﬂection of a cantilever beam subject to a general
+tip load is governed by large deﬂection beam theory calculated as
+/H20881/H9251= 1
+2 /H20885
+0
+/H92580 d/H9258
+/H20881/H20851cos/H20849/H92580 − /H9278/H20850− cos/H20849/H9258− /H9278/H20850/H20852+ /H9260
+/H208491/H20850
+a/l = 1
+2/H20881/H9251/H20885
+0
+/H92580 cos /H9258d/H9258
+/H20881/H20851cos/H20849/H92580 − /H9278/H20850− cos/H20849/H9258− /H9278/H20850/H20852+ /H9260
+/H208492/H20850
+b/l = 1
+2/H20881/H9251/H20885
+0
+/H92580 sin /H9258d/H9258
+/H20881/H20851cos/H20849/H92580 − /H9278/H20850− cos/H20849/H9258− /H9278/H20850/H20852+ /H9260
+/H208493/H20850
+where a / l and b / l are the normalized tip deﬂection, and /H9251and /H9260
+are the nondimensional force index and load ratio , respectively,
+deﬁned as
+/H9251= F0l2
+2EI , /H9260= /H92522
+4/H9251, /H9252= M0l
+EI /H208494/H20850
+The range of the load parameters is discussed as the following.
+Both the force index and load ratio are non-negative, i.e., /H9251/H113500,
+/H9260/H113500. Note that this incorporates the cases when M0 /H113490. The
+force angle /H9278is between 0 deg and 360 deg. However, due to the
+geometric symmetry, we only need to consider the case that the
+end force F0 is pointing up, i.e., /H9278/H33528/H208510 deg, 180 deg /H20852. When the
+end force is downward, the tip deﬂection in the vertical direction
+will be the same as the upward force cases but with a negative
+sign.
+2.1 Numerical Integration of Deﬂection Equations. Large
+deﬂection equations /H208491/H20850–/H208493/H20850consist of three load parameters
+/H9251, /H9278,
+and /H9260and three tip deﬂection parameters /H92580, a / l, and b / l. Given
+any three parameters, one can ﬁnd the other three by solving these
+equations. However, it is not convenient to directly solve Eqs.
+/H208491/H20850–/H208493/H20850for deﬂection parameters with known load parameters
+since the tip slope
+/H92580 is one of the integration limits. A common
+way to overcome this difﬁculty is to solve Eq. /H208491/H20850for /H9251with a
+given /H92580, and then use Eqs. /H208492/H20850and /H208493/H20850to determine the tip de-
+ﬂection. Howell and Midha /H208512/H20852provided an elliptic integral solu-
+tion, and Saxena and Kramer /H208514/H20852solved these equations with nu-
+merical integration. In this article, the numerical integration
+approach is used to compute the tip deﬂection for various combi-
+nations of end force and moment.
+In this section, we assume that there is no sign change in the
+curvature of the beam, i.e., the beam slope angle either monotoni-
+cally increases
+/H9258/H33528/H208510, /H92580/H20852or monotonically decreases /H9258/H33528/H20851/H92580 ,0 /H20852.
+Again due to geometric symmetry, we only need to consider one
+case. Without loss of generality, we assume that the beam slope
+angle is monotonically increasing. In Sec. 7, we will study the
+cases when there exists a point of inﬂection.
+When the beam curvature is monotonically increasing, the limit
+of slope angle
+/H92580 max is determined by requiring the term under the
+square root of Eq. /H208491/H20850being positive for /H9258/H33528/H208510, /H92580/H20852, written as
+/H92580 max = /H20877
+/H9278+ cos−1/H208491− /H9260/H20850,0 /H11349/H9260/H113492
+/H11009, /H9260/H113502 /H20878/H208495/H20850
+see Ref. /H208517/H20852for similar results. Choosing values of the parameters
+/H9258/H33528/H208510, /H92580 max/H20852, /H9278/H33528/H208510 deg, 180 deg /H20852, and /H9260/H33528/H208510, /H11009/H20850, we can com-
+pute the tip deﬂection by numerically integrating Eqs. /H208491/H20850–/H208493/H20850.
+This is done by using the “NIntegrate” function in MA THEMA TICA
+software.
+Figure 2 shows the deﬂected tip loci computed for various load
+ratios /H9260/H33528/H208510,5 0/H20852and various force direction angles /H9278
+/H33528/H208519 deg, 171 deg /H20852. Note that for simplicity, we set the upper
+bound of /H92580 to be /H9266, which is /H92580 max =m i n/H20851/H9266, /H9278+ cos−1/H208491− /H9260/H20850/H20852.A l l
+loci start with a circular arc when /H92580 is small and diverge as the
+load increases. When the end force dominates the load /H20849/H9260/H110210.1/H20850,
+the tip locus is straightened out as the load increases, and the
+smaller the angle /H9278, the earlier this occurs. When the end force
+and end moment are comparable /H208491 /H11021/H9260/H110212/H20850, the tip loci diverge
+signiﬁcantly for different angles /H9278. The smaller the angle /H9278, the
+x
+y
+b
+a
+φ
+EI, l
+(x, y) θ
+Fo
+Mo
+θo
+Fig. 1 Large deﬂection of a cantilever beam subject to a com-
+bined end force and moment
+-0.5 0.0 0.5 1.0
+0.2
+0.4
+0.6
+0.8
+1.0
+k=0.
+-0.5 0.0 0.5 1.0
+0.2
+0.4
+0.6
+0.8
+1.0
+k=0.1
+-0.5 0.0 0.5 1.0
+0.2
+0.4
+0.6
+0.8
+1.0
+k=1.
+-0.5 0.0 0.5 1.0
+0.2
+0.4
+0.6
+0.8
+1.0
+k=1.5
+-0.5 0.0 0.5 1.0
+0.2
+0.4
+0.6
+0.8
+1.0
+k=2.
+-0.5 0.0 0.5 1.0
+0.2
+0.4
+0.6
+0.8
+1.0
+k=2.5
+-0.5 0.0 0.5 1.0
+0.2
+0.4
+0.6
+0.8
+1.0
+k=5.
+-0.5 0.0 0.5 1.0
+0.2
+0.4
+0.6
+0.8
+1.0
+k=50.
+φ=171ο
+φ=9ο
+φ=135ο
+φ=99ο
+φ=9ο φ=9ο
+φ=171ο
+φ=9ο
+φ=171ο
+φ=9ο
+φ=171ο
+φ=171ο
+Fig.2 Trajectoryofthedeﬂectedtippointarrangedintermsof
+load ratio /H9260« †0,5 0‡. The maximum slope angle at the tip is
+determined by /H92580 max =m i n†/H9266, /H9278+ cos−1„1− /H9260…‡ .
+021008-2 / Vol. 1, MAY 2009 Transactions of the ASME
+Downloaded from http://asmedigitalcollection.asme.org/mechanismsrobotics/article-pdf/1/2/021008/5627316/021008_1.pdf by Ohio State University | OSU user on 30 March 2026
+
+===== Page 3 =====
+more the loci bend inward. This is a buckling phenomenon caused
+by axial force dominant loads. As /H9260increases, the effect of /H9278on
+the tip locus decreases. When the moment dominates the load
+/H20849/H9260/H110225/H20850, the tip locus is almost identical to that of the pure moment
+case. Essentially Fig. 2 provides a comprehensive atlas of actual
+tip deﬂection, which will be used to analyze and compare PRB
+models.
+2.2 Limit of Tip Slope Angle by Maximum Stress. Equation
+/H208495/H20850gives the upper bound of the end slope angle. In practical
+designs, the slope angle is often limited by the maximum stress of
+the beam, which is at the ﬁxed end for a beam with monotonic
+curvatures /H208518/H20852. To prevent the beam from failure, the following
+condition for rectangular section must be satisﬁed:
+/H9268max /H11350tMmax
+2I = t
+2I /H20851M0 + F0/H20849a sin /H9278− b cos /H9278/H20850/H20852 /H208496/H20850
+where /H9268max is the material yield strength and t is the beam thick-
+ness. Substituting the deﬁnitions Eq. /H208494/H20850yields
+/H9268max /H11350Et
+2l /H20875/H9252+2 /H9251/H20873
+a
+l sin /H9278− b
+l cos /H9278/H20874/H20876/H208497/H20850
+or
+2/H20873
+l
+t /H20874/H20873
+/H9268max
+E /H20874/H11350/H9252+2 /H9251/H20873
+a
+l sin /H9278− b
+l cos /H9278/H20874= Mnet /H208498/H20850
+where the term l / t /H20849ratio of length to thickness /H20850deﬁnes the beam
+slenderness and /H9268max / E /H20849ratio of yield strength to Y oung’s modu-
+lus/H20850deﬁnes the material ﬂexibility. The larger these two quanti-
+ties, the larger slope angle the beam can be bent to. The right side
+of Eq. /H208498/H20850Mnet is the normalized net moment applied to the ﬁxed
+end of the beam.
+Figure 3 shows that /H92580 max for a ﬂexible beam under moment
+load is determined by various materials and beam slenderness l / t.
+The values of /H9268max / E for various materials are from page 30 of
+Ref. /H208511/H20852. It can be seen that a polypropylene beam with l / t = 100
+can sustai n a 5 rad or 286 deg tip bending angle without failure,
+and steel beams with l / t = 500 can only be bent to an angle of 50
+deg. This ﬁgure can help us identify material and slenderness
+needed for a speciﬁc application.
+3 The Pseudorigid-Body 1R Model
+Figure 4 shows the classical PRB 1R model for large deﬂection
+beams, which is composed of two rigid links connected by a pin
+joint with a torsion spring. The location of the torsion spring is
+determined by the characteristic radius factor
+/H9253, and the tip point
+is determined by a PRB angle /H9008. To determine /H9253and /H9008, Howell
+and Midha /H208512/H20852provided a one-dimensional search routine that
+maximizes the angle /H9008for a prescribed allowable error bound. An
+alternative way to compute /H9253and pseudorigid-body angle /H9008for
+each tip point /H20849a / l , b / l/H20850is via kinematics of 1R chain, calculated
+as
+/H9253= /H208491− a/l/H208502 + /H20849b/l/H208502
+2/H208491− a/l/H20850 /H208499/H20850
+/H9008= tan−1/H20873
+b/l
+a/l + /H9253−1 /H20874 /H2084910/H20850
+It has been shown /H208514/H20852that /H9253is predominantly dependent on the
+load ratio /H9260and only slightly correlated with force directional
+angle /H9278. For each load ratio /H9260, we average the values of /H9253over /H9278
+and plot the average value as dots in Fig. 5. We approximate /H9253
+versus load ratio /H9260by the following function:
+/H9253/H11015/H9253F +2 /H9253M/H20849c/H9253/H9260/H20850
+1+2 c/H9253/H9260 /H2084911/H20850
+where /H9253F = 0.842 and /H9253M = 0.735 are the optimal characteristic ra-
+dius factors for pure end force and for pure end moment, respec-
+tively, and c/H9253= 4.694 can be calculated by a standard one param-
+eter linear regression procedure. As far as the author is aware, c/H9253
+has not been previously discussed in the literature. Let us name
+variable c/H9253as the “nonlinearity index.”
+The approximated values of /H9253versus /H9260are plotted as the con-
+tinuous line in Fig. 5. Pearson’s correlation coefﬁcient of the ac-
+tual value and approximated values is 0.98. They represent errors
+less than 0.016 or 2%. Comparing with the ﬁtting functions pro-
+vided in Refs. /H208514,9/H20852, function /H2084911/H20850is simpler and has a smaller
+approximation error. Furthermore function /H2084911/H20850is inﬁnity order
+continuous for
+/H9260/H110220, which is important in applying numerical
+methods for design synthesis /H2085110/H20852and optimization. Similarly the
+spring stiffness k/H9008and the ratio c/H9008of the tip slope angle /H92580 to the
+PRB angle can also be calculated for each set of /H92580, a / l, and b / l.
+Since the model parameters /H9253, k/H9008, and c/H9008are dependent on the
+load parameters /H9260and /H9278, it is not convenient for analyzing com-
+pliant mechanisms that are subject to a wide range of loads, or for
+synthesizing mechanisms when the external load is completely
+-0.2 0.0 0.2 0.4 0.6 0.8 1.0
+0.2
+0.4
+0.6
+0.8
+a/l
+b/l
+θo=3π/2
+θo=5
+Polypropylene
+l/t=100
+θo=π θo=π/2
+θo=0
+θo=2.5
+Polypropylene
+l/t=50
+θo=4
+Polyethylene
+l/t=100
+θo=2
+Titanium (Ti-13)
+l/t=100 θo=1.4
+Aluminum
+l/t=100
+θo=0.87
+Steel
+l/t=500
+Fig. 3 Limit of the tip slope /H92580 max under pure moment loads
+determined by maximum stress
+x
+y
+EI, l
+Θ
+(1−γ)l k
+γl
+θok=kΘ(EI/l)
+θ=c Θo Θ
+φ
+Fo
+Mo
+Fig. 4 The pseudorigid-body 1R model with parameter /H9253
+« †0.735, 0.85‡ depending on the load
+/CID1
+/CID1
+/CID1/CID1/CID1
+/CID1
+/CID1/CID1/CID1/CID1/CID1/CID1/CID1/CID1/CID1/CID1/CID1/CID1/CID1/CID1 /CID1 /CID110 20 30 40 50
+0.76
+0.78
+0.80
+0.82
+0.84
+κ
+γ
+approximation
+actual
+Fig. 5 Actual and approximated characteristic radius factor /H9253
+versus load ratio /H9260for beams under large deﬂections. The ac-
+tual values of /H9253are obtained by averaging over /H9278« †0, /H9266‡.
+Journal of Mechanisms and Robotics MAY 2009, Vol. 1 / 021008-3
+Downloaded from http://asmedigitalcollection.asme.org/mechanismsrobotics/article-pdf/1/2/021008/5627316/021008_1.pdf by Ohio State University | OSU user on 30 March 2026
+
+===== Page 4 =====
+unknown. In what follows, we propose a new 3R model whose
+geometric parameters and spring coefﬁcients are independent of
+external loads. We then investigate the accuracy of the model for
+various load modes.
+4 The Pseudorigid-Body 3R Model
+Figure 6 shows a PRB 3R serial chain for modeling a ﬂexible
+beam subject to a combined end force and moment. The PRB
+model is composed of four rigid links joined by three pin joints
+and three torsion springs. Let us denote the deﬂection angles and
+spring stiffness by /H9008
+1, /H90082, and /H90083 and k1, k2, and k3, respectively.
+The ratios of the four link length to the length of the beam are
+characteristic radius factors, denoted by /H92530, /H92531, /H92532, and /H92533 satis-
+fying
+/H92530 + /H92531 + /H92532 + /H92533 =1 /H2084912/H20850
+4.1 Forward and Inverse Kinematics Equations. The tip
+point Q = /H20849Qx , Qy/H20850T = /H20849a / l , b / l/H20850T and slope angle /H92580 of the 3R chain
+are calculated via their forward kinematics
+Qx = /H92530 + /H92531c1 + /H92532c12 + /H92533c123
+Qy = /H92531s1 + /H92532s12 + /H92533s123 /H2084913/H20850
+/H92580 = /H90081 + /H90082 + /H90083
+where c1 = cos/H20849/H90081/H20850, s1 = sin/H20849/H90081/H20850, c12 = cos/H20849/H90081 + /H90082/H20850, s12 = sin/H20849/H90081
++ /H90082/H20850, c123 = cos/H20849/H90081 + /H90082 + /H90083/H20850, and s123 = sin/H20849/H90081 + /H90082 + /H90083/H20850.
+On the other hand, given tip point Q and slope /H92580, the PRB
+angles /H9008i are computed by analytical inverse kinematics of the 3R
+serial chain. The detailed derivation of inverse kinematics of the
+3R chain can be found in many textbooks such as Ref. /H2085111/H20852.A
+sketch of the solution process is shown below. For convenience,
+we denote the vector from P
+1 to P3 by P13 = /H20849px , py/H20850T.
+px = Qx − /H92533 cos /H92580 − /H92530 /H2084914/H20850
+py = Qy − /H92533 sin /H92580 /H2084915/H20850
+/H90082 = /H11006cos−1/H20873
+px
+2 + py
+2 − /H92531
+2 − /H92532
+2
+2/H92531/H92532
+/H20874/H2084916/H20850
+/H90081 = Atan2/H20849sin /H90081,cos /H90081/H20850/H20849 17/H20850
+/H90083 = /H92580 − /H90081 − /H90082 /H2084918/H20850
+where
+cos /H90081 = px/H20849/H92531 + /H92532 cos /H90082/H20850+ py/H92532 sin /H90082
+/H92531
+2 + /H92532
+2
++2 /H92531/H92532 cos /H90082
+sin /H90081 = py/H20849/H92531 + /H92532 cos /H90082/H20850− px/H92532 sin /H90082
+/H92531
+2 + /H92532
+2
++2 /H92531/H92532 cos /H90082
+Note that Eq. /H2084916/H20850yields two solutions, “+” for the elbow-down
+solution and “−” for the elbow-up solution. For beams with mono-
+tonic curvature, we choose either the elbow-down solution or the
+elbow-up solution for all /H92580.
+4.2 Statics Equations. Given external loads F0, /H9278, and M0 on
+the tip of the 3R chain, the torques at the three pin joins are given
+by
+/H20902
+/H92701
+/H92702
+/H92703
+/H20903= /H20851JT/H20852/H20902
+Fxl
+Fyl
+M0
+/H20903 /H2084919/H20850
+where we have redeﬁned Fx = F0 cos /H9278and Fy = F0 sin /H9278. And ma-
+trix /H20851JT/H20852is the transpose of the nondimensional Jacobian of the 3R
+chain obtained by differentiating kinematic equation /H2084913/H20850, written
+as
+/H20851JT/H20852= /H20900
+− /H92531s1 − /H92532s12 − /H92533s123 /H92531c1 + /H92532c12 + /H92533c123 1
+− /H92532s12 − /H92533s123 /H92532c12 + /H92533c123 1
+− /H92533s123 /H92533c123 1 /H20901
+/H2084920/H20850
+Let us assume the spring torques are proportional to the PRB
+angles, i.e.,
+/H9270i = ki/H9008i, i = 1,2,3 /H2084921/H20850
+where the spring stiffness ki can be normalized into
+ki = k/H9008i/H20849EI/l/H20850, i = 1,2,3 /H2084922/H20850
+By substituting deﬁnitions /H2084921/H20850and /H2084922/H20850into Eq. /H2084919/H20850, we ob-
+tain the normalized and nondimensional statics equation
+/H20902
+k/H90081/H90081
+k/H90082/H90082
+k/H90083/H90083
+/H20903= /H20851JT/H20852/H20902
+2/H9251cos /H9278
+2/H9251sin /H9278
+/H9252/H20903 /H2084923/H20850
+where the deﬁnitions /H208494/H20850are used.
+4.3 Computation of Equivalent Spring Stiffness. For a
+given set of characteristic radius factors /H92530, /H92531, /H92532, and /H92533, the
+spring stiffness k1, k2, and k3 are determined in the following two
+steps.
+1. Substitute precomputed tip point a / l and b / l and slope /H92580
+/H20849plotted in Fig. 2 /H20850into the inverse kinematics equations
+/H2084914/H20850–/H2084918/H20850to compute the PRB angles /H90081, /H90082, and /H90083.
+2. Substitute the angles /H90081, /H90082, and /H90083 and load parameters /H9251,
+/H9252, and /H9278into Eq. /H2084923/H20850to compute the stiffness coefﬁcients
+k/H90081, k/H90082, and k/H90083.
+4.4 Three-Dimensional Search for Optimal Characteristic
+Radius Factors. The PRB 3R model consists of four kinematic
+parameters /H92530, /H92531, /H92532, and /H92533 and three static parameters k1, k2,
+and k3. The goal is to ﬁnd the optimal model that ﬁts all load
+modes within an acceptable error range. To achieve this goal, we
+evenly divide the range of /H9253i /H33528/H208510.05, 0.5/H20852/H20849i =0,...,3 /H20850with step
+size 0.05. For any set of /H9253i, the spring stiffness is computed for
+two extreme loads, pure moment and pure vertical force. The
+optimal set of /H9253i is the one that has the minimum difference be-
+tween the spring stiffness for end moment load and end force
+load. Because these two load modes represent the extreme cases,
+the difference of spring stiffness for all other load modes will be
+guaranteed to be smaller. Note that this is a three-dimensional
+search procedure since the sum of
+/H9253i is equal to 1. The details of
+the procedure are listed as follows.
+1. Pick a set of /H9253i /H33528/H208510.05, 0.5/H20852/H20849i =0,...,3 /H20850.
+x
+y
+EI, l
+Θ1k1
+θ= Θ1+Θ2+Θ3o
+Θ2
+Θ3
+γ0l
+γ1l
+γ2l
+γ3l
+k2
+k3
+φ
+Fo
+Mo
+O
+P3
+P1
+P2
+Q=(Q ,Q )= ( a/l,b/l)xy
+T T
+Fig. 6 A pseudorigid-body 3R model for a cantilever beam
+subject to a combined end force and moment
+021008-4 / Vol. 1, MAY 2009 Transactions of the ASME
+Downloaded from http://asmedigitalcollection.asme.org/mechanismsrobotics/article-pdf/1/2/021008/5627316/021008_1.pdf by Ohio State University | OSU user on 30 March 2026
+
+===== Page 5 =====
+2. Compute the equivalent spring stiffness for the end moment
+load /H20849/H9260= /H11009, /H9251=0 /H20850using the procedure in Sec. 4.3 and name
+them as kmj /H20849j =1,2,3 /H20850.
+3. Compute the equivalent spring stiffness for the vertical end
+force load /H20849/H9260=0, /H9278= /H9266/ 2/H20850and name spring stiffness as
+kfj /H20849j =1,2,3 /H20850.
+4. Repeat steps 2 and 3 for each set of /H9253i /H33528/H208510.05, 0.5/H20852.
+5. The optimal set of characteristic radius factors is the one in
+which kmj is closest to kfj , that is,
+/H20877/H9253i/H20841min/H20873/H20858
+j=1
+3
+/H20849kmj − kfj /H208502
+/H20874, /H9253i /H33528/H208510.05,0.5/H20852/H20878
+To determine the maximum slope angle /H92580 max, we substitute the
+beam slenderness l / t = 100 and material ﬂexibility /H9268max / E =3 0
+into Eq. /H208498/H20850. The search routine found the optimal characteristic
+radius factors
+/H92530 = 0.1, /H92531 = 0.35, /H92532 = 0.40, /H92533 = 0.15 /H2084924/H20850
+4.5 Evaluation of the PRB 3R Model With a Pure Moment
+Load. For pure moment loads /H20849/H9260= /H11009/H20850, the actual values of the
+PRB angles /H9008i are plotted as dots in Fig. 7 in which the range of
+tip slope is /H92580 /H33528/H208510,3 /H9266/ 2/H20852. A linear regression process is used to
+compute the approximated values of spring stiffness k/H90081, k/H90082, and
+k/H90083 as
+k/H90081 = 3.51933, k/H90082 = 2.78518, k/H90083 = 2.79756 /H2084925/H20850
+The linear ﬁt curves are plotted as continuous lines in Fig. 7.
+The error of tip locus of the PRB 3R model is plotted in Fig. 8.
+The maximum error of tip deﬂection is 2.3% of the beam length
+for /H92580 /H33528/H208510,3 /H9266/ 2/H20852, and the relative error of tip slope angle is given
+by
+/H208411/k/H90081 +1 /k/H90082 +1 /k/H90083 −1 /H20841= 0.064% /H2084926/H20850
+As a comparison, the PRB 1R model gives an error of 31.8% for
+tip locus and an error of 25.8% for tip slope angle at /H92580 =3 /H9266/ 2.
+When using the PRB 1R model, the slope angle must be limited to
+below 100 deg. Figure 9 shows the tip loci of the PRB 1R model
+and PRB 3R model. It can be seen that the PRB 1R model devi-
+ates off the actual curve when
+/H92580 /H11022120 deg, while the PRB 3R
+model is still accurate. The shape of the deﬂected beam and cor-
+responding conﬁguration of the PRB 3R chain at three represen-
+tative positions
+/H92580 =9 /H9266/ 50, /H92580 =3 7/H9266/ 50, and /H92580 =3 /H9266/ 2 are also
+plotted in Fig. 9.
+4.6 Evaluation of the PRB 3R Model With a Pure Force
+Load. Similarly the spring stiffness is computed for the pure force
+load /H20849/H9260=0 /H20850as
+k/H90081 = 3.71591, k/H90082 = 2.87128, k/H90083 = 2.26417 /H2084927/H20850
+where the characteristic radius factors in Eq. /H2084924/H20850are used and the
+maximum tip slope angle is /H92580 = /H9278by Eq. /H208495/H20850. Figure 10 shows the
+tip loci of PRB 1R model and the PRB 3R model for beams under
+a vertical force load /H20849/H9278= /H9266/ 2/H20850. Once again, the PRB 3R model
+has a smaller error of 1.2% than the error of 3.6% for the PRB 1R
+model at /H92580 = /H9266/ 2.
+5 The Optimal PRB 3R Model
+The goal of this section is to ﬁnd the optimal PRB 3R model
+that best ﬁts the theoretical tip ﬂection atlas for a wide range of
+external loads. For the optimal set of /H9253i given in Eq. /H2084924/H20850, we plot
+the spring stiffness k/H90081, k/H90082, and k/H90083 versus /H9278/H33528/H208510, /H9266/H20852with /H9260
+0.5 1.0 1.5
+1
+2
+3
+4
+Θi
+θ0
+actualΘ1 linear fit of τ2,τ3
+linear fito f τ1 actualΘ3
+actualΘ2
+τi=(EI/l)θ0
+Fig. 7 Linear regression of spring stiffness k/H90081, k/H90082, and k/H90083
+for end moment loads. The range of tip slope angle is /H92580
+« †0,3 /H9266/2 ‡.
+1 2 3 4
+0.05
+0.10
+0.15
+0.20
+0.25
+0.30
+θ0
+PRB 3R mode l
+tip error
+PRB 1R model (γ=0.735)
+Fig. 8 Comparison of the tip error of PRB 1R model with the
+PRB 3R model for beams under moment loads
+-0.2 0.0 0.2 0.4 0.6 0.8 1.0
+0.2
+0.4
+0.6
+0.8
+a/l
+b/l
+θo=3π/2
+θo=37π/50
+θo=9π/50Deflected beam
+Deflected beam
+PRB 1R Model
+(γ=0.735) PRB 3R Chain Tip
+PRB 1R Model (γ=0.735)
+3R chain
+3R chain
+3R chain
+Deflected beam
+Numerical Integration
+PRB 3R Model
+Fig. 9 Comparison of the tip loci of the PRB 1R model and the
+PRB 3R model for beams under moment loads
+0.0 0.2 0.4 0.6 0.8 1.00.0
+0.2
+0.4
+0.6
+0.8
+1.0
+a/l
+PRB 1R model
+(γ=0.85)
+Actual locusPRB 3R Model
+b/l
+φ=π/2
+Fig. 10 Comparison of tip locus of the PRB 1R model and the
+PRB 3R model for beams under force loads
+Journal of Mechanisms and Robotics MAY 2009, Vol. 1 / 021008-5
+Downloaded from http://asmedigitalcollection.asme.org/mechanismsrobotics/article-pdf/1/2/021008/5627316/021008_1.pdf by Ohio State University | OSU user on 30 March 2026
+
+===== Page 6 =====
+= 0 in Fig. 11 /H20849a/H20850. It can be seen that the spring stiffness is only
+slightly correlated to force direction angle /H9278. Hence the effect of
+/H9278can be neglected in ﬁnding the desired model that is indepen-
+dent of external loads.
+Figure 11 /H20849b/H20850shows the plot of the spring stiffness versus /H9260
+/H33528/H208510,2 5/H20852with ﬁxing /H9278= /H9266/ 2. The spring stiffness k/H90081 drops from
+3.716 at /H9260= 0 to 3.445 at /H9260= 5 and then remains constant. Simi-
+larly k/H90082 increases from 2.871 at /H9260= 0 to 3.031 at /H9260= 5 and then
+remains constant. However, k/H90083 suffers a sharp increase from
+2.264 at /H9260= 0 to 2.600 at /H9260= 0.1 and then ﬂattens out.
+The spring stiffness for the ﬁnal optimal PRB 3R model is
+computed by averaging over /H9260/H33528/H208510,2 5/H20852. The kinematic and static
+parameters of the optimal PRB 3R model are summarized in Table
+1.
+5.1 Comparison of the Optimal PRB 3R Model With the
+Results of Numerical Integration. The error analysis of the op-
+timal PRB 3R model is carried out via the following three steps.
+1. Compute the PRB angles /H90081, /H90082, and /H90083 for a given exter-
+nal load /H9251, /H9278, and /H9252by solving the static equation /H2084923/H20850.
+2. Compute the tip points a / l and b / l and the tip slope angle /H92580
+with PRB angles computed from step 1 by forward kinemat-
+ics /H20849Eq. /H2084913/H20850/H20850.
+3. Compute error of the tip point and slope angle with the
+numerical integration solution plotted in Fig. 2.
+Figure 12 shows the actual and approximated tip loci for dif-
+ferent load indices /H9260with ﬁxed force angle /H9278= /H9266/ 2. The maxi-
+mum error for the tip point is about 2.2% of the beam length, and
+Fig. 13 shows the actual and approximated tip loci for different
+force angles
+/H9278with ﬁxed load ratio /H9260= 0. The maximum error of
+tip is about 8.5% when /H9278= 175 deg, which corresponds to the
+maximum tip slope angle /H92580 max = 153 deg.
+The most difﬁcult load mode to approximate is when /H9260= 2 and
+/H9278is small /H20849Fig. 2 /H20850. This corresponds to a load in which the mo-
+ment is comparable with an axially dominant force. For this case,
+tip deﬂection angles must be constrained below a certain value in
+order to maintain a certain error bound.
+5.2 Analysis of a Compliant Four-Bar With the PRB 3R
+Model. To demonstrate the use of the proposed PRB 3R model in
+analyzing compliant mechanisms, here we study a compliant four-
+bar linkage shown in Fig. 14. The crank link OA is hinged to the
+ground at the pin joint B and to the coupler link AQ at the pin
+joint A, respectively. Links OA and AQ are considered rigid. The
+follower link OQ is initially straight and considered ﬂexible with
+one end ﬁxed on the ground and the other end rigidly connected to
+the coupler link AQ at point Q.
+The coordinate systems are deﬁned as the following. The origin
+of the global coordinate system xy is chosen at the ﬁxed end of the
+ﬂexible beam with the x axis along the beam. For convenience, a
+moving coordinate system u
+v is placed on the coupler link at the
+connection point Q with the u axis along the slope of the beam
+tip. Let Q = /H20849Qx , Qy/H20850T, B = /H20849Bx , By/H20850T, and A = /H20849Ax , Ay/H20850T denote the
+coordinates of the points Q, B, and A, respectively. The length
+and position of the crank link are denoted by r and the angle /H9274,
+respectively. The position of the pin joint A in the moving frame
+system is denoted as /H20849Au , Av/H20850T.
+The kinematic constraint equations are obtained by applying the
+loop closure at the pin joint A, written as
+/H20877
+Qx
+Qy
+/H20878+ /H20875
+c123 − s123
+s123 c123
+/H20876/H20877
+Au
+Av
+/H20878= /H20877
+Bx
+By
+/H20878+ r/H20877
+cos /H9274
+cos /H9274/H20878/H2084928/H20850
+And the coordinates of the beam tip Q can be written in terms of
+three pseudorigid angles via the forward kinematics /H2084913/H20850.
+We disconnect the follower link and the coupler link at the
+point Q and deﬁne the internal force and moment applied to the
+beam OQ at point Q as F = /H20849Fx , Fy/H20850T and M, respectively, see Fig.
+15. They can be obtained by solving Eq. /H2084919/H20850
+5 10 15 20 25
+2.6
+2.8
+3.0
+3.2
+3.4
+3.6
+φ=π/2
+kΘ1
+κ
+kΘ2
+kΘ3
+0.0 0.5 1.0 1.5 2.0 2.5 3.0
+2.4
+2.6
+2.8
+3.0
+3.2
+3.4
+3.6
+φ
+kΘ1
+κ=0
+kΘ2
+kΘ3
+(a)( b)
+Fig. 11 „a… Plot of stiffness k/H9008i versus the force directional
+angle /H9278« †0, /H9266‡ for /H9260= 0 and „b… plot of stiffness k/H9008i versus the
+load ratio /H9260« †0,2 5‡ for /H9278= /H9266/2
+Table 1 Geometric parameters and equivalent spring stiffness
+of the optimized PRB 3R model
+/H92530 = 0.1, /H92531 = 0.35, /H92532 = 0.40, /H92533 = 0.15
+k1 = 3.51 EI
+l , k2 = 2.99 EI
+l , k3 = 2.58 EI
+l
+0.0 0.2 0.4 0.6 0.8 1.00.0
+0.2
+0.4
+0.6
+0.8
+1.0
+0.0 0.2 0.4 0.6 0.8 1.00.0
+0.2
+0.4
+0.6
+0.8
+1.0
+0.0 0.2 0.4 0.6 0.8 1.00.0
+0.2
+0.4
+0.6
+0.8
+1.0
+0.0 0.2 0.4 0.6 0.8 1.00.0
+0.2
+0.4
+0.6
+0.8
+1.0
+0.0 0.2 0.4 0.6 0.8 1.00.0
+0.2
+0.4
+0.6
+0.8
+1.0
+0.0 0.2 0.4 0.6 0.8 1.00.0
+0.2
+0.4
+0.6
+0.8
+1.0
+κ=0 κ=0.1
+κ=5 κ=50
+κ=2κ=1
+(error/l)max=1.9% (error/ l)max=1.6%
+(error/l)max=0.9% (error/ l)max=1.1%
+(error/l)max=1.2% (error/ l)max=2.2%
+PRB 3R ModelNumerical Integration
+a/l
+b/l
+Fig. 12 Approximation error of the PRB 3R model for various
+load indices /H9260with /H9278= /H9266/ 2. The dots represent the deﬂection
+loci computed via numerical integration and the solid lines rep-
+resent the approximated tip loci predicted the optimal PRB 3R
+model.
+021008-6 / Vol. 1, MAY 2009 Transactions of the ASME
+Downloaded from http://asmedigitalcollection.asme.org/mechanismsrobotics/article-pdf/1/2/021008/5627316/021008_1.pdf by Ohio State University | OSU user on 30 March 2026
+
+===== Page 7 =====
+/H20902
+Fxl
+Fyl
+M /H20903= /H20851JT/H20852−1
+/H20902
+k1/H90081
+k2/H90082
+k3/H90083
+/H20903 /H2084929/H20850
+where inverse of the matrix /H2084920/H20850can be derived analytically and
+written as
+/H20851JT/H20852−1
+= /H20900
+/H92532c12 − /H92531c1 − /H92532c12 /H92531c1
+/H92532s12 − /H92531s1 − /H92532s12 /H92531s1
+/H92532/H92533s3 − /H92533/H20849/H92532s3 + /H92531s23/H20850/H92531/H20849/H92532s2 + /H92533s23/H20850/H20901/H20907
+/H20849/H92531/H92532s2/H20850
+/H2084930/H20850
+The static equilibrium equation is obtained by vanishing the
+resultant moment of the reaction force F/H11032and M/H11032with respect to
+the pin joint A, written as
+AQ /H11003F/H11032+ M/H11032k =0 /H2084931/H20850
+where the symbol “ /H11003” represents the vector cross product and
+AQ = /H20849AQx , AQy/H20850T is the vector from point A pointing to point Q,
+calculated from Eq. /H2084928/H20850as
+/H20877
+AQx
+AQy
+/H20878= /H20877
+Qx
+Qy
+/H20878− /H20877
+Ax
+Ay
+/H20878=− /H20875
+c123 − s123
+s123 c123
+/H20876/H20877
+Au
+Av
+/H20878/H2084932/H20850
+By using the fact that F/H11032=− F and M/H11032=− M, Eq. /H2084931/H20850can be
+rewritten in scalar form as
+AQxFy − AQyFx + M =0 /H2084933/H20850
+Substituting Eqs. /H2084929/H20850and /H2084932/H20850into Eq. /H2084933/H20850and combing with
+the kinematic constraint equations /H2084928/H20850yield a system of three
+equations in three unknowns /H90081, /H90082, and /H90083. Assuming the crank
+angle /H9274is controlled, we can then apply numerical solvers, such
+as the Newton–Raphson based iteration method, to obtain solu-
+tions of /H90081, /H90082, and /H90083. It can be seen that the kinematic and
+static equations are much simpler compared with the ﬁnite ele-
+ment model where a large number of nonlinear equations must be
+solved.
+Note that it is possible to transfer the resulting equations into a
+polynomial form by using the approximation techniques proposed
+by Su and McCarthy /H2085112/H20852and to analytically solve the polynomial
+system to obtain solutions. However, this is out of the scope of
+this paper and shall be an interesting research topic in the future.
+6 A Numerical Example
+Consider the partially compliant four-bar shown in Fig. 14 and
+let Au / l =−1 / /H208812, Av / l =1 / /H208812, r / l =1− /H208812 / 2, and B = /H208490,1 / /H208812/H20850.B y
+driving the crank angle /H9274/H33528/H208510,2 /H9266/H20852, the motion of the ﬂexible
+beam and the coupler link is determined by simultaneously solv-
+ing the kinematic constraint equation /H2084928/H20850and the static constraint
+equation /H2084933/H20850. The linkage at six key positions is plotted as solid
+line segments in Fig. 16. To verify the results, a FEA model is
+built with the
+ABAQUS software. The crank link and coupler link
+are deﬁned as discrete rigid elements, and the ﬂexible follower
+link OQ is meshed into 20 planar beam elements. The linkage
+computed based on the FEA model is plotted as continuous lines
+in Fig. 16.
+It can be seen that the deformation of the PRB 3R model is very
+close to the FEA model. To ﬁnd the accuracy of the PRB 3R
+model, we calculate the normalized tip error relative to the FEA
+model and plot it in Fig. 17. It can be seen that a maximum tip
+error is about 1.2% of the beam length for
+/H9274/H33528/H208510,2 /H9266/H20852, which is
+-0.4-0.2 0.0 0.2 0.4 0.6 0.8 1.0
+0.2
+0.4
+0.6
+0.8
+1.0
+-0.4-0.20.0 0.2 0.4 0.6 0.8 1.0
+0.2
+0.4
+0.6
+0.8
+1.0
+-0.4-0.2 0.0 0.2 0.4 0.6 0.8 1.0
+0.2
+0.4
+0.6
+0.8
+1.0
+-0.4-0.20.0 0.2 0.4 0.6 0.8 1.0
+0.2
+0.4
+0.6
+0.8
+1.0
+-0.4-0.2 0.0 0.2 0.4 0.6 0.8 1.0
+0.2
+0.4
+0.6
+0.8
+1.0
+-0.4-0.2 0.0 0.2 0.4 0.6 0.8 1.0
+0.2
+0.4
+0.6
+0.8
+1.0
+(error/l)max=0.35% (error/ l)max=0.97%
+(error/l)max=3.8% (error/ l)max=4.9%
+(error/l)max=6.2% (error/ l)max=8.5%
+φ=30
+o
+φ=60
+o
+φ=120
+o
+φ=135
+o
+φ=150
+o
+φ=175
+o
+PRB 3R Mo delNumerical Integration
+a/l
+b/l
+Fig. 13 Approximation error of the PRB 3R model for various
+force direction angles /H9278with ﬁxed load ratio /H9260= 0. The dots
+represent the actual deﬂection loci computed via numerical in-
+tegration, and the solid lines represent the approximated tip
+loci predicted by the optimal PRB 3R model.
+x
+y
+O
+Θ1 Θ2 Θ3
+ψ
+u
+u
+QP3P1 P2
+AB
+v
+v
+r
+l
+A
+A
+Fig. 14 A compliant four-bar linkage formed by a ﬁxed-ﬁxed
+ﬂexible beam OQ and two rigid links BA and AQ connected by
+two pin joints A and B
+Q
+A
+F’
+M’
+O
+Q
+M F
+Fig. 15 The internal force and moment at the connection point
+Q
+Journal of Mechanisms and Robotics MAY 2009, Vol. 1 / 021008-7
+Downloaded from http://asmedigitalcollection.asme.org/mechanismsrobotics/article-pdf/1/2/021008/5627316/021008_1.pdf by Ohio State University | OSU user on 30 March 2026
+
+===== Page 8 =====
+acceptable for the conceptual design stage. Please note that there
+is no error for force parameters, as the tip deﬂection is calculated
+with the actual force applied on the beam. In other words, all
+errors are attributed to the errors of the tip and slope deﬂection.
+7 Limitations
+The parameters /H9253j and ki of the proposed PRB 3R model are
+only dependent on the geometry and material of the beam, but not
+on the external load. However, several limitations for the pro-
+posed PRB 3R model should be pointed out. First of all, when the
+end force is axially dominant, i.e.,
+/H9278is close to 0 deg or 180 deg,
+the end slope angle /H92580 must be limited within a certain range in
+order to have an accurate approximation. In this article, the force
+angle is limited to /H9278/H33528/H208519 deg, 171 deg /H20852.
+In Sec. 2.1, we assumed that there is no inﬂection point in the
+deﬂected beam. Here we study the accuracy of the PRB 3R model
+for conﬁgurations with a point of inﬂection. Obviously the end
+moment must be clockwise, i.e., M
+0 /H113490 for this case. At the in-
+ﬂection point, the beam curvature is zero, i.e., d/H9258/ ds =0 o r
+cos/H20849/H92580 − /H9278/H20850− cos/H20849/H9258i − /H9278/H20850+ /H9260=0 /H2084934/H20850
+where /H9258i is the slope angle at the point of inﬂection. Alternatively
+/H9258i can be expressed as
+/H9258i = /H9278+ cos−1/H20849cos/H20849/H92580 − /H9278/H20850+ /H9260/H20850/H20849 35/H20850
+The inﬂection angle /H9258i exists only when /H20841cos/H20849/H92580 − /H9278/H20850+ /H9260/H20841/H11021=1.
+Since cos /H20849/H92580 − /H9278/H20850is bounded, there does not exist an inﬂection
+point for the load with /H9260/H110222, and the inﬂection slope angle is
+always greater than the tip slope angle, i.e., /H9258i /H11022/H92580.
+When a point of inﬂection exists, the functions of the integra-
+tion /H20849Eqs. /H208491/H20850–/H208493/H20850/H20850are discontinuous at /H9258= /H9258i. Therefore the de-
+ﬂection equations must be modiﬁed as
+/H20881/H9251= 1
+2 /H20873/H20885
+0
+/H9258i d/H9258
+/H20881/H20851cos/H20849/H92580 − /H9278/H20850− cos/H20849/H9258− /H9278/H20850/H20852+ /H9260
++ /H20885
+/H92580
+/H9258i d/H9258
+/H20881/H20851cos/H20849/H92580 − /H9278/H20850− cos/H20849/H9258− /H9278/H20850/H20852+ /H9260/H20874/H2084936/H20850
+a/l = 1
+2/H20881/H9251/H20873/H20885
+0
+/H9258i cos /H9258d/H9258
+/H20881/H20851cos/H20849/H92580 − /H9278/H20850− cos/H20849/H9258− /H9278/H20850/H20852+ /H9260
++ /H20885
+/H92580
+/H9258i cos /H9258d/H9258
+/H20881/H20851cos/H20849/H92580 − /H9278/H20850− cos/H20849/H9258− /H9278/H20850/H20852+ /H9260/H20874/H2084937/H20850
+b/l = 1
+2/H20881/H9251/H20873/H20885
+0
+/H9258i sin /H9258d/H9258
+/H20881/H20851cos/H20849/H92580 − /H9278/H20850− cos/H20849/H9258− /H9278/H20850/H20852+ /H9260
++ /H20885
+/H92580
+/H9258i sin /H9258d/H9258
+/H20881/H20851cos/H20849/H92580 − /H9278/H20850− cos/H20849/H9258− /H9278/H20850/H20852+ /H9260/H20874/H2084938/H20850
+For given values of /H9278and /H92580, we choose values of /H9258i
+/H33528/H20851/H92580 , /H92580 + /H9254/H9258/H20852. The load ratio /H9260must be chosen such that cos /H20849/H92580
+− /H9278/H20850− cos/H20849/H9258i − /H9278/H20850+ /H9260/H113500 for all /H9258/H33528/H208510, /H9258i/H20852. For instance we choose
+the minimum value for /H9260, i.e., /H9260= cos/H20849/H9258i − /H9278/H20850− cos/H20849/H92580 − /H9278/H20850. Com-
+puting the integrations /H20849Eqs. /H2084936/H20850–/H2084938/H20850/H20850obtains the tip deﬂection.
+Figure 18 shows the comparison of the results of the PRB 3R
+model /H20849solid line segments /H20850and the numerical integration /H20849con-
+tinuous lines/H20850. The deformation of the PRB 3R model is computed
+by solving the static equation /H2084923/H20850with any given end force
+/H9251, /H9278,
+and /H9252.
+Figure 18 /H20849a/H20850shows the cases of /H9278= /H9266/ 2, /H92580 = /H9266/ 4, and /H9258i
+/H33528/H2085111/H9266/ 40, 19/H9266/ 40/H20852. For these cases, the maximum tip error is
+3.02% of the beam length. Figure 18 /H20849b/H20850shows the cases of /H9278
+= /H9266/ 2, /H92580 = /H9266/ 6, and /H9258i /H33528/H2085123/H9266/ 120, 5/H9266/ 12/H20852with a maximum tip
+error of 2.75%. The conﬁgurations of the 3R chain are all elbow
+down, i.e., /H90082 /H110220. Figure 18 /H20849c/H20850shows the cases of /H9278= /H9266/ 2, /H92580
+= 0, and /H9258i /H33528/H20851/H9266/ 40, /H9266/ 4/H20852with a maximum tip error of 2.92%. The
+second PBM angle is close to zero, i.e., /H90082 /H110150. It can be seen that
+the errors are sufﬁciently small for the cases with positive and
+zero tip slope angles /H92580 /H113500.
+However, when the beam tip is bent downward, i.e., /H92580 /H110210, the
+conﬁguration of the 3R chain will be elbow up, i.e., /H90082 /H110210. This
+is shown in Fig. 18 /H20849d/H20850where /H9278= /H9266/ 2, /H92580 =− /H9266/ 8, and /H9258i
+/H33528/H20851/H9266/ 40, /H9266/ 4/H20852. The maximum error is 12.3% of the beam length
+when /H9258i = /H9266/ 4. For this kind of load the inﬂection angle, hence the
+end moment, must be limited.
+-0.4 -0.2 0.2 0.4 0.6 0.8 1.0
+-0.2
+0.2
+0.4
+0.6
+0.8
+1.0
+-0.4 -0.2 0.2 0.4 0.6 0.8 1.0
+-0.2
+0.2
+0.4
+0.6
+0.8
+1.0
+-0.4 -0.2 0.2 0.4 0.6 0.8 1.0
+-0.2
+0.2
+0.4
+0.6
+0.8
+1.0
+-0.4 -0.2 0.2 0.4 0.6 0.8 1.0
+-0.2
+0.2
+0.4
+0.6
+0.8
+1.0
+-0.4 -0.2 0.2 0.4 0.6 0.8 1.0
+-0.2
+0.2
+0.4
+0.6
+0.8
+1.0
+-0.4 -0.2 0.2 0.4 0.6 0.8 1.0
+-0.2
+0.2
+0.4
+0.6
+0.8
+1.0
+FEA
+3R model
+Q
+A
+O
+B
+ψ=π/4 ψ =π/2
+ψ=3π/4 ψ =π
+ψ=3π/2 ψ =7π/4
+b/l
+a/l
+Fig. 16 Plots of the deﬂection of a partially compliant four-bar
+mechanism computed by the optimized PRB 3R model and by
+the FEA model with the input crank /H9274« †0,2 /H9266‡
+1 2 3 4 5 6
+0.002
+0.004
+0.006
+0.008
+0.010
+ψ
+Tip Error/l
+Fig. 17 Tip error of the optimized 3R model compared with the
+FEA model for /H9274« †0,2 /H9266‡
+021008-8 / Vol. 1, MAY 2009 Transactions of the ASME
+Downloaded from http://asmedigitalcollection.asme.org/mechanismsrobotics/article-pdf/1/2/021008/5627316/021008_1.pdf by Ohio State University | OSU user on 30 March 2026
+
+===== Page 9 =====
+8 Conclusion
+This paper proposes a pseudorigid-body 3R model analyzing/
+synthesizing large deﬂection of cantilever beams subject to com-
+bined end force and moment. The model is a planar serial chain
+with three revolute joints, each accompanied with a torsion spring.
+The deﬂection of ﬂexible beams depends on three load param-
+eters: force index, force direction angle, and load ratio. Numerical
+integration is used to compute the actual beam deﬂection /H20849tip
+point and tip slope /H20850for various load modes. These three-
+dimensional data sets are then input to a three-dimensional search
+routine in order to ﬁnd the optimal kinematic parameters /H20849charac-
+teristic radius factors /H20850and static parameters /H20849spring stiffness/H20850. The
+result is a 3R serial chain model with parameters independent of
+external loads. The error analysis for various load modes shows
+that this model is accurate and can accommodate a wide range of
+load ratios, force direction angles, and tip slope angles.
+Lastly a compliant mechanism example is used to demonstrate
+how to use the proposed PRB 3R in analyzing compliant mecha-
+nisms. A numerical example is provided and compared with the
+result of a FEA model. The result shows a maximum tip error of
+1.2% when the optimized PRB 3R is used. This model is an im-
+portant contribution to the ﬁeld and is very suitable for kinematic/
+static synthesis leading to the conceptual design of compliant
+mechanisms.
+However, one should be aware of the limitations of this model.
+The approximation error of this model will be signiﬁcantly large
+for some extreme load conditions such as axially dominant forces
+and the cases when the beam has an inﬂection point and the slope
+angle is bent downward. Further studies will be needed for these
+cases. In addition, it is anticipated that extra complexity will be
+introduced into the synthesis equations when this 3R model is
+used.
+Acknowledgment
+The author wishes to express his thanks to anonymous review-
+ers for their insightful comments and to Mr. Kun He and Mr.
+Fenqi Luo from Department of Mechanical Engineering, Univer-
+sity of Maryland, Baltimore County for their help with using the
+ABAQUS software. This research is sponsored by the UMBC DRIF
+Research Initiative fund.
+References
+/H208511/H20852Howell, L. L., 2001, Compliant Mechanisms , Wiley-Interscience, New Y ork,
+NY .
+/H208512/H20852Howell, L. L., and Midha, A., 1995, “Parametric Deﬂection Approximations
+for End-Loaded, Large-Deﬂection Beams in Compliant Mechanisms,” ASME
+J. Mech. Des., 117/H208491/H20850, pp. 156–165.
+/H208513/H20852Howell, L. L., 1991, “The Design and Analysis of Large-Deﬂection Members
+in Compliant Mechanisms,” MS thesis, Purdue University, West Lafayette, IN.
+/H208514/H20852Saxena, A., and Kramer, S. N., 1998, “A Simple and Accurate Method for
+Determining Large Deﬂections in Compliant Mechanisms Subjected to End
+Forces and Moments,” ASME J. Mech. Des., 120/H208493/H20850, pp. 392–400.
+/H208515/H20852Lyon, S. M., Howell, L. L., and Roach, G. M., 2000, “Modeling Fixed-Fixed
+Flexible Segments Via the Pseudo-Rigid-Body Model,” Proceedings of the
+2000 ASME International Mechanical Engineering Congress and Exposition,
+Orlando, FL, Nov. 5–10, DSC-V ol. 69–72, pp. 883–990.
+/H208516/H20852Saggere, L., and Kota, S., 2001, “Synthesis of Planar, Compliant Four-Bar
+Mechanisms for Compliant-Segment Motion Generation,” ASME J. Mech.
+Des., 123/H208494/H20850, pp. 535–541.
+/H208517/H20852Saxena, A., 1997, “A New Pseudo-Rigid-Body Model for Flexible Members in
+Compliant Mechanisms,” MS thesis, University of Toledo, Toledo, OH.
+/H208518/H20852Roark, R. J., and Y oung, W. C., 1982, Formulas for Stress and Strain ,
+McGraw-Hill, New Y ork.
+/H208519/H20852Howell, L. L., Midha, A., and Norton, T. W., 1996, “Evaluation of Equivalent
+Spring Stiffness for Use in a Pseudo-Rigid-Body Model of Large-Deﬂection
+Compliant Mechanisms,” ASME J. Mech. Des., 118/H208491/H20850, pp. 126–131.
+/H2085110/H20852Su, H. J., and McCarthy, J. M., 2007, “Synthesis of Bistable Compliant Four-
+Bar Mechanisms Using Polynomial Homotopy,” ASME J. Mech. Des.,
+129/H2084910/H20850, pp. 1094–1098.
+/H2085111/H20852Tsai, L. W., 1999, Robot Analysis, The Mechanics of Serial and Parallel Ma-
+nipulators, Wiley-Interscience, New Y ork, NY .
+/H2085112/H20852Su, H.-J., and McCarthy, J. M., 2006, “A Polynomial Homotopy Formulation
+of the Inverse Static Analysis of Planar Compliant Mechanisms,” ASME J.
+Mech. Des., 128/H208494/H20850, pp. 776–786.
+0.2 0.4 0.6 0.8 1.0
+0.1
+0.2
+0.3
+0.4
+0.5
+0.2 0.4 0.6 0.8
+0.2
+0.4
+0.6
+0.8
+0.2 0.4 0.6 0.8
+0.2
+0.4
+0.6
+0.8
+0.2 0.4 0.6 0.8 1.0
+0.1
+0.2
+0.3
+0.4
+0.5
+(a)
+PRB 3R Model
+a/l a/l
+a/la/l
+b/l
+b/l
+b/l
+(b)
+(c)( d)
+Numerical
+Integration
+Fig. 18 Comparison of large deﬂection beams with a ﬂection
+point „a… /H92580 = /H9266/4, „b… /H92580 = /H9266/6, „c… /H92580 = 0, and „d… /H92580 =− /H9266/8
+Journal of Mechanisms and Robotics MAY 2009, Vol. 1 / 021008-9
+Downloaded from http://asmedigitalcollection.asme.org/mechanismsrobotics/article-pdf/1/2/021008/5627316/021008_1.pdf by Ohio State University | OSU user on 30 March 2026

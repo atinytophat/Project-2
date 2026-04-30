@@ -1,0 +1,100 @@
+===== Page 1 =====
+ME 7751 Project 2
+Design and Analysis of Compliant Mechanisms
+Spring 2026
+Project Overview
+This project focuses on the design and analysis of compliant mechanisms. Students are
+expected to select a topic of their own interest and develop a complete analytical, numerical, and
+computational study around that topic. The project is intended to connect mechanism design
+theory, reduced-order modeling, finite element verification, and modern computational tool devel-
+opment.
+The selected mechanism may be planar or spatial, provided that the topic is clearly re-
+lated to compliant mechanism design and analysis. Students are encouraged to choose a problem
+with meaningful engineering context, such as precision positioning systems, force/displacement am-
+plifiers, medical devices, soft robotic structures, deployable systems, or other relevant compliant
+mechanism applications.
+Project Requirements
+Each project must satisfyall of the following requirements.
+1. Topic selection. The project topic must be directly related to the design and/or analysis
+of a compliant mechanism. The mechanism may be planar or spatial.
+2. Analytical modeling. Students must derive an analytical model for the mechanism using
+an appropriate reduced-order approach:
+• Forplanar compliant mechanisms, the analytical analysis must be derived using the
+pseudo-rigid-body (PRB) modelmethod.
+• Forspatial compliant mechanisms, the analytical analysis must be derived using the
+stiffness matrix method.
+The analytical formulation should be clearly presented, with all assumptions, modeling steps,
+governing equations, and derived performance metrics documented.
+3. Finite element validation.Students must construct finite element analysis (FEA) models
+of the mechanism and use the FEA results as theground truthfor validation. The com-
+parison should include appropriate kinematic, stiffness, force, stress, displacement, or other
+performance measures relevant to the chosen problem.
+1
+
+===== Page 2 =====
+4. Interactive computational app. Students must develop an interactive app with a
+graphical user interface (GUI)to demonstrate the discrepancy between the analytical
+model and the FEA model. The app may be created with the assistance of AI coding tools,
+but students remain responsible for the technical correctness of the model implementation,
+interface behavior, and interpretation of the results.
+At a minimum, the app should:
+• Allow a user to modify key design or loading parameters.
+• Display analytical model predictions.
+• Display FEA-based results or a validated surrogate/data representation of the FEA re-
+sults.
+• Quantify and visualize the discrepancy between the analytical and FEA predictions.
+5. Report preparation. Each team or student must prepare a written report in apaper
+formatusingan ASMEjournalorconferencestyle . Thereportshouldreadasatechnical
+paper rather than as a casual project summary.
+Expected Technical Content
+The final submission should demonstrate the following elements:
+• Clear problem definition and motivation for the chosen compliant mechanism.
+• Description of the mechanism configuration, assumptions, materials, geometry, boundary con-
+ditions, and intended function.
+• Derivation of the analytical model using PRB or stiffness-matrix-based methods, as appropri-
+ate.
+• Construction and description of the FEA model, including assumptions, element choices when
+relevant, and loading/boundary conditions.
+• Systematic comparison between analytical and FEA results.
+• Discussion of sources of discrepancy, such as modeling assumptions, geometric nonlinearity,
+distributed compliance effects, large deformation effects, material idealizations, or numerical
+approximations.
+• Demonstration and explanation of the interactive GUI app.
+• Engineering conclusions and recommendations for improving either the compliant mechanism
+design or the reduced-order analytical model.
+2
+
+===== Page 3 =====
+Suggested Structure for the Report
+An effective report will typically include the following sections:
+1. Title and abstract
+2. Introduction and motivation
+3. Mechanism description and problem definition
+4. Analytical modeling methodology
+5. FEA methodology
+6. Results and comparison
+7. Interactive app description
+8. Discussion
+9. Conclusions
+10. References
+Deliverables
+The project submission should include the following:
+• The final paper-format report in ASME journal or conference style.
+• The analytical derivation and supporting equations.
+• The FEA model results used for validation.
+• The interactive GUI app and any required supporting files or instructions to run it.
+• A clear comparison demonstrating the discrepancy between analytical and FEA predictions.
+Evaluation Emphasis
+Projects will be judged primarily on:
+• Relevance and quality of the chosen compliant mechanism problem.
+• Correctness and rigor of the analytical derivation.
+• Quality and credibility of the FEA validation.
+• Depth of interpretation of discrepancies between analytical and numerical results.
+• Functionality and usefulness of the interactive GUI app.
+3
+
+===== Page 4 =====
+• Professional quality, organization, and clarity of the final paper.
+Note: Freedom in topic selection is encouraged, but the required analytical method, FEA com-
+parison, interactive app, and ASME-style paper format are mandatory elements of every project.
+4

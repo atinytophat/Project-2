@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+*.pyo
+
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+Abaqus/*.cae
+Abaqus/*.jnl
+Abaqus/*.mp4
+
+webapp_stdout.txt
+webapp_stderr.txt

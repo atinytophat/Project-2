@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Compliant Design Workspace</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="tab-bar" role="tablist" aria-label="Project screens">
+        <button class="tab-button active" id="tab-atlas" type="button" role="tab" aria-selected="true" aria-controls="panel-atlas" data-tab-target="atlas">
+          Section 2 Atlas
+        </button>
+        <button class="tab-button" id="tab-prb" type="button" role="tab" aria-selected="false" aria-controls="panel-prb" data-tab-target="prb">
+          Section 4 PRB
+        </button>
+        <button class="tab-button" id="tab-mechanism" type="button" role="tab" aria-selected="false" aria-controls="panel-mechanism" data-tab-target="mechanism">
+          Section 5 Mechanism
+        </button>
+        <button class="tab-button" id="tab-materials" type="button" role="tab" aria-selected="false" aria-controls="panel-materials" data-tab-target="materials">
+          Material Library
+        </button>
+      </div>
+    </header>
+
+    <main class="screen-stack">
+      <section class="screen-panel active" id="panel-atlas" role="tabpanel" aria-labelledby="tab-atlas" data-tab-panel="atlas">
+        <div class="atlas-workspace">
+          <article class="content-card atlas-plot-card">
+            <div class="atlas-view-panel active" id="atlasInteractiveView" data-atlas-view="interactive">
+              <div class="atlas-svg-wrap">
+                <div class="atlas-legend" aria-label="Atlas plot legend">
+                  <div class="atlas-legend-item">
+                    <span class="legend-swatch legend-dashed"></span>
+                    <span>Geometric branch</span>
+                  </div>
+                  <div class="atlas-legend-item">
+                    <span class="legend-swatch legend-solid"></span>
+                    <span>Allowable branch</span>
+                  </div>
+                  <div class="atlas-legend-item">
+                    <span class="legend-swatch legend-point"></span>
+                    <span>Selected theta0</span>
+                  </div>
+                </div>
+                <svg id="atlasPlot" class="atlas-plot" viewBox="0 0 720 520" role="img" aria-label="Section 2 interactive atlas plot">
+                  <rect x="0" y="0" width="720" height="520" fill="transparent"></rect>
+                  <g id="atlasGrid"></g>
+                  <g id="atlasAxes"></g>
+                  <path id="atlasFullCurve" class="atlas-curve atlas-curve-full" d=""></path>
+                  <path id="atlasAllowableCurve" class="atlas-curve atlas-curve-allowable" d=""></path>
+                  <circle id="atlasSelectedPoint" class="atlas-marker atlas-selected-point" r="7"></circle>
+                </svg>
+              </div>
+            </div>
+
+            <div class="atlas-view-panel" id="atlasReportView" data-atlas-view="report">
+              <div class="atlas-report-grid" id="atlasReportGrid"></div>
+            </div>
+          </article>
+
+          <div class="atlas-side">
+            <div class="atlas-side-shell">
+              <div class="atlas-mode-rail" role="tablist" aria-label="Atlas view mode">
+                <button class="atlas-mode-tab active" type="button" role="tab" aria-selected="true" data-atlas-mode="interactive">
+                  <span>Interactive</span>
+                </button>
+                <button class="atlas-mode-tab" type="button" role="tab" aria-selected="false" data-atlas-mode="report">
+                  <span>Atlas</span>
+                </button>
+              </div>
+
+              <div class="atlas-mode-panels">
+                <div class="atlas-mode-panel active" data-atlas-mode-panel="interactive">
+                  <article class="content-card atlas-control-card">
+                    <p class="eyebrow atlas-side-eyebrow">Reference layer</p>
+                    <h2 class="atlas-side-title">Atlas Tools</h2>
+
+                    <div class="card-kicker">Live controls</div>
+                    <h3>Curve inputs</h3>
+
+                    <label class="control-block" for="kappaSlider">
+                      <span class="control-label-row">
+                        <span>Kappa</span>
+                        <input id="kappaInput" class="value-input" type="number" min="0" max="50" step="0.05" value="0.00" />
+                      </span>
+                      <input id="kappaSlider" type="range" min="0" max="50" step="0.05" value="0" />
+                    </label>
+
+                    <label class="control-block" for="phiSlider">
+                      <span class="control-label-row">
+                        <span>Phi (deg)</span>
+                        <input id="phiInput" class="value-input" type="number" min="1" max="179" step="1" value="90.0" />
+                      </span>
+                      <input id="phiSlider" type="range" min="1" max="179" step="1" value="90" />
+                    </label>
+
+                    <div class="card-kicker">Beam and material</div>
+                    <h3>Allowable limits inputs</h3>
+
+                    <div class="property-grid">
+                      <label class="property-field" for="beamLengthInput">
+                        <span>Length L (m)</span>
+                        <input id="beamLengthInput" class="value-input value-input-wide" type="number" min="0.0001" step="0.001" value="0.100" />
+                      </label>
+
+                      <label class="property-field" for="thicknessInput">
+                        <span>Thickness t (m)</span>
+                        <input id="thicknessInput" class="value-input value-input-wide" type="number" min="0.000001" step="0.0001" value="0.0010" />
+                      </label>
+
+                      <label class="property-field" for="beamWidthInput">
+                        <span>Width b (m)</span>
+                        <input id="beamWidthInput" class="value-input value-input-wide" type="number" min="0.0001" step="0.001" value="0.020" />
+                      </label>
+
+                      <label class="property-field" for="youngsModulusInput">
+                        <span>Elastic modulus E (MPa)</span>
+                        <input id="youngsModulusInput" class="value-input value-input-wide" type="number" min="0.001" step="1" value="69000" />
+                      </label>
+
+                      <label class="property-field" for="sigmaMaxInput">
+                        <span>Yield / sigma max (MPa)</span>
+                        <input id="sigmaMaxInput" class="value-input value-input-wide" type="number" min="0.001" step="1" value="276" />
+                      </label>
+                    </div>
+                  </article>
+
+                  <article class="content-card atlas-summary-card">
+                    <div class="atlas-detail-tabs" role="tablist" aria-label="Atlas detail views">
+                      <button class="atlas-detail-tab active" type="button" role="tab" aria-selected="true" data-detail-mode="theta">
+                        End Point
+                      </button>
+                      <button class="atlas-detail-tab" type="button" role="tab" aria-selected="false" data-detail-mode="loads">
+                        Loads
+                      </button>
+                    </div>
+
+                    <div class="atlas-detail-panel active" data-detail-panel="theta">
+                      <div class="card-kicker">Curve summary</div>
+                      <h3>Selected end point</h3>
+                      <dl class="summary-list">
+                        <div class="summary-row">
+                          <dt>theta0 max</dt>
+                          <dd id="thetaMaxRad">0.00 deg</dd>
+                        </div>
+                        <div class="summary-row">
+                          <dt>theta0 selected</dt>
+                          <dd id="thetaSelectedDeg">0.00 deg</dd>
+                        </div>
+                        <div class="summary-row">
+                          <dt>Start point</dt>
+                          <dd id="startPoint">(1.000, 0.000)</dd>
+                        </div>
+                        <div class="summary-row">
+                          <dt>Selected point</dt>
+                          <dd id="endPoint">(1.000, 0.000)</dd>
+                        </div>
+                      </dl>
+                    </div>
+
+                    <div class="atlas-detail-panel" data-detail-panel="loads">
+                      <div class="card-kicker">Allowable branch</div>
+                      <h3>Required loads</h3>
+
+                      <label class="control-block" for="thetaAllowableSlider">
+                        <span class="control-label-row">
+                          <span>theta0 (deg)</span>
+                          <input id="thetaAllowableInput" class="value-input" type="number" min="0" max="45.0" step="0.1" value="0.0" />
+                        </span>
+                        <input id="thetaAllowableSlider" type="range" min="0" max="45.0" step="0.1" value="0.0" />
+                      </label>
+
+                      <dl class="summary-list">
+                        <div class="summary-row">
+                          <dt>force</dt>
+                          <dd id="allowableForce">0.000 N</dd>
+                        </div>
+                        <div class="summary-row">
+                          <dt>moment</dt>
+                          <dd id="allowableMoment">0.000 N*m</dd>
+                        </div>
+                        <div class="summary-row">
+                          <dt>a/L</dt>
+                          <dd id="allowableAOverL">1.000</dd>
+                        </div>
+                        <div class="summary-row">
+                          <dt>b/L</dt>
+                          <dd id="allowableBOverL">0.000</dd>
+                        </div>
+                      </dl>
+                    </div>
+                  </article>
+
+                </div>
+
+                <div class="atlas-mode-panel" data-atlas-mode-panel="report">
+                  <article class="content-card atlas-control-card">
+                    <p class="eyebrow atlas-side-eyebrow">Reference layer</p>
+                    <h2 class="atlas-side-title">Report Atlas</h2>
+                    <h3>Panel set</h3>
+                    <dl class="summary-list">
+                      <div class="summary-row">
+                        <dt>Load ratios</dt>
+                        <dd>0, 0.1, 1, 1.5, 2, 2.5, 5, 50</dd>
+                      </div>
+                      <div class="summary-row">
+                        <dt>Force angles</dt>
+                        <dd>9 deg to 171 deg</dd>
+                      </div>
+                    </dl>
+                  </article>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen-panel" id="panel-prb" role="tabpanel" aria-labelledby="tab-prb" data-tab-panel="prb">
+        <div class="prb-workspace">
+          <article class="content-card prb-plot-card">
+            <div id="prbLegend" class="prb-legend" aria-label="Section 4 plot legend"></div>
+
+            <div class="prb-svg-wrap">
+              <svg id="prbPlot" class="prb-plot" viewBox="0 0 860 520" role="img" aria-label="Section 4 PRB workflow plot">
+                <rect x="0" y="0" width="860" height="520" fill="transparent"></rect>
+                <g id="prbGrid"></g>
+                <g id="prbAxes"></g>
+                <g id="prbSeries"></g>
+                <g id="prbAnnotations"></g>
+              </svg>
+            </div>
+          </article>
+
+          <div class="prb-side">
+            <article class="content-card prb-control-card">
+              <p class="eyebrow atlas-side-eyebrow">Approximation layer</p>
+              <h2 class="atlas-side-title">Section 4 PRB Builder</h2>
+
+              <div class="prb-stage-tabs" role="tablist" aria-label="Section 4 stages">
+                <button class="prb-stage-tab active" type="button" role="tab" aria-selected="true" data-prb-mode="search">
+                  Search
+                </button>
+                <button class="prb-stage-tab" type="button" role="tab" aria-selected="false" data-prb-mode="moment">
+                  Moment
+                </button>
+                <button class="prb-stage-tab" type="button" role="tab" aria-selected="false" data-prb-mode="force">
+                  Force
+                </button>
+                <button class="prb-stage-tab" type="button" role="tab" aria-selected="false" data-prb-mode="average">
+                  Average
+                </button>
+              </div>
+
+              <div id="prbStageKicker" class="card-kicker">Section400</div>
+              <h3 id="prbStageTitle">Characteristic radius search</h3>
+
+              <dl id="prbStageSummary" class="summary-list">
+                <div class="summary-row">
+                  <dt>Status</dt>
+                  <dd>Loading</dd>
+                </div>
+              </dl>
+            </article>
+
+            <article class="content-card status-card prb-output-card">
+              <div class="card-kicker">Section 5 feed</div>
+              <h3>Computed PRB parameters</h3>
+              <dl class="summary-list">
+                <div class="summary-row">
+                  <dt>gamma set</dt>
+                  <dd id="prbFinalGammas">-</dd>
+                </div>
+                <div class="summary-row">
+                  <dt>kbar</dt>
+                  <dd id="prbFinalKbar">-</dd>
+                </div>
+                <div class="summary-row">
+                  <dt>kappa grid</dt>
+                  <dd id="prbKappaGrid">-</dd>
+                </div>
+              </dl>
+
+              <div class="prb-output-tabs" role="tablist" aria-label="Section 5 preview figures">
+                <button class="prb-output-tab active" type="button" data-prb-output-mode="figure12">Figure 12</button>
+                <button class="prb-output-tab" type="button" data-prb-output-mode="figure13">Figure 13</button>
+              </div>
+
+              <div class="prb-output-meta">
+                <div class="mechanism-legend-item">
+                  <span class="mechanism-swatch mechanism-swatch-prb"></span>
+                  <span>PRB model</span>
+                </div>
+                <div class="mechanism-legend-item">
+                  <span class="mechanism-swatch prb-output-swatch-atlas"></span>
+                  <span>Numerical integration</span>
+                </div>
+              </div>
+
+              <div class="prb-output-svg-wrap">
+                <svg id="prbOutputPlot" class="prb-output-plot" viewBox="0 0 860 540" role="img" aria-label="Section 5 comparison preview">
+                  <rect x="0" y="0" width="860" height="540" fill="transparent"></rect>
+                  <g id="prbOutputGrid"></g>
+                  <g id="prbOutputAxes"></g>
+                  <g id="prbOutputSeries"></g>
+                  <g id="prbOutputLabels"></g>
+                </svg>
+              </div>
+
+              <dl id="prbOutputSummary" class="summary-list">
+                <div class="summary-row">
+                  <dt>Status</dt>
+                  <dd>Loading</dd>
+                </div>
+              </dl>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="screen-panel" id="panel-mechanism" role="tabpanel" aria-labelledby="tab-mechanism" data-tab-panel="mechanism">
+        <div class="mechanism-workspace">
+          <article class="content-card mechanism-plot-card">
+            <div class="mechanism-legend" aria-label="Section 520 legend">
+              <div class="mechanism-legend-item">
+                <span class="mechanism-swatch mechanism-swatch-fea"></span>
+                <span>FEA mechanism</span>
+              </div>
+              <div class="mechanism-legend-item">
+                <span class="mechanism-swatch mechanism-swatch-fea-nodes"></span>
+                <span>FEA flex nodes</span>
+              </div>
+              <div class="mechanism-legend-item">
+                <span class="mechanism-swatch mechanism-swatch-prb"></span>
+                <span>PRB overlay</span>
+              </div>
+            </div>
+
+            <div class="mechanism-svg-wrap">
+              <svg id="mechanismPlot" class="mechanism-plot" viewBox="0 0 860 520" role="img" aria-label="Section 601 PRB and FEA overlay plot">
+                <rect x="0" y="0" width="860" height="520" fill="transparent"></rect>
+                <g id="mechanismGrid"></g>
+                <g id="mechanismAxes"></g>
+                <path id="mechanismFEACrank" class="mechanism-path mechanism-path-fea" d=""></path>
+                <path id="mechanismFEACoupler" class="mechanism-path mechanism-path-fea" d=""></path>
+                <path id="mechanismFEAFlex" class="mechanism-path mechanism-path-fea" d=""></path>
+                <path id="mechanismPRBChain" class="mechanism-chain" d=""></path>
+                <path id="mechanismBALink" class="mechanism-link mechanism-link-ba" d=""></path>
+                <path id="mechanismAQLink" class="mechanism-link mechanism-link-aq" d=""></path>
+                <circle id="mechanismOrigin" class="mechanism-anchor" r="3.8"></circle>
+                <circle id="mechanismBAnchor" class="mechanism-anchor" r="3.8"></circle>
+                <g id="mechanismFEAFlexNodes"></g>
+                <g id="mechanismJointPoints"></g>
+                <circle id="mechanismQPoint" class="mechanism-point mechanism-point-q" r="3.8"></circle>
+                <circle id="mechanismAPoint" class="mechanism-point mechanism-point-a" r="3.8"></circle>
+                <circle id="mechanismCrankPoint" class="mechanism-point mechanism-point-crank" r="3.8"></circle>
+              </svg>
+            </div>
+          </article>
+
+          <div class="mechanism-trend-stack">
+            <article class="content-card mechanism-trend-card">
+              <div class="card-kicker">Q trajectory</div>
+              <h3>y / l vs crank angle</h3>
+              <div class="mechanism-trend-wrap">
+                <svg id="mechanismYTrendPlot" class="mechanism-trend-plot" viewBox="0 0 420 240" role="img" aria-label="Q y over crank angle for FEA and PRB">
+                  <rect x="0" y="0" width="420" height="240" fill="transparent"></rect>
+                  <g id="mechanismYTrendGrid"></g>
+                  <g id="mechanismYTrendAxes"></g>
+                  <path id="mechanismYTrendFEA" class="mechanism-trend-line mechanism-trend-line-fea" d=""></path>
+                  <path id="mechanismYTrendPRB" class="mechanism-trend-line mechanism-trend-line-prb" d=""></path>
+                  <line id="mechanismYTrendCursor" class="mechanism-trend-cursor" x1="0" y1="0" x2="0" y2="0"></line>
+                  <circle id="mechanismYTrendPointFEA" class="mechanism-trend-point mechanism-trend-point-fea" r="3.5"></circle>
+                  <circle id="mechanismYTrendPointPRB" class="mechanism-trend-point mechanism-trend-point-prb" r="3.5"></circle>
+                </svg>
+              </div>
+            </article>
+
+            <article class="content-card mechanism-trend-card">
+              <div class="card-kicker">Q trajectory</div>
+              <h3>x / l vs crank angle</h3>
+              <div class="mechanism-trend-wrap">
+                <svg id="mechanismXTrendPlot" class="mechanism-trend-plot" viewBox="0 0 420 240" role="img" aria-label="Q x over crank angle for FEA and PRB">
+                  <rect x="0" y="0" width="420" height="240" fill="transparent"></rect>
+                  <g id="mechanismXTrendGrid"></g>
+                  <g id="mechanismXTrendAxes"></g>
+                  <path id="mechanismXTrendFEA" class="mechanism-trend-line mechanism-trend-line-fea" d=""></path>
+                  <path id="mechanismXTrendPRB" class="mechanism-trend-line mechanism-trend-line-prb" d=""></path>
+                  <line id="mechanismXTrendCursor" class="mechanism-trend-cursor" x1="0" y1="0" x2="0" y2="0"></line>
+                  <circle id="mechanismXTrendPointFEA" class="mechanism-trend-point mechanism-trend-point-fea" r="3.5"></circle>
+                  <circle id="mechanismXTrendPointPRB" class="mechanism-trend-point mechanism-trend-point-prb" r="3.5"></circle>
+                </svg>
+              </div>
+            </article>
+          </div>
+
+          <article class="content-card mechanism-control-card">
+            <p class="eyebrow atlas-side-eyebrow">Approximation layer</p>
+            <h2 class="atlas-side-title">Mechanism Tools</h2>
+            <h3>Interactive PRB and FEA comparison</h3>
+
+            <label class="control-block" for="mechanismAngleSlider">
+              <span class="control-label-row">
+                <span>Crank angle (deg)</span>
+                <input id="mechanismAngleInput" class="value-input" type="number" min="0" max="360" step="0.5" value="0.0" />
+              </span>
+              <input id="mechanismAngleSlider" type="range" min="0" max="360" step="0.5" value="0.0" />
+            </label>
+
+            <div class="mechanism-visibility-row">
+              <label class="mechanism-toggle">
+                <input id="mechanismShowFEA" type="checkbox" checked />
+                <span>Show FEA</span>
+              </label>
+              <label class="mechanism-toggle">
+                <input id="mechanismShowPRB" type="checkbox" checked />
+                <span>Show PRB</span>
+              </label>
+              <button id="mechanismAnimateButton" class="mechanism-animate-button" type="button">Animate</button>
+            </div>
+
+            <dl class="summary-list mechanism-summary-list">
+              <div class="summary-row">
+                <dt>gammas</dt>
+                <dd id="mechanismGammas">-</dd>
+              </div>
+              <div class="summary-row">
+                <dt>kbar</dt>
+                <dd id="mechanismKbar">-</dd>
+              </div>
+              <div class="summary-row">
+                <dt>theta1 / theta2 / theta3</dt>
+                <dd id="mechanismThetas">-</dd>
+              </div>
+              <div class="summary-row">
+                <dt>FEA / PRB tip slope</dt>
+                <dd id="mechanismTipSlope">-</dd>
+              </div>
+              <div class="summary-row">
+                <dt>FEA Q / PRB Q</dt>
+                <dd id="mechanismQValue">-</dd>
+              </div>
+              <div class="summary-row">
+                <dt>FEA A / PRB A</dt>
+                <dd id="mechanismAValue">-</dd>
+              </div>
+              <div class="summary-row">
+                <dt>A error / Q error [%]</dt>
+                <dd id="mechanismErrors">-</dd>
+              </div>
+              <div class="summary-row">
+                <dt>Fx / Fy / M</dt>
+                <dd id="mechanismLoadValue">-</dd>
+              </div>
+              <div class="summary-row">
+                <dt>residual norm</dt>
+                <dd id="mechanismResidual">-</dd>
+              </div>
+            </dl>
+          </article>
+        </div>
+      </section>
+
+      <section class="screen-panel" id="panel-materials" role="tabpanel" aria-labelledby="tab-materials" data-tab-panel="materials">
+        <div class="materials-workspace">
+          <div class="materials-main">
+            <article class="content-card materials-plot-card">
+              <div class="materials-legend">
+                <div class="mechanism-legend-item">
+                  <span class="mechanism-swatch mechanism-swatch-fea"></span>
+                  <span>Undeformed beam</span>
+                </div>
+                <div class="mechanism-legend-item">
+                  <span class="mechanism-swatch materials-swatch-path"></span>
+                  <span>Target path</span>
+                </div>
+                <div class="mechanism-legend-item">
+                  <span class="mechanism-swatch materials-swatch-actual"></span>
+                  <span>Achieved tip path</span>
+                </div>
+                <div class="mechanism-legend-item">
+                  <span class="mechanism-swatch mechanism-swatch-prb"></span>
+                  <span>PRB configuration</span>
+                </div>
+                <div class="mechanism-legend-item">
+                  <span class="mechanism-swatch materials-swatch-tip"></span>
+                  <span>Selected tip</span>
+                </div>
+              </div>
+
+              <div class="materials-svg-wrap">
+                <svg id="materialsPlot" class="materials-plot" viewBox="0 0 860 520" role="img" aria-label="PRB intubation motion plot">
+                  <rect x="0" y="0" width="860" height="520" fill="transparent"></rect>
+                  <g id="materialsGrid"></g>
+                  <g id="materialsAxes"></g>
+                  <g id="materialsStatic"></g>
+                  <g id="materialsDynamic"></g>
+                </svg>
+              </div>
+            </article>
+
+            <div class="materials-trend-stack">
+              <article class="content-card materials-trend-card">
+                <div class="materials-trend-wrap">
+                  <svg id="materialsYTrendPlot" class="materials-trend-plot" viewBox="0 0 420 180" role="img" aria-label="Medical y deflection over time">
+                    <rect x="0" y="0" width="420" height="180" fill="transparent"></rect>
+                    <g id="materialsYTrendGrid"></g>
+                    <g id="materialsYTrendAxes"></g>
+                    <path id="materialsYTrendTarget" class="materials-trend-line materials-trend-line-target" d=""></path>
+                    <path id="materialsYTrendActual" class="materials-trend-line materials-trend-line-actual" d=""></path>
+                    <line id="materialsYTrendCursor" class="materials-trend-cursor" x1="0" y1="0" x2="0" y2="0"></line>
+                    <circle id="materialsYTrendPointTarget" class="materials-trend-point materials-trend-point-target" r="3.2"></circle>
+                    <circle id="materialsYTrendPointActual" class="materials-trend-point materials-trend-point-actual" r="3.2"></circle>
+                  </svg>
+                </div>
+              </article>
+
+              <article class="content-card materials-trend-card">
+                <div class="materials-trend-wrap">
+                  <svg id="materialsThetaTrendPlot" class="materials-trend-plot" viewBox="0 0 420 180" role="img" aria-label="Medical theta0 over time">
+                    <rect x="0" y="0" width="420" height="180" fill="transparent"></rect>
+                    <g id="materialsThetaTrendGrid"></g>
+                    <g id="materialsThetaTrendAxes"></g>
+                    <path id="materialsThetaTrendTarget" class="materials-trend-line materials-trend-line-target" d=""></path>
+                    <path id="materialsThetaTrendActual" class="materials-trend-line materials-trend-line-actual" d=""></path>
+                    <line id="materialsThetaTrendCursor" class="materials-trend-cursor" x1="0" y1="0" x2="0" y2="0"></line>
+                    <circle id="materialsThetaTrendPointTarget" class="materials-trend-point materials-trend-point-target" r="3.2"></circle>
+                    <circle id="materialsThetaTrendPointActual" class="materials-trend-point materials-trend-point-actual" r="3.2"></circle>
+                  </svg>
+                </div>
+              </article>
+
+              <article class="content-card materials-trend-card">
+                <div class="materials-trend-wrap">
+                  <svg id="materialsDemandTrendPlot" class="materials-trend-plot" viewBox="0 0 420 180" role="img" aria-label="Equivalent PRB moment demand over time">
+                    <rect x="0" y="0" width="420" height="180" fill="transparent"></rect>
+                    <g id="materialsDemandTrendGrid"></g>
+                    <g id="materialsDemandTrendAxes"></g>
+                    <path id="materialsDemandTrendLine" class="materials-trend-line materials-trend-line-demand" d=""></path>
+                    <line id="materialsDemandTrendCursor" class="materials-trend-cursor" x1="0" y1="0" x2="0" y2="0"></line>
+                    <circle id="materialsDemandTrendPoint" class="materials-trend-point materials-trend-point-demand" r="3.2"></circle>
+                  </svg>
+                </div>
+              </article>
+            </div>
+          </div>
+
+          <div class="materials-side">
+            <article class="content-card materials-summary-card">
+              <div class="card-kicker">Medical experiments</div>
+              <p class="eyebrow atlas-side-eyebrow">Medical path study</p>
+              <h2 class="atlas-side-title">Material Library</h2>
+              <h3 id="materialsExperimentTitle">Sinusoidal tip motion</h3>
+
+              <div class="card-kicker">Beam and material</div>
+              <h3>Inputs for later load solving</h3>
+              <div class="property-grid materials-property-grid">
+                <label class="property-field" for="materialsMotionTimeInput">
+                  <span>Time span (s)</span>
+                  <input id="materialsMotionTimeInput" class="value-input value-input-wide" type="number" min="0.1" step="0.5" value="8.0" />
+                </label>
+                <label class="property-field" for="materialsAmplitudeInput">
+                  <span>Sine amplitude</span>
+                  <input id="materialsAmplitudeInput" class="value-input value-input-wide" type="number" min="0.001" step="0.01" value="0.10" />
+                </label>
+                <label class="property-field" for="materialsLengthInput">
+                  <span>Length L (m)</span>
+                  <input id="materialsLengthInput" class="value-input value-input-wide" type="number" min="0.0001" step="0.001" value="0.100" />
+                </label>
+                <label class="property-field" for="materialsThicknessInput">
+                  <span>Thickness t (m)</span>
+                  <input id="materialsThicknessInput" class="value-input value-input-wide" type="number" min="0.000001" step="0.0001" value="0.0010" />
+                </label>
+                <label class="property-field" for="materialsWidthInput">
+                  <span>Width b (m)</span>
+                  <input id="materialsWidthInput" class="value-input value-input-wide" type="number" min="0.0001" step="0.001" value="0.020" />
+                </label>
+                <label class="property-field" for="materialsYoungsModulusInput">
+                  <span>Elastic modulus E (MPa)</span>
+                  <input id="materialsYoungsModulusInput" class="value-input value-input-wide" type="number" min="0.001" step="1" value="69000" />
+                </label>
+                <label class="property-field" for="materialsYieldStrengthInput">
+                  <span>Yield strength (MPa)</span>
+                  <input id="materialsYieldStrengthInput" class="value-input value-input-wide" type="number" min="0.001" step="1" value="276" />
+                </label>
+              </div>
+
+              <div class="control-block">
+                <span class="control-label-row">
+                  <span id="materialsSliderLabel">time</span>
+                  <span id="materialsFrameValue">Loading</span>
+                </span>
+                <input id="materialsFrameSlider" type="range" min="0" max="80" step="1" value="0" />
+              </div>
+
+              <div class="mechanism-visibility-row">
+                <button id="materialsAnimateButton" class="mechanism-animate-button" type="button">Animate</button>
+              </div>
+
+              <dl class="summary-list">
+                <div class="summary-row">
+                  <dt>gammas</dt>
+                  <dd id="materialsGammas">Loading</dd>
+                </div>
+                <div class="summary-row">
+                  <dt>kbar</dt>
+                  <dd id="materialsKbar">Loading</dd>
+                </div>
+                <div class="summary-row">
+                  <dt>x actual / y target</dt>
+                  <dd id="materialsTargetXY">-</dd>
+                </div>
+                <div class="summary-row">
+                  <dt>theta0 desired / actual</dt>
+                  <dd id="materialsThetaTip">-</dd>
+                </div>
+                <div class="summary-row">
+                  <dt>theta1 / theta2 / theta3</dt>
+                  <dd id="materialsThetas">-</dd>
+                </div>
+                <div class="summary-row">
+                  <dt>tau1 / tau2 / tau3</dt>
+                  <dd id="materialsTau">-</dd>
+                </div>
+                <div class="summary-row">
+                  <dt>spring energy</dt>
+                  <dd id="materialsEnergy">-</dd>
+                </div>
+                <div class="summary-row">
+                  <dt>eq. moment demand</dt>
+                  <dd id="materialsDemand">-</dd>
+                </div>
+                <div class="summary-row">
+                  <dt>force / moment</dt>
+                  <dd id="materialsForceMoment">Equivalent PRB moment only</dd>
+                </div>
+                <div class="summary-row">
+                  <dt>tracking error</dt>
+                  <dd id="materialsTrackingError">-</dd>
+                </div>
+                <div class="summary-row">
+                  <dt>trace span</dt>
+                  <dd id="materialsTraceSpan">-</dd>
+                </div>
+              </dl>
+            </article>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>
