@@ -317,6 +317,24 @@
     return wrappedValue < 0 ? wrappedValue + 360 : wrappedValue;
   }
 
+  function computePositionMagnitude(point) {
+    return Math.hypot(Number(point[0]), Number(point[1]));
+  }
+
+  function computeFeaTipAngleDegrees(flexPoints) {
+    if (!Array.isArray(flexPoints) || flexPoints.length < 2) {
+      return 0;
+    }
+    const previousPoint = flexPoints[flexPoints.length - 2];
+    const tipPoint = flexPoints[flexPoints.length - 1];
+    return radiansToDegrees(
+      Math.atan2(
+        Number(tipPoint[1]) - Number(previousPoint[1]),
+        Number(tipPoint[0]) - Number(previousPoint[0]),
+      ),
+    );
+  }
+
   function angleDistanceDegrees(leftValue, rightValue) {
     const wrappedDelta = Math.abs(wrapAngleDegrees(leftValue) - wrapAngleDegrees(rightValue));
     return Math.min(wrappedDelta, 360 - wrappedDelta);
@@ -2578,15 +2596,38 @@
       angle: wrapAngleDegrees(Number(frame.crank_angle_deg)),
       qx: Number(frame.parts["FLEX-1"].deformed_xy.at(-1)[0]) * feaScale,
       qy: Number(frame.parts["FLEX-1"].deformed_xy.at(-1)[1]) * feaScale,
+      positionMagnitude: Math.hypot(
+        Number(frame.parts["FLEX-1"].deformed_xy.at(-1)[0]) * feaScale,
+        Number(frame.parts["FLEX-1"].deformed_xy.at(-1)[1]) * feaScale,
+      ),
+      theta0Deg: computeFeaTipAngleDegrees(
+        frame.parts["FLEX-1"].deformed_xy.map((point) => [
+          Number(point[0]) * feaScale,
+          Number(point[1]) * feaScale,
+        ]),
+      ),
     })).sort((leftFrame, rightFrame) => leftFrame.angle - rightFrame.angle);
     const prbFrames = overlayData.prb_motion.angle_deg.map((angleDeg, index) => ({
       angle: wrapAngleDegrees(Number(angleDeg)),
       qx: Number(overlayData.prb_motion.Q[index][0]),
       qy: Number(overlayData.prb_motion.Q[index][1]),
+      positionMagnitude: Math.hypot(
+        Number(overlayData.prb_motion.Q[index][0]),
+        Number(overlayData.prb_motion.Q[index][1]),
+      ),
+      theta0Deg: radiansToDegrees(
+        overlayData.prb_motion.theta[index].reduce((sum, value) => sum + Number(value), 0),
+      ),
     })).sort((leftFrame, rightFrame) => leftFrame.angle - rightFrame.angle);
 
-    const xValues = [...feaFrames.map((frame) => frame.qx), ...prbFrames.map((frame) => frame.qx)];
-    const yValues = [...feaFrames.map((frame) => frame.qy), ...prbFrames.map((frame) => frame.qy)];
+    const positionValues = [
+      ...feaFrames.map((frame) => frame.positionMagnitude),
+      ...prbFrames.map((frame) => frame.positionMagnitude),
+    ];
+    const thetaValues = [
+      ...feaFrames.map((frame) => frame.theta0Deg),
+      ...prbFrames.map((frame) => frame.theta0Deg),
+    ];
     const computeBounds = (values) => {
       const minValue = Math.min(...values);
       const maxValue = Math.max(...values);
@@ -2600,8 +2641,8 @@
     return {
       feaFrames,
       prbFrames,
-      xBounds: computeBounds(xValues),
-      yBounds: computeBounds(yValues),
+      positionBounds: computeBounds(positionValues),
+      thetaBounds: computeBounds(thetaValues),
     };
   }
 
@@ -2695,21 +2736,53 @@
       return;
     }
 
-    const feaYPoints = mechanismTrendBounds.feaFrames.map((frame) => ({ angle: frame.angle, value: frame.qy }));
-    const prbYPoints = mechanismTrendBounds.prbFrames.map((frame) => ({ angle: frame.angle, value: frame.qy }));
-    const feaXPoints = mechanismTrendBounds.feaFrames.map((frame) => ({ angle: frame.angle, value: frame.qx }));
-    const prbXPoints = mechanismTrendBounds.prbFrames.map((frame) => ({ angle: frame.angle, value: frame.qx }));
+    const feaPositionPoints = mechanismTrendBounds.feaFrames.map((frame) => ({
+      angle: frame.angle,
+      value: frame.positionMagnitude,
+    }));
+    const prbPositionPoints = mechanismTrendBounds.prbFrames.map((frame) => ({
+      angle: frame.angle,
+      value: frame.positionMagnitude,
+    }));
+    const feaThetaPoints = mechanismTrendBounds.feaFrames.map((frame) => ({
+      angle: frame.angle,
+      value: frame.theta0Deg,
+    }));
+    const prbThetaPoints = mechanismTrendBounds.prbFrames.map((frame) => ({
+      angle: frame.angle,
+      value: frame.theta0Deg,
+    }));
 
-    drawMechanismTrendFrame(mechanismYTrendGrid, mechanismYTrendAxes, mechanismYTrendPlot, mechanismTrendBounds.yBounds, "Q y / l");
-    drawMechanismTrendFrame(mechanismXTrendGrid, mechanismXTrendAxes, mechanismXTrendPlot, mechanismTrendBounds.xBounds, "Q x / l");
+    drawMechanismTrendFrame(
+      mechanismYTrendGrid,
+      mechanismYTrendAxes,
+      mechanismYTrendPlot,
+      mechanismTrendBounds.positionBounds,
+      "|Q| / l",
+    );
+    drawMechanismTrendFrame(
+      mechanismXTrendGrid,
+      mechanismXTrendAxes,
+      mechanismXTrendPlot,
+      mechanismTrendBounds.thetaBounds,
+      "theta0 (deg)",
+    );
 
-    if (mechanismYTrendFEA) mechanismYTrendFEA.setAttribute("d", buildTrendPath(feaYPoints, mechanismTrendBounds.yBounds, mechanismYTrendPlot));
-    if (mechanismYTrendPRB) mechanismYTrendPRB.setAttribute("d", buildTrendPath(prbYPoints, mechanismTrendBounds.yBounds, mechanismYTrendPlot));
-    if (mechanismXTrendFEA) mechanismXTrendFEA.setAttribute("d", buildTrendPath(feaXPoints, mechanismTrendBounds.xBounds, mechanismXTrendPlot));
-    if (mechanismXTrendPRB) mechanismXTrendPRB.setAttribute("d", buildTrendPath(prbXPoints, mechanismTrendBounds.xBounds, mechanismXTrendPlot));
+    if (mechanismYTrendFEA) {
+      mechanismYTrendFEA.setAttribute("d", buildTrendPath(feaPositionPoints, mechanismTrendBounds.positionBounds, mechanismYTrendPlot));
+    }
+    if (mechanismYTrendPRB) {
+      mechanismYTrendPRB.setAttribute("d", buildTrendPath(prbPositionPoints, mechanismTrendBounds.positionBounds, mechanismYTrendPlot));
+    }
+    if (mechanismXTrendFEA) {
+      mechanismXTrendFEA.setAttribute("d", buildTrendPath(feaThetaPoints, mechanismTrendBounds.thetaBounds, mechanismXTrendPlot));
+    }
+    if (mechanismXTrendPRB) {
+      mechanismXTrendPRB.setAttribute("d", buildTrendPath(prbThetaPoints, mechanismTrendBounds.thetaBounds, mechanismXTrendPlot));
+    }
   }
 
-  function updateMechanismTrendSelection(feaAngleDeg, prbAngleDeg, feaQ, prbQ) {
+  function updateMechanismTrendSelection(feaAngleDeg, prbAngleDeg, feaPositionMagnitude, prbPositionMagnitude, feaTheta0Deg, prbTheta0Deg) {
     const updatePlotSelection = (plotElement, bounds, cursorNode, feaPointNode, prbPointNode, feaValue, prbValue) => {
       if (!plotElement || !bounds) {
         return;
@@ -2744,21 +2817,21 @@
 
     updatePlotSelection(
       mechanismYTrendPlot,
-      mechanismTrendBounds?.yBounds,
+      mechanismTrendBounds?.positionBounds,
       mechanismYTrendCursor,
       mechanismYTrendPointFEA,
       mechanismYTrendPointPRB,
-      Number(feaQ[1]),
-      Number(prbQ[1]),
+      Number(feaPositionMagnitude),
+      Number(prbPositionMagnitude),
     );
     updatePlotSelection(
       mechanismXTrendPlot,
-      mechanismTrendBounds?.xBounds,
+      mechanismTrendBounds?.thetaBounds,
       mechanismXTrendCursor,
       mechanismXTrendPointFEA,
       mechanismXTrendPointPRB,
-      Number(feaQ[0]),
-      Number(prbQ[0]),
+      Number(feaTheta0Deg),
+      Number(prbTheta0Deg),
     );
   }
 
@@ -2912,12 +2985,10 @@
     const feaFlex = frame.parts["FLEX-1"].deformed_xy.map((point) => point.map((value) => Number(value) * feaScale));
     const feaA = feaCrank[feaCrank.length - 1];
     const feaQ = feaFlex[feaFlex.length - 1];
-    const feaTipVector = [
-      Number(feaFlex[feaFlex.length - 1][0]) - Number(feaFlex[feaFlex.length - 2][0]),
-      Number(feaFlex[feaFlex.length - 1][1]) - Number(feaFlex[feaFlex.length - 2][1]),
-    ];
-    const feaTipDeg = radiansToDegrees(Math.atan2(feaTipVector[1], feaTipVector[0]));
+    const feaTipDeg = computeFeaTipAngleDegrees(feaFlex);
     const prbTipDeg = radiansToDegrees(thetaRow.reduce((sum, value) => sum + Number(value), 0));
+    const feaPositionMagnitude = computePositionMagnitude(feaQ);
+    const prbPositionMagnitude = computePositionMagnitude(qPoint);
     const aError = Math.hypot(Number(aPoint[0]) - Number(feaA[0]), Number(aPoint[1]) - Number(feaA[1]));
     const qError = Math.hypot(Number(qPoint[0]) - Number(feaQ[0]), Number(qPoint[1]) - Number(feaQ[1]));
 
@@ -2979,7 +3050,14 @@
     mechanismErrors.textContent = `${(100 * aError).toFixed(2)} / ${(100 * qError).toFixed(2)}`;
     mechanismLoadValue.textContent = `${Number(loadRow[0]).toFixed(3)} / ${Number(loadRow[1]).toFixed(3)} / ${Number(loadRow[2]).toFixed(3)}`;
     mechanismResidual.textContent = Number(prbMotion.residual_norm[prbIndex]).toExponential(2);
-    updateMechanismTrendSelection(feaAngleDeg, prbAngleDeg, feaQ, qPoint);
+    updateMechanismTrendSelection(
+      feaAngleDeg,
+      prbAngleDeg,
+      feaPositionMagnitude,
+      prbPositionMagnitude,
+      feaTipDeg,
+      prbTipDeg,
+    );
     applyMechanismVisibility();
   }
 
