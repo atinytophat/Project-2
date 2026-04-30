@@ -463,6 +463,16 @@ def stiffness_samples_from_eq23(
     return np.column_stack(theta_prb_samples), np.column_stack(kbar_samples)
 
 
+def zero_intercept_stiffness_fit(theta_samples: np.ndarray, torque_samples: np.ndarray) -> np.ndarray:
+    kbar = np.zeros(3, dtype=float)
+    for idx in range(3):
+        denom = float(np.dot(theta_samples[idx], theta_samples[idx]))
+        if denom <= 1.0e-14:
+            raise RuntimeError("Could not fit the PRB stiffness because the theta samples were degenerate.")
+        kbar[idx] = float(np.dot(theta_samples[idx], torque_samples[idx]) / denom)
+    return kbar
+
+
 def common_theta_range_for_extreme_load_comparison(
     l_over_t_value: float,
     sigma_over_e_value: float,
@@ -775,12 +785,19 @@ def get_section4_workspace_payload() -> dict[str, object]:
     if moment_sample_data is None or force_sample_data is None:
         raise RuntimeError("Unable to build the Section 4 fit workspace from the local procedure.")
 
-    _, moment_kbar_samples = moment_sample_data
-    _, force_kbar_samples = force_sample_data
+    moment_theta_prb_samples, moment_kbar_samples = moment_sample_data
+    force_theta_prb_samples, force_kbar_samples = force_sample_data
     moment_sample_count = int(moment_kbar_samples.shape[1])
     force_sample_count = int(force_kbar_samples.shape[1])
-    moment_theta_deg = np.rad2deg(moment_theta_values[:moment_sample_count])
-    force_theta_deg = np.rad2deg(force_theta_values[:force_sample_count])
+    moment_theta0_values = moment_theta_values[:moment_sample_count]
+    force_theta0_values = force_theta_values[:force_sample_count]
+    moment_theta_deg = np.rad2deg(moment_theta0_values)
+    force_theta_deg = np.rad2deg(force_theta0_values)
+    moment_fit_values = zero_intercept_stiffness_fit(
+        moment_theta_prb_samples[:, :moment_sample_count],
+        np.vstack([moment_theta0_values, moment_theta0_values, moment_theta0_values]),
+    )
+    force_fit_values = np.median(force_kbar_samples[:, :force_sample_count], axis=1)
 
     kbar, stiffness_by_kappa = compute_load_independent_stiffness(
         gammas,
@@ -839,17 +856,29 @@ def get_section4_workspace_payload() -> dict[str, object]:
             ],
         },
         "moment_fit": {
+            "theta0_rad": [float(value) for value in moment_theta0_values],
             "theta_deg": [float(value) for value in moment_theta_deg],
+            "theta_prb": [
+                [float(value) for value in moment_theta_prb_samples[row_index, :moment_sample_count]]
+                for row_index in range(3)
+            ],
             "k1": [float(value) for value in moment_kbar_samples[0, :moment_sample_count]],
             "k2": [float(value) for value in moment_kbar_samples[1, :moment_sample_count]],
             "k3": [float(value) for value in moment_kbar_samples[2, :moment_sample_count]],
+            "fit_k": [float(value) for value in moment_fit_values],
             "median": [float(value) for value in np.median(moment_kbar_samples[:, :moment_sample_count], axis=1)],
         },
         "force_fit": {
+            "theta0_rad": [float(value) for value in force_theta0_values],
             "theta_deg": [float(value) for value in force_theta_deg],
+            "theta_prb": [
+                [float(value) for value in force_theta_prb_samples[row_index, :force_sample_count]]
+                for row_index in range(3)
+            ],
             "k1": [float(value) for value in force_kbar_samples[0, :force_sample_count]],
             "k2": [float(value) for value in force_kbar_samples[1, :force_sample_count]],
             "k3": [float(value) for value in force_kbar_samples[2, :force_sample_count]],
+            "fit_k": [float(value) for value in force_fit_values],
             "median": [float(value) for value in np.median(force_kbar_samples[:, :force_sample_count], axis=1)],
         },
         "average": {

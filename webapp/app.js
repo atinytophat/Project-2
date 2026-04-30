@@ -1270,11 +1270,48 @@
 
     const isAverageMode = modeKey === "average";
     const data = isAverageMode ? prbWorkspaceData.average : prbWorkspaceData[`${modeKey}_fit`];
-    const xValues = isAverageMode ? data.kappa_values : data.theta_deg;
+    if (!isAverageMode) {
+      const theta0Rad = data.theta0_rad || [];
+      const thetaPrb = data.theta_prb || [];
+      const fitK = data.fit_k || [];
+      const xValues = thetaPrb.flat().concat(
+        thetaPrb.flatMap((series, index) => theta0Rad.map((value) => Number(value) / Number(fitK[index]))),
+      );
+      const yValues = [theta0Rad, theta0Rad, theta0Rad];
+      const bounds = buildPrbBounds(xValues, yValues);
+      drawPrbChartFrame(bounds, "Theta_i (rad)", "theta0 (rad)");
+
+      thetaPrb.forEach((series, index) => {
+        const pointNodes = series.map((value, pointIndex) => createSvgNode("circle", {
+          cx: prbMapX(Number(value), bounds),
+          cy: prbMapY(Number(theta0Rad[pointIndex]), bounds),
+          r: 2.3,
+          class: "prb-marker",
+          fill: PRB_SERIES_COLORS[index],
+          opacity: "0.78",
+        }));
+        pointNodes.forEach((node) => prbSeries.appendChild(node));
+
+        const fitX = theta0Rad.map((value) => Number(value) / Number(fitK[index]));
+        prbSeries.appendChild(createSvgNode("path", {
+          d: buildPrbPath(fitX, theta0Rad, bounds),
+          class: "prb-line",
+          stroke: PRB_SERIES_COLORS[index],
+        }));
+      });
+
+      buildPrbLegend([
+        { label: "actual Theta1 / fit tau1", color: PRB_SERIES_COLORS[0] },
+        { label: "actual Theta2 / fit tau2", color: PRB_SERIES_COLORS[1] },
+        { label: "actual Theta3 / fit tau3", color: PRB_SERIES_COLORS[2] },
+      ]);
+      return;
+    }
+
+    const xValues = data.kappa_values;
     const seriesValues = [data.k1, data.k2, data.k3];
     const bounds = buildPrbBounds(xValues, seriesValues);
-    drawPrbChartFrame(bounds, isAverageMode ? "kappa" : "theta0 (deg)", "k_i");
-
+    drawPrbChartFrame(bounds, "kappa", "k_i");
     seriesValues.forEach((series, index) => {
       prbSeries.appendChild(createSvgNode("path", {
         d: buildPrbPath(xValues, series, bounds),
@@ -1283,32 +1320,23 @@
       }));
     });
 
-    if (isAverageMode) {
-      data.kbar.forEach((value, index) => {
-        prbSeries.appendChild(createSvgNode("line", {
-          x1: prbMapX(bounds.xMin, bounds),
-          y1: prbMapY(Number(value), bounds),
-          x2: prbMapX(bounds.xMax, bounds),
-          y2: prbMapY(Number(value), bounds),
-          class: "prb-line prb-dashed-line",
-          stroke: PRB_SERIES_COLORS[index],
-          "stroke-width": 1.8,
-          opacity: "0.9",
-        }));
-      });
-      buildPrbLegend([
-        { label: "k1(kappa)", color: PRB_SERIES_COLORS[0] },
-        { label: "k2(kappa)", color: PRB_SERIES_COLORS[1] },
-        { label: "k3(kappa)", color: PRB_SERIES_COLORS[2] },
-        { label: "dashed = final kbar", color: "#43536e", dashed: true },
-      ]);
-      return;
-    }
-
+    data.kbar.forEach((value, index) => {
+      prbSeries.appendChild(createSvgNode("line", {
+        x1: prbMapX(bounds.xMin, bounds),
+        y1: prbMapY(Number(value), bounds),
+        x2: prbMapX(bounds.xMax, bounds),
+        y2: prbMapY(Number(value), bounds),
+        class: "prb-line prb-dashed-line",
+        stroke: PRB_SERIES_COLORS[index],
+        "stroke-width": 1.8,
+        opacity: "0.9",
+      }));
+    });
     buildPrbLegend([
-      { label: "k1 fit", color: PRB_SERIES_COLORS[0] },
-      { label: "k2 fit", color: PRB_SERIES_COLORS[1] },
-      { label: "k3 fit", color: PRB_SERIES_COLORS[2] },
+      { label: "k1(kappa)", color: PRB_SERIES_COLORS[0] },
+      { label: "k2(kappa)", color: PRB_SERIES_COLORS[1] },
+      { label: "k3(kappa)", color: PRB_SERIES_COLORS[2] },
+      { label: "dashed = final kbar", color: "#43536e", dashed: true },
     ]);
   }
 
@@ -1344,9 +1372,9 @@
       renderSummaryRows(prbStageSummary, [
         ["sample count", String(prbWorkspaceData.moment_fit.theta_deg.length)],
         ["theta max", `${Math.max(...prbWorkspaceData.moment_fit.theta_deg).toFixed(2)} deg`],
-        ["median k1", prbWorkspaceData.moment_fit.median[0].toFixed(3)],
-        ["median k2", prbWorkspaceData.moment_fit.median[1].toFixed(3)],
-        ["median k3", prbWorkspaceData.moment_fit.median[2].toFixed(3)],
+        ["k1", prbWorkspaceData.moment_fit.fit_k[0].toFixed(3)],
+        ["k2", prbWorkspaceData.moment_fit.fit_k[1].toFixed(3)],
+        ["k3", prbWorkspaceData.moment_fit.fit_k[2].toFixed(3)],
       ]);
       renderPrbLinePlot("moment");
       return;
@@ -1361,9 +1389,9 @@
       renderSummaryRows(prbStageSummary, [
         ["sample count", String(prbWorkspaceData.force_fit.theta_deg.length)],
         ["theta max", `${Math.max(...prbWorkspaceData.force_fit.theta_deg).toFixed(2)} deg`],
-        ["median k1", prbWorkspaceData.force_fit.median[0].toFixed(3)],
-        ["median k2", prbWorkspaceData.force_fit.median[1].toFixed(3)],
-        ["median k3", prbWorkspaceData.force_fit.median[2].toFixed(3)],
+        ["k1", prbWorkspaceData.force_fit.fit_k[0].toFixed(3)],
+        ["k2", prbWorkspaceData.force_fit.fit_k[1].toFixed(3)],
+        ["k3", prbWorkspaceData.force_fit.fit_k[2].toFixed(3)],
       ]);
       renderPrbLinePlot("force");
       return;
