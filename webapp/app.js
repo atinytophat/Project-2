@@ -204,12 +204,6 @@
   const materialsThetaTrendCursor = document.getElementById("materialsThetaTrendCursor");
   const materialsThetaTrendPointTarget = document.getElementById("materialsThetaTrendPointTarget");
   const materialsThetaTrendPointActual = document.getElementById("materialsThetaTrendPointActual");
-  const materialsDemandTrendPlot = document.getElementById("materialsDemandTrendPlot");
-  const materialsDemandTrendGrid = document.getElementById("materialsDemandTrendGrid");
-  const materialsDemandTrendAxes = document.getElementById("materialsDemandTrendAxes");
-  const materialsDemandTrendLine = document.getElementById("materialsDemandTrendLine");
-  const materialsDemandTrendCursor = document.getElementById("materialsDemandTrendCursor");
-  const materialsDemandTrendPoint = document.getElementById("materialsDemandTrendPoint");
   const materialsExperimentTitle = document.getElementById("materialsExperimentTitle");
   const materialsSliderLabel = document.getElementById("materialsSliderLabel");
   const materialsFrameSlider = document.getElementById("materialsFrameSlider");
@@ -230,8 +224,6 @@
   const materialsThetaTip = document.getElementById("materialsThetaTip");
   const materialsThetas = document.getElementById("materialsThetas");
   const materialsTau = document.getElementById("materialsTau");
-  const materialsEnergy = document.getElementById("materialsEnergy");
-  const materialsDemand = document.getElementById("materialsDemand");
   const materialsForceMoment = document.getElementById("materialsForceMoment");
   const materialsTrackingError = document.getElementById("materialsTrackingError");
   const materialsTraceSpan = document.getElementById("materialsTraceSpan");
@@ -2297,12 +2289,6 @@
       const tauValues = Array.isArray(frame.tau) ? frame.tau : [0, 0, 0];
       materialsTau.textContent = tauValues.map((value) => `${Number(value).toFixed(4)} N*m`).join(" / ");
     }
-    if (materialsEnergy) {
-      materialsEnergy.textContent = `${Number(frame.spring_energy || 0).toFixed(5)} J`;
-    }
-    if (materialsDemand) {
-      materialsDemand.textContent = `${Number(frame.equivalent_moment_demand || 0).toFixed(5)} N*m`;
-    }
     if (materialsForceMoment) {
       if (frame.exact_force_moment_solved) {
         materialsForceMoment.textContent = `|F| ${Number(frame.force_magnitude || 0).toFixed(4)} N / |M| ${Number(frame.moment_magnitude || 0).toFixed(5)} N*m`;
@@ -2468,12 +2454,6 @@
         }
         if (materialsTau) {
           materialsTau.textContent = "Unavailable";
-        }
-        if (materialsEnergy) {
-          materialsEnergy.textContent = "Unavailable";
-        }
-        if (materialsDemand) {
-          materialsDemand.textContent = "Unavailable";
         }
         if (materialsForceMoment) {
           materialsForceMoment.textContent = "Unavailable";
