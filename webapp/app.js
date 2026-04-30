@@ -1607,7 +1607,7 @@
   }
 
   function renderPrbOutputPreview() {
-    if (!prbWorkspaceData || !prbOutputGrid || !prbOutputAxes || !prbOutputSeries || !prbOutputLabels) {
+    if (!prbWorkspaceData || !prbOutputSummary) {
       return;
     }
 
@@ -1615,110 +1615,6 @@
     if (!previewGroup) {
       return;
     }
-
-    prbOutputGrid.replaceChildren();
-    prbOutputAxes.replaceChildren();
-    prbOutputSeries.replaceChildren();
-    prbOutputLabels.replaceChildren();
-
-    const width = prbOutputPlot.viewBox.baseVal.width;
-    const height = prbOutputPlot.viewBox.baseVal.height;
-    const cols = 3;
-    const rows = 2;
-    const outerLeft = 18;
-    const outerRight = 12;
-    const outerTop = 16;
-    const outerBottom = 18;
-    const gutterX = 14;
-    const gutterY = 18;
-    const panelWidth = (width - outerLeft - outerRight - gutterX * (cols - 1)) / cols;
-    const panelHeight = (height - outerTop - outerBottom - gutterY * (rows - 1)) / rows;
-    const xMin = -0.1;
-    const xMax = 1.05;
-    const yMin = 0.0;
-    const yMax = 1.05;
-    const xTicks = buildTickValues(0, 1.0, 0.2);
-    const yTicks = buildTickValues(0, 1.0, 0.2);
-
-    previewGroup.cases.forEach((caseData, index) => {
-      const col = index % cols;
-      const row = Math.floor(index / cols);
-      const panelLeft = outerLeft + col * (panelWidth + gutterX);
-      const panelTop = outerTop + row * (panelHeight + gutterY);
-      const panelRight = panelLeft + panelWidth;
-      const panelBottom = panelTop + panelHeight;
-      const innerLeft = panelLeft + 30;
-      const innerRight = panelRight - 8;
-      const innerTop = panelTop + 24;
-      const innerBottom = panelBottom - 22;
-      const mapX = (value) => innerLeft + ((Number(value) - xMin) / (xMax - xMin)) * (innerRight - innerLeft);
-      const mapY = (value) => innerBottom - ((Number(value) - yMin) / (yMax - yMin)) * (innerBottom - innerTop);
-
-      prbOutputAxes.appendChild(createSvgNode("rect", {
-        x: panelLeft, y: panelTop, width: panelWidth, height: panelHeight,
-        fill: "transparent", stroke: "rgba(34, 52, 78, 0.14)", "stroke-width": "1",
-        rx: "10",
-      }));
-
-      xTicks.forEach((tick) => {
-        const x = mapX(tick);
-        prbOutputGrid.appendChild(createSvgNode("line", {
-          x1: x, y1: innerTop, x2: x, y2: innerBottom, class: "prb-output-grid-line",
-        }));
-      });
-      yTicks.forEach((tick) => {
-        const y = mapY(tick);
-        prbOutputGrid.appendChild(createSvgNode("line", {
-          x1: innerLeft, y1: y, x2: innerRight, y2: y, class: "prb-output-grid-line",
-        }));
-      });
-
-      prbOutputAxes.appendChild(createSvgNode("line", {
-        x1: innerLeft, y1: mapY(0), x2: innerRight, y2: mapY(0), class: "prb-output-axis-line",
-      }));
-      prbOutputAxes.appendChild(createSvgNode("line", {
-        x1: mapX(0), y1: innerTop, x2: mapX(0), y2: innerBottom, class: "prb-output-axis-line",
-      }));
-
-      const prbPath = caseData.prb_x.map((value, pointIndex) => {
-        const command = pointIndex === 0 ? "M" : "L";
-        return `${command} ${mapX(value).toFixed(2)} ${mapY(caseData.prb_y[pointIndex]).toFixed(2)}`;
-      }).join(" ");
-      prbOutputSeries.appendChild(createSvgNode("path", {
-        d: prbPath,
-        fill: "none",
-        stroke: "#0c8aa4",
-        "stroke-width": "2.0",
-      }));
-
-      caseData.actual_x.forEach((value, pointIndex) => {
-        prbOutputSeries.appendChild(createSvgNode("circle", {
-          cx: mapX(value),
-          cy: mapY(caseData.actual_y[pointIndex]),
-          r: "1.9",
-          fill: "#1f2c40",
-          opacity: "0.82",
-        }));
-      });
-
-      prbOutputLabels.appendChild(createSvgNode("text", {
-        x: panelLeft + 10, y: panelTop + 14, class: "prb-output-title",
-      })).textContent = previewGroup.labels[index];
-      prbOutputLabels.appendChild(createSvgNode("text", {
-        x: panelLeft + 10, y: panelTop + 28, class: "prb-output-label",
-      })).textContent = `tip ${Number(caseData.max_tip_error_pct).toFixed(2)}% | slope ${Number(caseData.max_slope_error_deg).toFixed(2)} deg`;
-
-      if (col === 0) {
-        prbOutputLabels.appendChild(createSvgNode("text", {
-          x: panelLeft + 8, y: innerTop + 10, class: "prb-output-label",
-        })).textContent = "b / l";
-      }
-      if (row === rows - 1) {
-        prbOutputLabels.appendChild(createSvgNode("text", {
-          x: panelRight - 14, y: panelBottom - 6, class: "prb-output-label", "text-anchor": "end",
-        })).textContent = "a / l";
-      }
-    });
 
     const worstCase = previewGroup.cases.reduce((best, current, currentIndex) => (
       Number(current.max_tip_error_pct) > Number(best.case.max_tip_error_pct)
