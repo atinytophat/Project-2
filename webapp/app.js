@@ -2349,7 +2349,7 @@
     }
     if (materialsForceMoment) {
       if (frame.exact_force_moment_solved) {
-        materialsForceMoment.textContent = `|F| ${Number(frame.force_magnitude || 0).toFixed(4)} N / |M_net| ${Number(frame.base_net_moment_magnitude || 0).toFixed(5)} N*m`;
+        materialsForceMoment.textContent = `|F_tip| ${Number(frame.force_magnitude || 0).toFixed(4)} N / |M_tip| ${Number(frame.tip_moment_magnitude || 0).toFixed(5)} N*m`;
       } else {
         materialsForceMoment.textContent = "Force/moment solve pending";
       }
