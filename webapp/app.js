@@ -49,23 +49,15 @@
   ];
   const PRB_SERIES_COLORS = ["#0c8aa4", "#ef8c54", "#2f8f6d"];
   const MATERIAL_PRESETS = {
-    flexible_pvc: {
-      displayName: "Flexible PVC",
-      elasticModulusMpa: null,
-      strengthMpa: 18.6,
-      note: "Flexible PVC uses the stored design strength limit of 18.6 MPa. Its modulus was not available in the saved dataset, so the current E value is preserved.",
-    },
     pebax: {
       displayName: "PEBAX",
       elasticModulusMpa: 513.0,
       strengthMpa: 56.0,
-      note: "PEBAX preset uses the stored flexural modulus and design strength placeholder from the material library.",
     },
     medical_grade_tpu: {
-      displayName: "Medical-grade TPU",
+      displayName: "Med. TPU",
       elasticModulusMpa: 22.1,
       strengthMpa: 53.1,
-      note: "Medical-grade TPU preset uses the stored flexural modulus and design strength placeholder from the material library.",
     },
   };
   const STATIC_DATA_PATHS = {
@@ -436,6 +428,15 @@
     }
   }
 
+  function getMaterialsPresetStatus(presetKey, options = {}) {
+    const preset = MATERIAL_PRESETS[presetKey];
+    const suffix = options.loading ? " (loading...)" : "";
+    if (preset) {
+      return `Preset active: ${preset.displayName}${suffix}`;
+    }
+    return options.loading ? "No preset active (loading...)" : "No preset active.";
+  }
+
   function updateMaterialsPresetButtons() {
     materialsPresetButtons.forEach((button) => {
       const isActive = button.dataset.materialPreset === activeMaterialPresetKey;
@@ -460,7 +461,7 @@
       materialsYieldStrengthInput.value = Number(preset.strengthMpa).toFixed(1);
     }
 
-    setMaterialsPresetNote(preset.note);
+    setMaterialsPresetNote(getMaterialsPresetStatus(presetKey));
     stopMaterialsAnimation();
     scheduleMaterialsReload();
   }
@@ -2432,9 +2433,9 @@
         materialsFrameSlider.value = "0";
       }
       if (activeMaterialPresetKey && MATERIAL_PRESETS[activeMaterialPresetKey]) {
-        setMaterialsPresetNote(MATERIAL_PRESETS[activeMaterialPresetKey].note);
+        setMaterialsPresetNote(getMaterialsPresetStatus(activeMaterialPresetKey));
       } else {
-        setMaterialsPresetNote("Custom material values are active.");
+        setMaterialsPresetNote(getMaterialsPresetStatus(""));
       }
       return;
     }
@@ -2483,9 +2484,9 @@
           materialsFrameSlider.value = "0";
         }
         if (activeMaterialPresetKey && MATERIAL_PRESETS[activeMaterialPresetKey]) {
-          setMaterialsPresetNote(MATERIAL_PRESETS[activeMaterialPresetKey].note);
+          setMaterialsPresetNote(getMaterialsPresetStatus(activeMaterialPresetKey));
         } else {
-          setMaterialsPresetNote("Custom material values are active.");
+          setMaterialsPresetNote(getMaterialsPresetStatus(""));
         }
 
         renderMaterialsState(0);
@@ -2533,9 +2534,7 @@
       window.clearTimeout(materialsReloadTimer);
     }
     setMaterialsPresetNote(
-      activeMaterialPresetKey
-        ? `${MATERIAL_PRESETS[activeMaterialPresetKey].displayName} preset loading...`
-        : "Updating custom material values...",
+      getMaterialsPresetStatus(activeMaterialPresetKey, { loading: true }),
     );
     materialsReloadTimer = window.setTimeout(() => {
       materialsReloadTimer = null;
@@ -2581,7 +2580,7 @@
           if (inputElement !== materialsMotionTimeInput && inputElement !== materialsAmplitudeInput) {
             activeMaterialPresetKey = "";
             updateMaterialsPresetButtons();
-            setMaterialsPresetNote("Custom material values are active.");
+            setMaterialsPresetNote(getMaterialsPresetStatus(""));
           }
           stopMaterialsAnimation();
           scheduleMaterialsReload();
@@ -2591,7 +2590,7 @@
     }
 
     if (!activeMaterialPresetKey && materialsPresetButtons.length > 0) {
-      setMaterialsPresetNote("Select a stored material preset to update the medical beam properties.");
+      setMaterialsPresetNote(getMaterialsPresetStatus(""));
     }
     loadMaterialsMode();
   }
