@@ -209,6 +209,7 @@
   const materialsMomentTrendLine = document.getElementById("materialsMomentTrendLine");
   const materialsMomentTrendCursor = document.getElementById("materialsMomentTrendCursor");
   const materialsMomentTrendPoint = document.getElementById("materialsMomentTrendPoint");
+  const materialsMomentValue = document.getElementById("materialsMomentValue");
   const materialsExperimentTitle = document.getElementById("materialsExperimentTitle");
   const materialsSliderLabel = document.getElementById("materialsSliderLabel");
   const materialsFrameSlider = document.getElementById("materialsFrameSlider");
@@ -2113,6 +2114,9 @@
       Number(frame.base_net_moment || 0),
       Number(frame.base_net_moment || 0),
     );
+    if (materialsMomentValue) {
+      materialsMomentValue.textContent = `M_net = ${Number(frame.base_net_moment || 0).toFixed(5)} N·m`;
+    }
   }
 
   function materialsMapX(value, bounds) {
@@ -2511,6 +2515,9 @@
         }
         if (materialsForceMoment) {
           materialsForceMoment.textContent = "Unavailable";
+        }
+        if (materialsMomentValue) {
+          materialsMomentValue.textContent = "M_net = Unavailable";
         }
         if (materialsTrackingError) {
           materialsTrackingError.textContent = "Unavailable";

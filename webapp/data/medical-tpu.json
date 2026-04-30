@@ -710,8 +710,10 @@
       "force_x": 0.0,
       "force_y": 0.0,
       "force_magnitude": 0.0,
-      "moment": 0.0,
-      "moment_magnitude": 0.0,
+      "tip_moment": 0.0,
+      "tip_moment_magnitude": 0.0,
+      "base_net_moment": 0.0,
+      "base_net_moment_magnitude": 0.0,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -764,8 +766,10 @@
       "force_x": 0.0,
       "force_y": 0.0,
       "force_magnitude": 0.0,
-      "moment": 0.0,
-      "moment_magnitude": 0.0,
+      "tip_moment": 0.0,
+      "tip_moment_magnitude": 0.0,
+      "base_net_moment": 0.0,
+      "base_net_moment_magnitude": 0.0,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -818,8 +822,10 @@
       "force_x": 0.0,
       "force_y": 0.0,
       "force_magnitude": 0.0,
-      "moment": 0.0,
-      "moment_magnitude": 0.0,
+      "tip_moment": 0.0,
+      "tip_moment_magnitude": 0.0,
+      "base_net_moment": 0.0,
+      "base_net_moment_magnitude": 0.0,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -872,8 +878,10 @@
       "force_x": 0.0,
       "force_y": 0.0,
       "force_magnitude": 0.0,
-      "moment": 0.0,
-      "moment_magnitude": 0.0,
+      "tip_moment": 0.0,
+      "tip_moment_magnitude": 0.0,
+      "base_net_moment": 0.0,
+      "base_net_moment_magnitude": 0.0,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -926,8 +934,10 @@
       "force_x": 0.0,
       "force_y": 0.0,
       "force_magnitude": 0.0,
-      "moment": 0.0,
-      "moment_magnitude": 0.0,
+      "tip_moment": 0.0,
+      "tip_moment_magnitude": 0.0,
+      "base_net_moment": 0.0,
+      "base_net_moment_magnitude": 0.0,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -980,8 +990,10 @@
       "force_x": 0.0,
       "force_y": 0.0,
       "force_magnitude": 0.0,
-      "moment": 0.0,
-      "moment_magnitude": 0.0,
+      "tip_moment": 0.0,
+      "tip_moment_magnitude": 0.0,
+      "base_net_moment": 0.0,
+      "base_net_moment_magnitude": 0.0,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -1034,8 +1046,10 @@
       "force_x": 0.0,
       "force_y": 0.0,
       "force_magnitude": 0.0,
-      "moment": 0.0,
-      "moment_magnitude": 0.0,
+      "tip_moment": 0.0,
+      "tip_moment_magnitude": 0.0,
+      "base_net_moment": 0.0,
+      "base_net_moment_magnitude": 0.0,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -1088,8 +1102,10 @@
       "force_x": 0.0,
       "force_y": 0.0,
       "force_magnitude": 0.0,
-      "moment": 0.0,
-      "moment_magnitude": 0.0,
+      "tip_moment": 0.0,
+      "tip_moment_magnitude": 0.0,
+      "base_net_moment": 0.0,
+      "base_net_moment_magnitude": 0.0,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -1142,8 +1158,10 @@
       "force_x": 0.0,
       "force_y": 0.0,
       "force_magnitude": 0.0,
-      "moment": 0.0,
-      "moment_magnitude": 0.0,
+      "tip_moment": 0.0,
+      "tip_moment_magnitude": 0.0,
+      "base_net_moment": 0.0,
+      "base_net_moment_magnitude": 0.0,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -1196,8 +1214,10 @@
       "force_x": -0.018832474317352757,
       "force_y": 0.000450150277860611,
       "force_magnitude": 0.01883785349200936,
-      "moment": -2.6962963849914145e-05,
-      "moment_magnitude": 2.6962963849914145e-05,
+      "tip_moment": -2.6962963849914145e-05,
+      "tip_moment_magnitude": 2.6962963849914145e-05,
+      "base_net_moment": 1.719079822942052e-05,
+      "base_net_moment_magnitude": 1.719079822942052e-05,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -1250,8 +1270,10 @@
       "force_x": -0.018111746354095216,
       "force_y": 0.0008782240022734037,
       "force_magnitude": 0.01813302604071506,
-      "moment": -5.233809700163154e-05,
-      "moment_magnitude": 5.233809700163154e-05,
+      "tip_moment": -5.233809700163154e-05,
+      "tip_moment_magnitude": 5.233809700163154e-05,
+      "base_net_moment": 3.2193942610655066e-05,
+      "base_net_moment_magnitude": 3.2193942610655066e-05,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -1304,8 +1326,10 @@
       "force_x": -0.01738418845942146,
       "force_y": 0.0012805289459294938,
       "force_magnitude": 0.017431286893802352,
-      "moment": -7.601736573074086e-05,
-      "moment_magnitude": 7.601736573074086e-05,
+      "tip_moment": -7.601736573074086e-05,
+      "tip_moment_magnitude": 7.601736573074086e-05,
+      "base_net_moment": 4.498226301574807e-05,
+      "base_net_moment_magnitude": 4.498226301574807e-05,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -1358,8 +1382,10 @@
       "force_x": -0.016645535957413454,
       "force_y": 0.0016526763736671355,
       "force_magnitude": 0.016727378949064967,
-      "moment": -9.785511416851721e-05,
-      "moment_magnitude": 9.785511416851721e-05,
+      "tip_moment": -9.785511416851721e-05,
+      "tip_moment_magnitude": 9.785511416851721e-05,
+      "base_net_moment": 5.5504255818046165e-05,
+      "base_net_moment_magnitude": 5.5504255818046165e-05,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -1412,8 +1438,10 @@
       "force_x": -0.015890434469858397,
       "force_y": 0.0019892935970809763,
       "force_magnitude": 0.016014468353843386,
-      "moment": -0.0001176530778511635,
-      "moment_magnitude": 0.0001176530778511635,
+      "tip_moment": -0.0001176530778511635,
+      "tip_moment_magnitude": 0.0001176530778511635,
+      "base_net_moment": 6.367703637210957e-05,
+      "base_net_moment_magnitude": 6.367703637210957e-05,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -1466,8 +1494,10 @@
       "force_x": -0.015112079970276245,
       "force_y": 0.0022838540424766135,
       "force_magnitude": 0.015283682485427432,
-      "moment": -0.0001351530659657718,
-      "moment_magnitude": 0.0001351530659657718,
+      "tip_moment": -0.0001351530659657718,
+      "tip_moment_magnitude": 0.0001351530659657718,
+      "base_net_moment": 6.938507110062605e-05,
+      "base_net_moment_magnitude": 6.938507110062605e-05,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -1520,8 +1550,10 @@
       "force_x": -0.014301827194658188,
       "force_y": 0.002528608226925082,
       "force_magnitude": 0.014523640062709408,
-      "moment": -0.00015003609461522712,
-      "moment_magnitude": 0.00015003609461522712,
+      "tip_moment": -0.00015003609461522712,
+      "tip_moment_magnitude": 0.00015003609461522712,
+      "base_net_moment": 7.248363971150697e-05,
+      "base_net_moment_magnitude": 7.248363971150697e-05,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -1574,8 +1606,10 @@
       "force_x": -0.013448670973287034,
       "force_y": 0.0027145921332421795,
       "force_magnitude": 0.013719903840683197,
-      "moment": -0.00016192641976277706,
-      "moment_magnitude": 0.00016192641976277706,
+      "tip_moment": -0.00016192641976277706,
+      "tip_moment_magnitude": 0.00016192641976277706,
+      "base_net_moment": 7.280584468087321e-05,
+      "base_net_moment_magnitude": 7.280584468087321e-05,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -1628,8 +1662,10 @@
       "force_x": -0.012538437226838353,
       "force_y": 0.002831678053513095,
       "force_magnitude": 0.012854213655067103,
-      "moment": -0.00017039858261427807,
-      "moment_magnitude": 0.00017039858261427807,
+      "tip_moment": -0.00017039858261427807,
+      "tip_moment_magnitude": 0.00017039858261427807,
+      "base_net_moment": 7.017174081108416e-05,
+      "base_net_moment_magnitude": 7.017174081108416e-05,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -1682,8 +1718,10 @@
       "force_x": -0.011552427698689333,
       "force_y": 0.0028686170005296687,
       "force_magnitude": 0.011903257925004075,
-      "moment": -0.0001749853841622158,
-      "moment_magnitude": 0.0001749853841622158,
+      "tip_moment": -0.0001749853841622158,
+      "tip_moment_magnitude": 0.0001749853841622158,
+      "base_net_moment": 6.439797727911205e-05,
+      "base_net_moment_magnitude": 6.439797727911205e-05,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -1736,8 +1774,10 @@
       "force_x": -0.010465098694576425,
       "force_y": 0.0028129981222797455,
       "force_magnitude": 0.010836569988846774,
-      "moment": -0.00017518466622740348,
-      "moment_magnitude": 0.00017518466622740348,
+      "tip_moment": -0.00017518466622740348,
+      "tip_moment_magnitude": 0.00017518466622740348,
+      "base_net_moment": 5.530625722690907e-05,
+      "base_net_moment_magnitude": 5.530625722690907e-05,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -1790,8 +1830,10 @@
       "force_x": -0.009240035130485243,
       "force_y": 0.0026510096140154697,
       "force_magnitude": 0.009612809224477718,
-      "moment": -0.0001704627556794358,
-      "moment_magnitude": 0.0001704627556794358,
+      "tip_moment": -0.0001704627556794358,
+      "tip_moment_magnitude": 0.0001704627556794358,
+      "base_net_moment": 4.272886839165149e-05,
+      "base_net_moment_magnitude": 4.272886839165149e-05,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -1844,8 +1886,10 @@
       "force_x": -0.007822811554896681,
       "force_y": 0.0023668016667634096,
       "force_magnitude": 0.00817301234265672,
-      "moment": -0.00016025195485826194,
-      "moment_magnitude": 0.00016025195485826194,
+      "tip_moment": -0.00016025195485826194,
+      "tip_moment_magnitude": 0.00016025195485826194,
+      "base_net_moment": 2.6509264267888578e-05,
+      "base_net_moment_magnitude": 2.6509264267888578e-05,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -1898,8 +1942,10 @@
       "force_x": -0.006127822506773684,
       "force_y": 0.0019410572623804676,
       "force_magnitude": 0.00642790105480491,
-      "moment": -0.00014393727475179314,
-      "moment_magnitude": 0.00014393727475179314,
+      "tip_moment": -0.00014393727475179314,
+      "tip_moment_magnitude": 0.00014393727475179314,
+      "base_net_moment": 6.494452889388788e-06,
+      "base_net_moment_magnitude": 6.494452889388788e-06,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -1952,8 +1998,10 @@
       "force_x": -0.004012464968224184,
       "force_y": 0.0013478825189795114,
       "force_magnitude": 0.004232807863132564,
-      "moment": -0.00012082030421393559,
-      "moment_magnitude": 0.00012082030421393559,
+      "tip_moment": -0.00012082030421393559,
+      "tip_moment_magnitude": 0.00012082030421393559,
+      "base_net_moment": -1.7488215839822922e-05,
+      "base_net_moment_magnitude": 1.7488215839822922e-05,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -2006,8 +2054,10 @@
       "force_x": -0.001221974202292994,
       "force_y": 0.000547751099815702,
       "force_magnitude": 0.0013391236755501375,
-      "moment": -9.002542874369149e-05,
-      "moment_magnitude": 9.002542874369149e-05,
+      "tip_moment": -9.002542874369149e-05,
+      "tip_moment_magnitude": 9.002542874369149e-05,
+      "base_net_moment": -4.5690425812001766e-05,
+      "base_net_moment_magnitude": 4.5690425812001766e-05,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -2060,8 +2110,10 @@
       "force_x": 0.0027432612817335496,
       "force_y": -0.0005301101004269573,
       "force_magnitude": 0.0027940113060675106,
-      "moment": -5.0239271782185344e-05,
-      "moment_magnitude": 5.0239271782185344e-05,
+      "tip_moment": -5.0239271782185344e-05,
+      "tip_moment_magnitude": 5.0239271782185344e-05,
+      "base_net_moment": -7.860233341339962e-05,
+      "base_net_moment_magnitude": 7.860233341339962e-05,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -2114,8 +2166,10 @@
       "force_x": 0.009005272109318343,
       "force_y": -0.0020389993853531557,
       "force_magnitude": 0.009233225019262629,
-      "moment": 1.1085946491915233e-06,
-      "moment_magnitude": 1.1085946491915233e-06,
+      "tip_moment": 1.1085946491915233e-06,
+      "tip_moment_magnitude": 1.1085946491915233e-06,
+      "base_net_moment": -0.00011744184282347559,
+      "base_net_moment_magnitude": 0.00011744184282347559,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -2168,8 +2222,10 @@
       "force_x": 0.020696978643521217,
       "force_y": -0.004405617879060422,
       "force_magnitude": 0.021160680373434833,
-      "moment": 7.103195020828069e-05,
-      "moment_magnitude": 7.103195020828069e-05,
+      "tip_moment": 7.103195020828069e-05,
+      "tip_moment_magnitude": 7.103195020828069e-05,
+      "base_net_moment": -0.00016603432673101872,
+      "base_net_moment_magnitude": 0.00016603432673101872,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -2222,8 +2278,10 @@
       "force_x": 0.05108529899465154,
       "force_y": -0.009452029718584443,
       "force_magnitude": 0.05195236894669914,
-      "moment": 0.0001900371350461254,
-      "moment_magnitude": 0.0001900371350461254,
+      "tip_moment": 0.0001900371350461254,
+      "tip_moment_magnitude": 0.0001900371350461254,
+      "base_net_moment": -0.00024200340029265047,
+      "base_net_moment_magnitude": 0.00024200340029265047,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -2276,8 +2334,10 @@
       "force_x": 0.3380187136118314,
       "force_y": -0.0500437734293304,
       "force_magnitude": 0.34170313140333297,
-      "moment": 0.0009171855876092685,
-      "moment_magnitude": 0.0009171855876092685,
+      "tip_moment": 0.0009171855876092685,
+      "tip_moment_magnitude": 0.0009171855876092685,
+      "base_net_moment": -0.0006732347032604283,
+      "base_net_moment_magnitude": 0.0006732347032604283,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -2330,8 +2390,10 @@
       "force_x": -0.12619890862944344,
       "force_y": 0.01316638262187632,
       "force_magnitude": 0.12688387671650114,
-      "moment": -0.00012271773725663492,
-      "moment_magnitude": 0.00012271773725663492,
+      "tip_moment": -0.00012271773725663492,
+      "tip_moment_magnitude": 0.00012271773725663492,
+      "base_net_moment": -6.53225183757059e-05,
+      "base_net_moment_magnitude": 6.53225183757059e-05,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -2384,8 +2446,10 @@
       "force_x": -0.06394539628053442,
       "force_y": 0.003569349861814974,
       "force_magnitude": 0.0640449370669581,
-      "moment": 7.774287837267928e-05,
-      "moment_magnitude": 7.774287837267928e-05,
+      "tip_moment": 7.774287837267928e-05,
+      "tip_moment_magnitude": 7.774287837267928e-05,
+      "base_net_moment": -0.0001833085294134429,
+      "base_net_moment_magnitude": 0.0001833085294134429,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -2438,8 +2502,10 @@
       "force_x": -0.0466476339291545,
       "force_y": 0.00020522513844250856,
       "force_magnitude": 0.04664808536848918,
-      "moment": 0.00017046164232018793,
-      "moment_magnitude": 0.00017046164232018793,
+      "tip_moment": 0.00017046164232018793,
+      "tip_moment_magnitude": 0.00017046164232018793,
+      "base_net_moment": -0.0002357145693332936,
+      "base_net_moment_magnitude": 0.0002357145693332936,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -2492,8 +2558,10 @@
       "force_x": -0.03842234380234022,
       "force_y": -0.0018495699638135514,
       "force_magnitude": 0.03846683522615648,
-      "moment": 0.00023787315200609667,
-      "moment_magnitude": 0.00023787315200609667,
+      "tip_moment": 0.00023787315200609667,
+      "tip_moment_magnitude": 0.00023787315200609667,
+      "base_net_moment": -0.00027078338785631626,
+      "base_net_moment_magnitude": 0.00027078338785631626,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -2546,8 +2614,10 @@
       "force_x": -0.033499488953698434,
       "force_y": -0.00335669032834875,
       "force_magnitude": 0.0336672412014913,
-      "moment": 0.00029174372697253145,
-      "moment_magnitude": 0.00029174372697253145,
+      "tip_moment": 0.00029174372697253145,
+      "tip_moment_magnitude": 0.00029174372697253145,
+      "base_net_moment": -0.00029533064969689546,
+      "base_net_moment_magnitude": 0.00029533064969689546,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -2600,8 +2670,10 @@
       "force_x": -0.030103248807318714,
       "force_y": -0.0045295416917783046,
       "force_magnitude": 0.030442114524009228,
-      "moment": 0.0003348343637704181,
-      "moment_magnitude": 0.0003348343637704181,
+      "tip_moment": 0.0003348343637704181,
+      "tip_moment_magnitude": 0.0003348343637704181,
+      "base_net_moment": -0.0003109568020137469,
+      "base_net_moment_magnitude": 0.0003109568020137469,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -2654,8 +2726,10 @@
       "force_x": -0.027503556669476244,
       "force_y": -0.005442507498928783,
       "force_magnitude": 0.028036877810251753,
-      "moment": 0.00036788857790660514,
-      "moment_magnitude": 0.00036788857790660514,
+      "tip_moment": 0.00036788857790660514,
+      "tip_moment_magnitude": 0.00036788857790660514,
+      "base_net_moment": -0.0003181660431162894,
+      "base_net_moment_magnitude": 0.0003181660431162894,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -2708,8 +2782,10 @@
       "force_x": -0.025346039969906784,
       "force_y": -0.0061241126812290455,
       "force_magnitude": 0.026075400251741154,
-      "moment": 0.00039116711891266736,
-      "moment_magnitude": 0.00039116711891266736,
+      "tip_moment": 0.00039116711891266736,
+      "tip_moment_magnitude": 0.00039116711891266736,
+      "base_net_moment": -0.000317278536620761,
+      "base_net_moment_magnitude": 0.000317278536620761,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -2762,8 +2838,10 @@
       "force_x": -0.02343951568790343,
       "force_y": -0.0065860593679938975,
       "force_magnitude": 0.02434721901331261,
-      "moment": 0.0004048534254755463,
-      "moment_magnitude": 0.0004048534254755463,
+      "tip_moment": 0.0004048534254755463,
+      "tip_moment_magnitude": 0.0004048534254755463,
+      "base_net_moment": -0.00030867021488992116,
+      "base_net_moment_magnitude": 0.00030867021488992116,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -2816,8 +2894,10 @@
       "force_x": -0.021672258441433,
       "force_y": -0.0068338952546532555,
       "force_magnitude": 0.022724192181545998,
-      "moment": 0.0004091418574695691,
-      "moment_magnitude": 0.0004091418574695691,
+      "tip_moment": 0.0004091418574695691,
+      "tip_moment_magnitude": 0.0004091418574695691,
+      "base_net_moment": -0.0002928163144941695,
+      "base_net_moment_magnitude": 0.0002928163144941695,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -2870,8 +2950,10 @@
       "force_x": -0.019972719434473783,
       "force_y": -0.006871226388522183,
       "force_magnitude": 0.021121630469509933,
-      "moment": 0.00040423439503048186,
-      "moment_magnitude": 0.00040423439503048186,
+      "tip_moment": 0.00040423439503048186,
+      "tip_moment_magnitude": 0.00040423439503048186,
+      "base_net_moment": -0.00027027304005119204,
+      "base_net_moment_magnitude": 0.00027027304005119204,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -2924,8 +3006,10 @@
       "force_x": -0.01828760883135892,
       "force_y": -0.006701337879421369,
       "force_magnitude": 0.019476769910407744,
-      "moment": 0.00039032337014481333,
-      "moment_magnitude": 0.00039032337014481333,
+      "tip_moment": 0.00039032337014481333,
+      "tip_moment_magnitude": 0.00039032337014481333,
+      "base_net_moment": -0.00024164570704210468,
+      "base_net_moment_magnitude": 0.00024164570704210468,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -2978,8 +3062,10 @@
       "force_x": -0.01656684252550275,
       "force_y": -0.006327626874614596,
       "force_magnitude": 0.017734123410226715,
-      "moment": 0.00036758793102848397,
-      "moment_magnitude": 0.00036758793102848397,
+      "tip_moment": 0.00036758793102848397,
+      "tip_moment_magnitude": 0.00036758793102848397,
+      "base_net_moment": -0.000207562438740589,
+      "base_net_moment_magnitude": 0.000207562438740589,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -3032,8 +3118,10 @@
       "force_x": -0.014749957009109665,
       "force_y": -0.0057533170241424085,
       "force_magnitude": 0.015832305219104077,
-      "moment": 0.00033621232035403953,
-      "moment_magnitude": 0.00033621232035403953,
+      "tip_moment": 0.00033621232035403953,
+      "tip_moment_magnitude": 0.00033621232035403953,
+      "base_net_moment": -0.00016865994235741079,
+      "base_net_moment_magnitude": 0.00016865994235741079,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -3086,8 +3174,10 @@
       "force_x": -0.012749627491206198,
       "force_y": -0.0049803791875407954,
       "force_magnitude": 0.013687847822656795,
-      "moment": 0.0002964210679342917,
-      "moment_magnitude": 0.0002964210679342917,
+      "tip_moment": 0.0002964210679342917,
+      "tip_moment_magnitude": 0.0002964210679342917,
+      "base_net_moment": -0.0001255803052000185,
+      "base_net_moment_magnitude": 0.0001255803052000185,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -3140,8 +3230,10 @@
       "force_x": -0.010425547367227572,
       "force_y": -0.004006959759318801,
       "force_magnitude": 0.01116905387305057,
-      "moment": 0.00024851243675813497,
-      "moment_magnitude": 0.00024851243675813497,
+      "tip_moment": 0.00024851243675813497,
+      "tip_moment_magnitude": 0.00024851243675813497,
+      "base_net_moment": -7.896843596432877e-05,
+      "base_net_moment_magnitude": 7.896843596432877e-05,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -3194,8 +3286,10 @@
       "force_x": -0.007534106852730703,
       "force_y": -0.002821288919964186,
       "force_magnitude": 0.008045025620734617,
-      "moment": 0.00019284052814519346,
-      "moment_magnitude": 0.00019284052814519346,
+      "tip_moment": 0.00019284052814519346,
+      "tip_moment_magnitude": 0.00019284052814519346,
+      "base_net_moment": -2.9442235952382002e-05,
+      "base_net_moment_magnitude": 2.9442235952382002e-05,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -3248,8 +3342,10 @@
       "force_x": -0.0036141546847437843,
       "force_y": -0.0013863906533131917,
       "force_magnitude": 0.0038709421500262207,
-      "moment": 0.00012962504788607382,
-      "moment_magnitude": 0.00012962504788607382,
+      "tip_moment": 0.00012962504788607382,
+      "tip_moment_magnitude": 0.00012962504788607382,
+      "base_net_moment": 2.2534397583335962e-05,
+      "base_net_moment_magnitude": 2.2534397583335962e-05,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -3302,8 +3398,10 @@
       "force_x": 0.002321890579019819,
       "force_y": 0.00040277901435734997,
       "force_magnitude": 0.0023565667389971517,
-      "moment": 5.8245082903930725e-05,
-      "moment_magnitude": 5.8245082903930725e-05,
+      "tip_moment": 5.8245082903930725e-05,
+      "tip_moment_magnitude": 5.8245082903930725e-05,
+      "base_net_moment": 7.707614432401252e-05,
+      "base_net_moment_magnitude": 7.707614432401252e-05,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -3356,8 +3454,10 @@
       "force_x": 0.012846447400127088,
       "force_y": 0.002866702600898086,
       "force_magnitude": 0.01316241598667311,
-      "moment": -2.531711148865363e-05,
-      "moment_magnitude": 2.531711148865363e-05,
+      "tip_moment": -2.531711148865363e-05,
+      "tip_moment_magnitude": 2.531711148865363e-05,
+      "base_net_moment": 0.00013638187471240676,
+      "base_net_moment_magnitude": 0.00013638187471240676,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -3410,8 +3510,10 @@
       "force_x": 0.03750996970268858,
       "force_y": 0.007288608227018357,
       "force_magnitude": 0.03821153800861168,
-      "moment": -0.0001413068798185013,
-      "moment_magnitude": 0.0001413068798185013,
+      "tip_moment": -0.0001413068798185013,
+      "tip_moment_magnitude": 0.0001413068798185013,
+      "base_net_moment": 0.00021227835356518398,
+      "base_net_moment_magnitude": 0.00021227835356518398,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -3464,8 +3566,10 @@
       "force_x": 0.16783709880000702,
       "force_y": 0.026280060685151,
       "force_magnitude": 0.1698821159605052,
-      "moment": -0.0005025510424007024,
-      "moment_magnitude": 0.0005025510424007024,
+      "tip_moment": -0.0005025510424007024,
+      "tip_moment_magnitude": 0.0005025510424007024,
+      "base_net_moment": 0.0004299715802051177,
+      "base_net_moment_magnitude": 0.0004299715802051177,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -3518,8 +3622,10 @@
       "force_x": -0.18877875961923316,
       "force_y": -0.022076196616545654,
       "force_magnitude": 0.19006519549993522,
-      "moment": 0.0002845279388985844,
-      "moment_magnitude": 0.0002845279388985844,
+      "tip_moment": 0.0002845279388985844,
+      "tip_moment_magnitude": 0.0002845279388985844,
+      "base_net_moment": -3.043124662442323e-05,
+      "base_net_moment_magnitude": 3.043124662442323e-05,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -3572,8 +3678,10 @@
       "force_x": -0.08063826204078549,
       "force_y": -0.006300639797250184,
       "force_magnitude": 0.08088403653881944,
-      "moment": -1.3752890386256907e-05,
-      "moment_magnitude": 1.3752890386256907e-05,
+      "tip_moment": -1.3752890386256907e-05,
+      "tip_moment_magnitude": 1.3752890386256907e-05,
+      "base_net_moment": 0.0001453990504553804,
+      "base_net_moment_magnitude": 0.0001453990504553804,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -3626,8 +3734,10 @@
       "force_x": -0.057713477747959,
       "force_y": -0.002406617921237507,
       "force_magnitude": 0.057763633226996555,
-      "moment": -0.0001048857302978384,
-      "moment_magnitude": 0.0001048857302978384,
+      "tip_moment": -0.0001048857302978384,
+      "tip_moment_magnitude": 0.0001048857302978384,
+      "base_net_moment": 0.00019713857290583987,
+      "base_net_moment_magnitude": 0.00019713857290583987,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -3680,8 +3790,10 @@
       "force_x": -0.04764942517900257,
       "force_y": -0.000408008710977836,
       "force_magnitude": 0.04765117197926613,
-      "moment": -0.00015837725288935078,
-      "moment_magnitude": 0.00015837725288935078,
+      "tip_moment": -0.00015837725288935078,
+      "tip_moment_magnitude": 0.00015837725288935078,
+      "base_net_moment": 0.00022471411857128063,
+      "base_net_moment_magnitude": 0.00022471411857128063,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -3734,8 +3846,10 @@
       "force_x": -0.04190768706964948,
       "force_y": 0.0008693132271180928,
       "force_magnitude": 0.04191670241102595,
-      "moment": -0.00019424904306894464,
-      "moment_magnitude": 0.00019424904306894464,
+      "tip_moment": -0.00019424904306894464,
+      "tip_moment_magnitude": 0.00019424904306894464,
+      "base_net_moment": 0.00024014134816756686,
+      "base_net_moment_magnitude": 0.00024014134816756686,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -3788,8 +3902,10 @@
       "force_x": -0.038121923930629666,
       "force_y": 0.0017516893059769845,
       "force_magnitude": 0.03816214747098739,
-      "moment": -0.0002183133828818637,
-      "moment_magnitude": 0.0002183133828818637,
+      "tip_moment": -0.0002183133828818637,
+      "tip_moment_magnitude": 0.0002183133828818637,
+      "base_net_moment": 0.0002471088146076631,
+      "base_net_moment_magnitude": 0.0002471088146076631,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -3842,8 +3958,10 @@
       "force_x": -0.03537766937395234,
       "force_y": 0.0023687963440884763,
       "force_magnitude": 0.035456884894931935,
-      "moment": -0.00023316287279570407,
-      "moment_magnitude": 0.00023316287279570407,
+      "tip_moment": -0.00023316287279570407,
+      "tip_moment_magnitude": 0.00023316287279570407,
+      "base_net_moment": 0.0002474330824915708,
+      "base_net_moment_magnitude": 0.0002474330824915708,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -3896,8 +4014,10 @@
       "force_x": -0.033249827669414964,
       "force_y": 0.002785632167907306,
       "force_magnitude": 0.03336631215193961,
-      "moment": -0.00024035477589628702,
-      "moment_magnitude": 0.00024035477589628702,
+      "tip_moment": -0.00024035477589628702,
+      "tip_moment_magnitude": 0.00024035477589628702,
+      "base_net_moment": 0.00024233173327568196,
+      "base_net_moment_magnitude": 0.00024233173327568196,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -3950,8 +4070,10 @@
       "force_x": -0.031516135479057954,
       "force_y": 0.0030412581797833464,
       "force_magnitude": 0.031662533803384005,
-      "moment": -0.00024102970847729075,
-      "moment_magnitude": 0.00024102970847729075,
+      "tip_moment": -0.00024102970847729075,
+      "tip_moment_magnitude": 0.00024102970847729075,
+      "base_net_moment": 0.00023277538428789323,
+      "base_net_moment_magnitude": 0.00023277538428789323,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -4004,8 +4126,10 @@
       "force_x": -0.030050541964294485,
       "force_y": 0.0031628390267179627,
       "force_magnitude": 0.030216528971024354,
-      "moment": -0.00023612605840876594,
-      "moment_magnitude": 0.00023612605840876594,
+      "tip_moment": -0.00023612605840876594,
+      "tip_moment_magnitude": 0.00023612605840876594,
+      "base_net_moment": 0.00021960324766033207,
+      "base_net_moment_magnitude": 0.00021960324766033207,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -4058,8 +4182,10 @@
       "force_x": -0.028777175293326237,
       "force_y": 0.0031714415101624185,
       "force_magnitude": 0.028951405131965657,
-      "moment": -0.0002264648604659265,
-      "moment_magnitude": 0.0002264648604659265,
+      "tip_moment": -0.0002264648604659265,
+      "tip_moment_magnitude": 0.0002264648604659265,
+      "base_net_moment": 0.00020356462296585028,
+      "base_net_moment_magnitude": 0.00020356462296585028,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -4112,8 +4238,10 @@
       "force_x": -0.027648326886153866,
       "force_y": 0.003084618968640002,
       "force_magnitude": 0.027819864373956112,
-      "moment": -0.0002127858999434784,
-      "moment_magnitude": 0.0002127858999434784,
+      "tip_moment": -0.0002127858999434784,
+      "tip_moment_magnitude": 0.0002127858999434784,
+      "base_net_moment": 0.00018533414476932825,
+      "base_net_moment_magnitude": 0.00018533414476932825,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -4166,8 +4294,10 @@
       "force_x": -0.0266332549462429,
       "force_y": 0.002917592037520095,
       "force_magnitude": 0.02679258502513284,
-      "moment": -0.00019576233977808573,
-      "moment_magnitude": 0.00019576233977808573,
+      "tip_moment": -0.00019576233977808573,
+      "tip_moment_magnitude": 0.00019576233977808573,
+      "base_net_moment": 0.00016551687119644373,
+      "base_net_moment_magnitude": 0.00016551687119644373,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -4220,8 +4350,10 @@
       "force_x": -0.025712489048392035,
       "force_y": 0.0026837700980071014,
       "force_magnitude": 0.025852170411836555,
-      "moment": -0.000176004496408901,
-      "moment_magnitude": 0.000176004496408901,
+      "tip_moment": -0.000176004496408901,
+      "tip_moment_magnitude": 0.000176004496408901,
+      "base_net_moment": 0.00014464927882712082,
+      "base_net_moment_magnitude": 0.00014464927882712082,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -4274,8 +4406,10 @@
       "force_x": -0.024875472930919785,
       "force_y": 0.0023949573491683536,
       "force_magnitude": 0.02499049767894306,
-      "moment": -0.00015405792146735,
-      "moment_magnitude": 0.00015405792146735,
+      "tip_moment": -0.00015405792146735,
+      "tip_moment_magnitude": 0.00015405792146735,
+      "base_net_moment": 0.0001231988865006154,
+      "base_net_moment_magnitude": 0.0001231988865006154,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -4328,8 +4462,10 @@
       "force_x": -0.02412114177982973,
       "force_y": 0.0020614214281521066,
       "force_magnitude": 0.02420906729031691,
-      "moment": -0.0001303991790190427,
-      "moment_magnitude": 0.0001303991790190427,
+      "tip_moment": -0.0001303991790190427,
+      "tip_moment_magnitude": 0.0001303991790190427,
+      "base_net_moment": 0.0001015641148978764,
+      "base_net_moment_magnitude": 0.0001015641148978764,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -4382,8 +4518,10 @@
       "force_x": -0.023463236578994098,
       "force_y": 0.00169192684514469,
       "force_magnitude": 0.023524159649415066,
-      "moment": -0.0001054321349725887,
-      "moment_magnitude": 0.0001054321349725887,
+      "tip_moment": -0.0001054321349725887,
+      "tip_moment_magnitude": 0.0001054321349725887,
+      "base_net_moment": 8.007559387642592e-05,
+      "base_net_moment_magnitude": 8.007559387642592e-05,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -4436,8 +4574,10 @@
       "force_x": -0.02294890808291931,
       "force_y": 0.001293797952723334,
       "force_magnitude": 0.022985349580564363,
-      "moment": -7.948736216780975e-05,
-      "moment_magnitude": 7.948736216780975e-05,
+      "tip_moment": -7.948736216780975e-05,
+      "tip_moment_magnitude": 7.948736216780975e-05,
+      "base_net_moment": 5.899992365307771e-05,
+      "base_net_moment_magnitude": 5.899992365307771e-05,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -4490,8 +4630,10 @@
       "force_x": -0.02273419661466862,
       "force_y": 0.000873063234257778,
       "force_magnitude": 0.02275095459811352,
-      "moment": -5.282773864512701e-05,
-      "moment_magnitude": 5.282773864512701e-05,
+      "tip_moment": -5.282773864512701e-05,
+      "tip_moment_magnitude": 5.282773864512701e-05,
+      "base_net_moment": 3.854677098308219e-05,
+      "base_net_moment_magnitude": 3.854677098308219e-05,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -4544,8 +4686,10 @@
       "force_x": -0.02359413773795096,
       "force_y": 0.00043481403226698737,
       "force_magnitude": 0.023598143970237528,
-      "moment": -2.5671457657534413e-05,
-      "moment_magnitude": 2.5671457657534413e-05,
+      "tip_moment": -2.5671457657534413e-05,
+      "tip_moment_magnitude": 2.5671457657534413e-05,
+      "base_net_moment": 1.888088364368582e-05,
+      "base_net_moment_magnitude": 1.888088364368582e-05,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -4598,8 +4742,10 @@
       "force_x": -0.0895193671429008,
       "force_y": 1.440345609060561e-06,
       "force_magnitude": 0.08951936715448822,
-      "moment": 1.7119050026563083e-07,
-      "moment_magnitude": 1.7119050026563083e-07,
+      "tip_moment": 1.7119050026563083e-07,
+      "tip_moment_magnitude": 1.7119050026563083e-07,
+      "base_net_moment": 3.1572566552378975e-07,
+      "base_net_moment_magnitude": 3.1572566552378975e-07,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -4652,8 +4798,10 @@
       "force_x": -0.08951898744753434,
       "force_y": 1.4447220852486576e-06,
       "force_magnitude": 0.08951898745919232,
-      "moment": 1.711840753362924e-07,
-      "moment_magnitude": 1.711840753362924e-07,
+      "tip_moment": 1.711840753362924e-07,
+      "tip_moment_magnitude": 1.711840753362924e-07,
+      "base_net_moment": 3.156562837626762e-07,
+      "base_net_moment_magnitude": 3.156562837626762e-07,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -4706,8 +4854,10 @@
       "force_x": -0.08951898744753434,
       "force_y": 1.4447220852486576e-06,
       "force_magnitude": 0.08951898745919232,
-      "moment": 1.711840753362924e-07,
-      "moment_magnitude": 1.711840753362924e-07,
+      "tip_moment": 1.711840753362924e-07,
+      "tip_moment_magnitude": 1.711840753362924e-07,
+      "base_net_moment": 3.156562837626762e-07,
+      "base_net_moment_magnitude": 3.156562837626762e-07,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -4760,8 +4910,10 @@
       "force_x": -0.08951898744753434,
       "force_y": 1.4447220852486576e-06,
       "force_magnitude": 0.08951898745919232,
-      "moment": 1.711840753362924e-07,
-      "moment_magnitude": 1.711840753362924e-07,
+      "tip_moment": 1.711840753362924e-07,
+      "tip_moment_magnitude": 1.711840753362924e-07,
+      "base_net_moment": 3.156562837626762e-07,
+      "base_net_moment_magnitude": 3.156562837626762e-07,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -4814,8 +4966,10 @@
       "force_x": -0.08951898744753434,
       "force_y": 1.4447220852486576e-06,
       "force_magnitude": 0.08951898745919232,
-      "moment": 1.711840753362924e-07,
-      "moment_magnitude": 1.711840753362924e-07,
+      "tip_moment": 1.711840753362924e-07,
+      "tip_moment_magnitude": 1.711840753362924e-07,
+      "base_net_moment": 3.156562837626762e-07,
+      "base_net_moment_magnitude": 3.156562837626762e-07,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -4868,8 +5022,10 @@
       "force_x": -0.08951898744753434,
       "force_y": 1.4447220852486576e-06,
       "force_magnitude": 0.08951898745919232,
-      "moment": 1.711840753362924e-07,
-      "moment_magnitude": 1.711840753362924e-07,
+      "tip_moment": 1.711840753362924e-07,
+      "tip_moment_magnitude": 1.711840753362924e-07,
+      "base_net_moment": 3.156562837626762e-07,
+      "base_net_moment_magnitude": 3.156562837626762e-07,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -4922,8 +5078,10 @@
       "force_x": -0.08951898744753434,
       "force_y": 1.4447220852486576e-06,
       "force_magnitude": 0.08951898745919232,
-      "moment": 1.711840753362924e-07,
-      "moment_magnitude": 1.711840753362924e-07,
+      "tip_moment": 1.711840753362924e-07,
+      "tip_moment_magnitude": 1.711840753362924e-07,
+      "base_net_moment": 3.156562837626762e-07,
+      "base_net_moment_magnitude": 3.156562837626762e-07,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -4976,8 +5134,10 @@
       "force_x": -0.08951898744753434,
       "force_y": 1.4447220852486576e-06,
       "force_magnitude": 0.08951898745919232,
-      "moment": 1.711840753362924e-07,
-      "moment_magnitude": 1.711840753362924e-07,
+      "tip_moment": 1.711840753362924e-07,
+      "tip_moment_magnitude": 1.711840753362924e-07,
+      "base_net_moment": 3.156562837626762e-07,
+      "base_net_moment_magnitude": 3.156562837626762e-07,
       "exact_force_moment_solved": true,
       "chain": [
         [
@@ -5030,8 +5190,10 @@
       "force_x": -0.08951898744753434,
       "force_y": 1.4447220852486576e-06,
       "force_magnitude": 0.08951898745919232,
-      "moment": 1.711840753362924e-07,
-      "moment_magnitude": 1.711840753362924e-07,
+      "tip_moment": 1.711840753362924e-07,
+      "tip_moment_magnitude": 1.711840753362924e-07,
+      "base_net_moment": 3.156562837626762e-07,
+      "base_net_moment_magnitude": 3.156562837626762e-07,
       "exact_force_moment_solved": true,
       "chain": [
         [
