@@ -48,6 +48,14 @@
     "#c17c1f", "#6a5acd", "#0f766e", "#d45d5d", "#43536e",
   ];
   const PRB_SERIES_COLORS = ["#0c8aa4", "#ef8c54", "#2f8f6d"];
+  const STATIC_DATA_PATHS = {
+    atlasDefault: "./data/atlas-default.json",
+    atlasLoadsDefault: "./data/atlas-loads-default.json",
+    atlasReport: "./data/atlas-report.json",
+    section4Workspace: "./data/section4-workspace.json",
+    section520Overlay: "./data/section520-overlay.json",
+    medicalDefault: "./data/medical-default.json",
+  };
 
   const tabButtons = Array.from(document.querySelectorAll("[data-tab-target]"));
   const tabPanels = Array.from(document.querySelectorAll("[data-tab-panel]"));
@@ -221,6 +229,8 @@
   let mechanismCurrentFrameIndex = 0;
   let mechanismAnimationTimer = null;
   let mechanismTrendBounds = null;
+  let mechanismFEAFlexNodePool = [];
+  let mechanismJointPointPool = [];
   let materialsPanelInitialized = false;
   let materialsExperimentCache = null;
   let materialsExperimentCacheKey = "";
@@ -231,6 +241,12 @@
   let materialsTrendBounds = null;
   let materialsReloadTimer = null;
   let materialsRequestSequence = 0;
+  let materialsTargetTracePath = null;
+  let materialsActualTracePath = null;
+  let materialsChainPath = null;
+  let materialsJointPool = [];
+  let materialsTargetPoint = null;
+  let materialsTipPoint = null;
 
   function createSvgNode(tagName, attrs) {
     const node = document.createElementNS("http://www.w3.org/2000/svg", tagName);
@@ -238,6 +254,17 @@
       node.setAttribute(key, String(value));
     });
     return node;
+  }
+
+  function ensureCirclePool(container, pool, count, attrsFactory) {
+    while (pool.length < count) {
+      const node = createSvgNode("circle", attrsFactory());
+      container.appendChild(node);
+      pool.push(node);
+    }
+    pool.forEach((node, index) => {
+      node.style.display = index < count ? "" : "none";
+    });
   }
 
   function clamp(value, minValue, maxValue) {
@@ -484,7 +511,79 @@
     return error && (error.name === "AbortError" || error.message === "The operation was aborted.");
   }
 
+  function getStaticSnapshotPath(endpoint) {
+    try {
+      const url = new URL(endpoint, window.location.href);
+      const path = url.pathname;
+      const params = url.searchParams;
+
+      if (path === "/api/section4-workspace") {
+        return STATIC_DATA_PATHS.section4Workspace;
+      }
+      if (path === "/api/section520-overlay") {
+        return STATIC_DATA_PATHS.section520Overlay;
+      }
+      if (path === "/api/atlas-report") {
+        return STATIC_DATA_PATHS.atlasReport;
+      }
+      if (path === "/api/atlas") {
+        const isDefault =
+          Number(params.get("kappa")) === 0
+          && Number(params.get("phi_deg")) === 90
+          && Number(params.get("beam_length")) === 0.1
+          && Number(params.get("beam_width")) === 0.02
+          && Number(params.get("thickness")) === 0.001
+          && Number(params.get("youngs_modulus")) === 69000000000
+          && Number(params.get("sigma_max")) === 276000000;
+        if (isDefault) {
+          return STATIC_DATA_PATHS.atlasDefault;
+        }
+      }
+      if (path === "/api/atlas-loads") {
+        const isDefault =
+          Number(params.get("kappa")) === 0
+          && Number(params.get("phi_deg")) === 90
+          && Number(params.get("theta0_deg")) === 0
+          && Number(params.get("beam_length")) === 0.1
+          && Number(params.get("beam_width")) === 0.02
+          && Number(params.get("thickness")) === 0.001
+          && Number(params.get("youngs_modulus")) === 69000000000
+          && Number(params.get("sigma_max")) === 276000000;
+        if (isDefault) {
+          return STATIC_DATA_PATHS.atlasLoadsDefault;
+        }
+      }
+      if (path === "/api/medical-experiment") {
+        const isDefault =
+          params.get("mode") === "sinusoid"
+          && Number(params.get("tip_amplitude")) === 0.1
+          && Number(params.get("core_motion_time")) === 8
+          && Number(params.get("beam_length")) === 0.1
+          && Number(params.get("beam_width")) === 0.02
+          && Number(params.get("thickness")) === 0.001
+          && Number(params.get("youngs_modulus")) === 69000000000
+          && Number(params.get("sigma_max")) === 276000000;
+        if (isDefault) {
+          return STATIC_DATA_PATHS.medicalDefault;
+        }
+      }
+    } catch (error) {
+      console.warn("Unable to parse endpoint for static snapshot lookup.", endpoint, error);
+    }
+
+    return null;
+  }
+
   async function requestJson(endpoint, options = {}) {
+    const staticSnapshotPath = getStaticSnapshotPath(endpoint);
+    if (staticSnapshotPath) {
+      const response = await fetch(staticSnapshotPath, options);
+      if (!response.ok) {
+        throw new Error(`Unable to load static snapshot: ${staticSnapshotPath}`);
+      }
+      return response.json();
+    }
+
     if (window.StaticPyBackend && typeof window.StaticPyBackend.request === "function") {
       try {
         return await window.StaticPyBackend.request(endpoint, options);
@@ -2034,6 +2133,51 @@
     }
   }
 
+  function initializeMaterialsDynamicScene() {
+    if (!materialsDynamic) {
+      return;
+    }
+    materialsDynamic.replaceChildren();
+    materialsJointPool = [];
+
+    materialsTargetTracePath = createSvgNode("path", {
+      class: "materials-line",
+      stroke: "#ef8c54",
+      "stroke-width": "2.4",
+      opacity: "0.28",
+      d: "",
+    });
+    materialsActualTracePath = createSvgNode("path", {
+      class: "materials-line",
+      stroke: "rgba(12, 138, 164, 0.45)",
+      "stroke-width": "2.2",
+      d: "",
+    });
+    materialsChainPath = createSvgNode("path", {
+      class: "materials-line",
+      stroke: "#0c8aa4",
+      "stroke-width": "2.8",
+      d: "",
+    });
+
+    materialsDynamic.appendChild(materialsTargetTracePath);
+    materialsDynamic.appendChild(materialsActualTracePath);
+    materialsDynamic.appendChild(materialsChainPath);
+
+    materialsTargetPoint = createSvgNode("circle", {
+      r: 5.2,
+      fill: "rgba(239, 140, 84, 0.18)",
+      stroke: "#ef8c54",
+      "stroke-width": "1.8",
+    });
+    materialsTipPoint = createSvgNode("circle", {
+      r: 3.4,
+      fill: "#ef8c54",
+    });
+    materialsDynamic.appendChild(materialsTargetPoint);
+    materialsDynamic.appendChild(materialsTipPoint);
+  }
+
   function renderMaterialsState(frameIndex) {
     if (!materialsMotionData || !materialsBounds || !materialsDynamic) {
       return;
@@ -2042,63 +2186,42 @@
     materialsCurrentFrameIndex = clamp(frameIndex, 0, materialsMotionData.frames.length - 1);
     const frame = materialsMotionData.frames[materialsCurrentFrameIndex];
 
-    materialsDynamic.replaceChildren();
+    if (!materialsChainPath) {
+      initializeMaterialsDynamicScene();
+    }
 
     const targetTracePoints = materialsMotionData.target_path.slice(0, materialsCurrentFrameIndex + 1);
-    if (targetTracePoints.length > 1) {
-      materialsDynamic.appendChild(createSvgNode("path", {
-        d: buildMaterialsPath(targetTracePoints, materialsBounds),
-        class: "materials-line",
-        stroke: "#ef8c54",
-        "stroke-width": "2.4",
-        opacity: "0.28",
-      }));
-    }
+    materialsTargetTracePath.setAttribute(
+      "d",
+      targetTracePoints.length > 1 ? buildMaterialsPath(targetTracePoints, materialsBounds) : "",
+    );
 
     const actualTracePoints = Array.isArray(materialsMotionData.actual_path)
       ? materialsMotionData.actual_path.slice(0, materialsCurrentFrameIndex + 1)
       : [];
-    if (actualTracePoints.length > 1) {
-      materialsDynamic.appendChild(createSvgNode("path", {
-        d: buildMaterialsPath(actualTracePoints, materialsBounds),
-        class: "materials-line",
-        stroke: "rgba(12, 138, 164, 0.45)",
-        "stroke-width": "2.2",
-      }));
-    }
+    materialsActualTracePath.setAttribute(
+      "d",
+      actualTracePoints.length > 1 ? buildMaterialsPath(actualTracePoints, materialsBounds) : "",
+    );
+    materialsChainPath.setAttribute("d", buildMaterialsPath(frame.chain, materialsBounds));
 
-    materialsDynamic.appendChild(createSvgNode("path", {
-      d: buildMaterialsPath(frame.chain, materialsBounds),
-      class: "materials-line",
-      stroke: "#0c8aa4",
-      "stroke-width": "2.8",
-    }));
-
-    frame.chain.slice(1).forEach((point) => {
-      materialsDynamic.appendChild(createSvgNode("circle", {
-        cx: materialsMapX(Number(point[0]), materialsBounds),
-        cy: materialsMapY(Number(point[1]), materialsBounds),
-        r: 3.4,
-        class: "materials-joint",
-        fill: "#0c8aa4",
-      }));
-    });
-
-    materialsDynamic.appendChild(createSvgNode("circle", {
-      cx: materialsMapX(Number(frame.target_x), materialsBounds),
-      cy: materialsMapY(Number(frame.target_y), materialsBounds),
-      r: 5.2,
-      fill: "rgba(239, 140, 84, 0.18)",
-      stroke: "#ef8c54",
-      "stroke-width": "1.8",
-    }));
-
-    materialsDynamic.appendChild(createSvgNode("circle", {
-      cx: materialsMapX(Number(frame.tip_x), materialsBounds),
-      cy: materialsMapY(Number(frame.tip_y), materialsBounds),
+    const jointPoints = frame.chain.slice(1);
+    ensureCirclePool(materialsDynamic, materialsJointPool, jointPoints.length, () => ({
       r: 3.4,
-      fill: "#ef8c54",
+      class: "materials-joint",
+      fill: "#0c8aa4",
     }));
+    jointPoints.forEach((point, pointIndex) => {
+      const node = materialsJointPool[pointIndex];
+      node.setAttribute("cx", materialsMapX(Number(point[0]), materialsBounds));
+      node.setAttribute("cy", materialsMapY(Number(point[1]), materialsBounds));
+    });
+    materialsTargetPoint.setAttribute("cx", materialsMapX(Number(frame.target_x), materialsBounds));
+    materialsTargetPoint.setAttribute("cy", materialsMapY(Number(frame.target_y), materialsBounds));
+    materialsTipPoint.setAttribute("cx", materialsMapX(Number(frame.tip_x), materialsBounds));
+    materialsTipPoint.setAttribute("cy", materialsMapY(Number(frame.tip_y), materialsBounds));
+    materialsDynamic.appendChild(materialsTargetPoint);
+    materialsDynamic.appendChild(materialsTipPoint);
 
     if (materialsFrameSlider) {
       materialsFrameSlider.value = String(materialsCurrentFrameIndex);
@@ -2183,6 +2306,7 @@
       materialsTrendBounds = computeMaterialsTrendBounds(data);
       drawMaterialsFrame(materialsBounds);
       drawMaterialsStaticScene();
+      initializeMaterialsDynamicScene();
       renderMaterialsTrendPlots();
       renderMaterialsState(0);
       if (materialsExperimentTitle) {
@@ -2228,6 +2352,7 @@
         materialsTrendBounds = computeMaterialsTrendBounds(data);
         drawMaterialsFrame(materialsBounds);
         drawMaterialsStaticScene();
+        initializeMaterialsDynamicScene();
         renderMaterialsTrendPlots();
 
         if (materialsExperimentTitle) {
@@ -2724,15 +2849,15 @@
     mechanismFEAFlex.setAttribute("d", buildMechanismPath(feaFlex));
 
     if (mechanismFEAFlexNodes) {
-        mechanismFEAFlexNodes.replaceChildren();
-        feaFlex.forEach((point) => {
-          mechanismFEAFlexNodes.appendChild(createSvgNode("circle", {
-            cx: mechanismMapX(Number(point[0])),
-            cy: mechanismMapY(Number(point[1])),
-            r: 2.8,
-            class: "mechanism-flex-node",
-          }));
-        });
+      ensureCirclePool(mechanismFEAFlexNodes, mechanismFEAFlexNodePool, feaFlex.length, () => ({
+        r: 2.8,
+        class: "mechanism-flex-node",
+      }));
+      feaFlex.forEach((point, pointIndex) => {
+        const node = mechanismFEAFlexNodePool[pointIndex];
+        node.setAttribute("cx", mechanismMapX(Number(point[0])));
+        node.setAttribute("cy", mechanismMapY(Number(point[1])));
+      });
     }
 
     mechanismPRBChain.setAttribute("d", buildMechanismPath(chain));
@@ -2740,15 +2865,15 @@
     mechanismAQLink.setAttribute("d", buildMechanismPath([aPoint, qPoint]));
 
     if (mechanismJointPoints) {
-        mechanismJointPoints.replaceChildren();
-        chain.forEach((point) => {
-          mechanismJointPoints.appendChild(createSvgNode("circle", {
-            cx: mechanismMapX(Number(point[0])),
-            cy: mechanismMapY(Number(point[1])),
-            r: 2.8,
-            class: "mechanism-joint",
-          }));
-        });
+      ensureCirclePool(mechanismJointPoints, mechanismJointPointPool, chain.length, () => ({
+        r: 2.8,
+        class: "mechanism-joint",
+      }));
+      chain.forEach((point, pointIndex) => {
+        const node = mechanismJointPointPool[pointIndex];
+        node.setAttribute("cx", mechanismMapX(Number(point[0])));
+        node.setAttribute("cy", mechanismMapY(Number(point[1])));
+      });
     }
 
     mechanismOrigin.setAttribute("cx", mechanismMapX(0));
@@ -2944,11 +3069,6 @@
     });
   }
 
-  if (window.StaticPyBackend && typeof window.StaticPyBackend.prime === "function") {
-    window.StaticPyBackend.prime().catch((error) => {
-      console.error("Unable to initialize the in-browser Python backend.", error);
-    });
-  }
   initializeAtlasPanel();
   setActiveTab("atlas");
 }());
