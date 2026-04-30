@@ -35,6 +35,20 @@ def build() -> None:
         "youngs_modulus": server.DEFAULT_YOUNGS_MODULUS,
         "sigma_max": server.DEFAULT_SIGMA_MAX,
     }
+    pebax_beam = {
+        "beam_length": server.DEFAULT_BEAM_LENGTH,
+        "beam_width": server.DEFAULT_BEAM_WIDTH,
+        "thickness": server.DEFAULT_THICKNESS,
+        "youngs_modulus": 513.0e6,
+        "sigma_max": 56.0e6,
+    }
+    tpu_beam = {
+        "beam_length": server.DEFAULT_BEAM_LENGTH,
+        "beam_width": server.DEFAULT_BEAM_WIDTH,
+        "thickness": server.DEFAULT_THICKNESS,
+        "youngs_modulus": 22.1e6,
+        "sigma_max": 53.1e6,
+    }
 
     default_kappa = float(server.INTERACTIVE_DEFAULT_K)
     default_phi_deg = float(server.INTERACTIVE_DEFAULT_PHI_DEG)
@@ -96,6 +110,16 @@ def build() -> None:
         core_motion_time=server.SECTION701_CORE_MOTION_TIME,
         beam=default_beam,
     )
+    medical_pebax = server.get_section701_sinusoid_payload(
+        tip_amplitude=server.SECTION701_TIP_AMPLITUDE,
+        core_motion_time=server.SECTION701_CORE_MOTION_TIME,
+        beam=pebax_beam,
+    )
+    medical_tpu = server.get_section701_sinusoid_payload(
+        tip_amplitude=server.SECTION701_TIP_AMPLITUDE,
+        core_motion_time=server.SECTION701_CORE_MOTION_TIME,
+        beam=tpu_beam,
+    )
 
     write_json(DATA_DIR / "atlas-default.json", atlas_default)
     write_json(DATA_DIR / "atlas-loads-default.json", atlas_loads_default)
@@ -103,6 +127,8 @@ def build() -> None:
     write_json(DATA_DIR / "section4-workspace.json", server.get_section4_workspace_payload())
     write_json(DATA_DIR / "section520-overlay.json", server.get_section520_overlay_payload())
     write_json(DATA_DIR / "medical-default.json", medical_default)
+    write_json(DATA_DIR / "medical-pebax.json", medical_pebax)
+    write_json(DATA_DIR / "medical-tpu.json", medical_tpu)
 
 
 if __name__ == "__main__":

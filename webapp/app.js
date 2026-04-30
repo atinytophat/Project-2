@@ -75,6 +75,8 @@
     section4Workspace: "./data/section4-workspace.json",
     section520Overlay: "./data/section520-overlay.json",
     medicalDefault: "./data/medical-default.json",
+    medicalPebax: "./data/medical-pebax.json",
+    medicalTpu: "./data/medical-tpu.json",
   };
 
   const tabButtons = Array.from(document.querySelectorAll("[data-tab-target]"));
@@ -623,6 +625,30 @@
           && Number(params.get("sigma_max")) === 276000000;
         if (isDefault) {
           return STATIC_DATA_PATHS.medicalDefault;
+        }
+        const isPebax =
+          params.get("mode") === "sinusoid"
+          && Number(params.get("tip_amplitude")) === 0.1
+          && Number(params.get("core_motion_time")) === 8
+          && Number(params.get("beam_length")) === 0.1
+          && Number(params.get("beam_width")) === 0.02
+          && Number(params.get("thickness")) === 0.001
+          && Number(params.get("youngs_modulus")) === 513000000
+          && Number(params.get("sigma_max")) === 56000000;
+        if (isPebax) {
+          return STATIC_DATA_PATHS.medicalPebax;
+        }
+        const isTpu =
+          params.get("mode") === "sinusoid"
+          && Number(params.get("tip_amplitude")) === 0.1
+          && Number(params.get("core_motion_time")) === 8
+          && Number(params.get("beam_length")) === 0.1
+          && Number(params.get("beam_width")) === 0.02
+          && Number(params.get("thickness")) === 0.001
+          && Number(params.get("youngs_modulus")) === 22100000
+          && Number(params.get("sigma_max")) === 53100000;
+        if (isTpu) {
+          return STATIC_DATA_PATHS.medicalTpu;
         }
       }
     } catch (error) {
@@ -2394,6 +2420,11 @@
         materialsFrameSlider.step = "1";
         materialsFrameSlider.value = "0";
       }
+      if (activeMaterialPresetKey && MATERIAL_PRESETS[activeMaterialPresetKey]) {
+        setMaterialsPresetNote(MATERIAL_PRESETS[activeMaterialPresetKey].note);
+      } else {
+        setMaterialsPresetNote("Custom material values are active.");
+      }
       return;
     }
 
@@ -2439,6 +2470,11 @@
           materialsFrameSlider.max = String(data.frames.length - 1);
           materialsFrameSlider.step = "1";
           materialsFrameSlider.value = "0";
+        }
+        if (activeMaterialPresetKey && MATERIAL_PRESETS[activeMaterialPresetKey]) {
+          setMaterialsPresetNote(MATERIAL_PRESETS[activeMaterialPresetKey].note);
+        } else {
+          setMaterialsPresetNote("Custom material values are active.");
         }
 
         renderMaterialsState(0);
@@ -2488,6 +2524,11 @@
     if (materialsReloadTimer !== null) {
       window.clearTimeout(materialsReloadTimer);
     }
+    setMaterialsPresetNote(
+      activeMaterialPresetKey
+        ? `${MATERIAL_PRESETS[activeMaterialPresetKey].displayName} preset loading...`
+        : "Updating custom material values...",
+    );
     materialsReloadTimer = window.setTimeout(() => {
       materialsReloadTimer = null;
       materialsExperimentCache = null;
