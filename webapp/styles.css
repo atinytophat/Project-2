@@ -465,6 +465,13 @@ body {
   border-color: rgba(12, 138, 164, 0.24);
 }
 
+.materials-preset-note {
+  margin: -4px 0 2px;
+  color: var(--muted);
+  font-size: 0.76rem;
+  line-height: 1.35;
+}
+
 .materials-table-wrap {
   margin-top: 10px;
   overflow: auto;

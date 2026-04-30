@@ -48,6 +48,26 @@
     "#c17c1f", "#6a5acd", "#0f766e", "#d45d5d", "#43536e",
   ];
   const PRB_SERIES_COLORS = ["#0c8aa4", "#ef8c54", "#2f8f6d"];
+  const MATERIAL_PRESETS = {
+    flexible_pvc: {
+      displayName: "Flexible PVC",
+      elasticModulusMpa: null,
+      strengthMpa: 18.6,
+      note: "Flexible PVC uses the stored design strength limit of 18.6 MPa. Its modulus was not available in the saved dataset, so the current E value is preserved.",
+    },
+    pebax: {
+      displayName: "PEBAX",
+      elasticModulusMpa: 513.0,
+      strengthMpa: 56.0,
+      note: "PEBAX preset uses the stored flexural modulus and design strength placeholder from the material library.",
+    },
+    medical_grade_tpu: {
+      displayName: "Medical-grade TPU",
+      elasticModulusMpa: 22.1,
+      strengthMpa: 53.1,
+      note: "Medical-grade TPU preset uses the stored flexural modulus and design strength placeholder from the material library.",
+    },
+  };
   const STATIC_DATA_PATHS = {
     atlasDefault: "./data/atlas-default.json",
     atlasLoadsDefault: "./data/atlas-loads-default.json",
@@ -200,6 +220,8 @@
   const materialsWidthInput = document.getElementById("materialsWidthInput");
   const materialsYoungsModulusInput = document.getElementById("materialsYoungsModulusInput");
   const materialsYieldStrengthInput = document.getElementById("materialsYieldStrengthInput");
+  const materialsPresetButtons = Array.from(document.querySelectorAll("[data-material-preset]"));
+  const materialsPresetNote = document.getElementById("materialsPresetNote");
   const materialsGammas = document.getElementById("materialsGammas");
   const materialsKbar = document.getElementById("materialsKbar");
   const materialsTargetXY = document.getElementById("materialsTargetXY");
@@ -241,6 +263,7 @@
   let materialsTrendBounds = null;
   let materialsReloadTimer = null;
   let materialsRequestSequence = 0;
+  let activeMaterialPresetKey = "";
   let materialsTargetTracePath = null;
   let materialsActualTracePath = null;
   let materialsChainPath = null;
@@ -356,6 +379,41 @@
       `sigma_max=${encodeURIComponent(beam.sigma_max_mpa * 1e6)}`,
     ].join("&");
     return `${MATERIALS_CONFIG.endpoint}&${params}`;
+  }
+
+  function setMaterialsPresetNote(message) {
+    if (materialsPresetNote) {
+      materialsPresetNote.textContent = message;
+    }
+  }
+
+  function updateMaterialsPresetButtons() {
+    materialsPresetButtons.forEach((button) => {
+      const isActive = button.dataset.materialPreset === activeMaterialPresetKey;
+      button.classList.toggle("active", isActive);
+      button.setAttribute("aria-pressed", isActive ? "true" : "false");
+    });
+  }
+
+  function applyMaterialPreset(presetKey) {
+    const preset = MATERIAL_PRESETS[presetKey];
+    if (!preset) {
+      return;
+    }
+
+    activeMaterialPresetKey = presetKey;
+    updateMaterialsPresetButtons();
+
+    if (materialsYoungsModulusInput && Number.isFinite(preset.elasticModulusMpa)) {
+      materialsYoungsModulusInput.value = Number(preset.elasticModulusMpa).toFixed(1);
+    }
+    if (materialsYieldStrengthInput && Number.isFinite(preset.strengthMpa)) {
+      materialsYieldStrengthInput.value = Number(preset.strengthMpa).toFixed(1);
+    }
+
+    setMaterialsPresetNote(preset.note);
+    stopMaterialsAnimation();
+    scheduleMaterialsReload();
   }
 
   function scheduleAtlasUpdate() {
@@ -2453,6 +2511,11 @@
       if (materialsAnimateButton) {
         materialsAnimateButton.addEventListener("click", toggleMaterialsAnimation);
       }
+      materialsPresetButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          applyMaterialPreset(button.dataset.materialPreset);
+        });
+      });
       [
         materialsMotionTimeInput,
         materialsAmplitudeInput,
@@ -2466,6 +2529,11 @@
           return;
         }
         inputElement.addEventListener("input", () => {
+          if (inputElement !== materialsMotionTimeInput && inputElement !== materialsAmplitudeInput) {
+            activeMaterialPresetKey = "";
+            updateMaterialsPresetButtons();
+            setMaterialsPresetNote("Custom material values are active.");
+          }
           stopMaterialsAnimation();
           scheduleMaterialsReload();
         });
@@ -2473,6 +2541,9 @@
       materialsPanelInitialized = true;
     }
 
+    if (!activeMaterialPresetKey && materialsPresetButtons.length > 0) {
+      setMaterialsPresetNote("Select a stored material preset to update the medical beam properties.");
+    }
     loadMaterialsMode();
   }
 
