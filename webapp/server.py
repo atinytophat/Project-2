@@ -1099,7 +1099,7 @@ def section701_dimensional_load_response(
     kbar: np.ndarray,
     beam: dict[str, float],
 ) -> dict[str, object]:
-    """Recover dimensional PRB spring torques and equivalent tip loads."""
+    """Recover dimensional PRB spring torques, tip loads, and base net moment."""
     inertia = rectangular_second_moment(float(beam["beam_width"]), float(beam["thickness"]))
     bending_stiffness = float(beam["youngs_modulus"]) * inertia
     beam_length = float(beam["beam_length"])
@@ -1108,7 +1108,11 @@ def section701_dimensional_load_response(
     load_vector_normalized = section520_tip_load(theta, gammas, kbar)
     force_x = float(load_vector_normalized[0] * bending_stiffness / (beam_length * beam_length))
     force_y = float(load_vector_normalized[1] * bending_stiffness / (beam_length * beam_length))
-    moment = float(load_vector_normalized[2] * bending_stiffness / beam_length)
+    tip_moment = float(load_vector_normalized[2] * bending_stiffness / beam_length)
+    qx_normalized, qy_normalized, _ = prb3r_forward_kinematics(theta, gammas)
+    tip_x = float(qx_normalized * beam_length)
+    tip_y = float(qy_normalized * beam_length)
+    base_net_moment = float(tip_x * force_y - tip_y * force_x + tip_moment)
     return {
         "inertia": float(inertia),
         "bending_stiffness": float(bending_stiffness),
@@ -1117,8 +1121,10 @@ def section701_dimensional_load_response(
         "force_x": force_x,
         "force_y": force_y,
         "force_magnitude": float(math.hypot(force_x, force_y)),
-        "moment": moment,
-        "moment_magnitude": float(abs(moment)),
+        "tip_moment": tip_moment,
+        "tip_moment_magnitude": float(abs(tip_moment)),
+        "base_net_moment": base_net_moment,
+        "base_net_moment_magnitude": float(abs(base_net_moment)),
     }
 
 
@@ -1305,8 +1311,10 @@ def get_section701_sinusoid_payload(
                 "force_x": float(load_response["force_x"]),
                 "force_y": float(load_response["force_y"]),
                 "force_magnitude": float(load_response["force_magnitude"]),
-                "moment": float(load_response["moment"]),
-                "moment_magnitude": float(load_response["moment_magnitude"]),
+                "tip_moment": float(load_response["tip_moment"]),
+                "tip_moment_magnitude": float(load_response["tip_moment_magnitude"]),
+                "base_net_moment": float(load_response["base_net_moment"]),
+                "base_net_moment_magnitude": float(load_response["base_net_moment_magnitude"]),
                 "exact_force_moment_solved": True,
                 "chain": [[float(x), float(y)] for x, y in chain],
             }

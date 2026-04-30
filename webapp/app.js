@@ -1910,7 +1910,7 @@
     const yActual = data.frames.map((frame) => Number(frame.tip_y));
     const thetaDesired = data.frames.map((frame) => Number(frame.theta0_desired_deg ?? frame.theta_tip_deg));
     const thetaActual = data.frames.map((frame) => Number(frame.theta_tip_deg));
-    const momentValues = data.frames.map((frame) => Number(frame.moment_magnitude || 0));
+    const momentValues = data.frames.map((frame) => Number(frame.base_net_moment || 0));
 
     return {
       time: {
@@ -2019,11 +2019,11 @@
     const yActualPoints = timePoints.map((time, index) => ({ x: time, y: Number(materialsMotionData.frames[index].tip_y) }));
     const thetaTargetPoints = timePoints.map((time, index) => ({ x: time, y: Number(materialsMotionData.frames[index].theta0_desired_deg ?? materialsMotionData.frames[index].theta_tip_deg) }));
     const thetaActualPoints = timePoints.map((time, index) => ({ x: time, y: Number(materialsMotionData.frames[index].theta_tip_deg) }));
-    const momentPoints = timePoints.map((time, index) => ({ x: time, y: Number(materialsMotionData.frames[index].moment_magnitude || 0) }));
+    const momentPoints = timePoints.map((time, index) => ({ x: time, y: Number(materialsMotionData.frames[index].base_net_moment || 0) }));
 
     drawMaterialsTrendFrame(materialsYTrendGrid, materialsYTrendAxes, materialsYTrendPlot, materialsTrendBounds.time, materialsTrendBounds.y, "y / L");
     drawMaterialsTrendFrame(materialsThetaTrendGrid, materialsThetaTrendAxes, materialsThetaTrendPlot, materialsTrendBounds.time, materialsTrendBounds.theta, "\u03b80 (\u00b0)");
-    drawMaterialsTrendFrame(materialsMomentTrendGrid, materialsMomentTrendAxes, materialsMomentTrendPlot, materialsTrendBounds.time, materialsTrendBounds.moment, "M (N\u00b7m)");
+    drawMaterialsTrendFrame(materialsMomentTrendGrid, materialsMomentTrendAxes, materialsMomentTrendPlot, materialsTrendBounds.time, materialsTrendBounds.moment, "M_net (N\u00b7m)");
 
     if (materialsYTrendTarget) {
       materialsYTrendTarget.setAttribute("d", buildMaterialsTrendPath(yTargetPoints, materialsTrendBounds.time, materialsTrendBounds.y, materialsYTrendPlot));
@@ -2110,8 +2110,8 @@
       materialsMomentTrendPoint,
       null,
       timeValue,
-      Number(frame.moment_magnitude || 0),
-      Number(frame.moment_magnitude || 0),
+      Number(frame.base_net_moment || 0),
+      Number(frame.base_net_moment || 0),
     );
   }
 
@@ -2345,7 +2345,7 @@
     }
     if (materialsForceMoment) {
       if (frame.exact_force_moment_solved) {
-        materialsForceMoment.textContent = `|F| ${Number(frame.force_magnitude || 0).toFixed(4)} N / |M| ${Number(frame.moment_magnitude || 0).toFixed(5)} N*m`;
+        materialsForceMoment.textContent = `|F| ${Number(frame.force_magnitude || 0).toFixed(4)} N / |M_net| ${Number(frame.base_net_moment_magnitude || 0).toFixed(5)} N*m`;
       } else {
         materialsForceMoment.textContent = "Force/moment solve pending";
       }
