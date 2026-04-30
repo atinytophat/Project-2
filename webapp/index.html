@@ -42,7 +42,7 @@
                   </div>
                   <div class="atlas-legend-item">
                     <span class="legend-swatch legend-point"></span>
-                    <span>Selected theta0</span>
+                    <span>Selected θ0</span>
                   </div>
                 </div>
                 <svg id="atlasPlot" class="atlas-plot" viewBox="0 0 720 520" role="img" aria-label="Section 2 interactive atlas plot">
@@ -143,11 +143,11 @@
                       <h3>Selected end point</h3>
                       <dl class="summary-list">
                         <div class="summary-row">
-                          <dt>theta0 max</dt>
+                          <dt>θ0 max</dt>
                           <dd id="thetaMaxRad">0.00 deg</dd>
                         </div>
                         <div class="summary-row">
-                          <dt>theta0 selected</dt>
+                          <dt>θ0 selected</dt>
                           <dd id="thetaSelectedDeg">0.00 deg</dd>
                         </div>
                         <div class="summary-row">
@@ -167,7 +167,7 @@
 
                       <label class="control-block" for="thetaAllowableSlider">
                         <span class="control-label-row">
-                          <span>theta0 (deg)</span>
+                          <span>θ0 (deg)</span>
                           <input id="thetaAllowableInput" class="value-input" type="number" min="0" max="45.0" step="0.1" value="0.0" />
                         </span>
                         <input id="thetaAllowableSlider" type="range" min="0" max="45.0" step="0.1" value="0.0" />
@@ -371,9 +371,9 @@
 
             <article class="content-card mechanism-trend-card">
               <div class="card-kicker">Tip comparison</div>
-              <h3>theta0 vs crank angle</h3>
+              <h3>θ0 vs crank angle</h3>
               <div class="mechanism-trend-wrap">
-                <svg id="mechanismXTrendPlot" class="mechanism-trend-plot" viewBox="0 0 420 240" role="img" aria-label="Tip angle theta0 over crank angle for FEA and PRB">
+                <svg id="mechanismXTrendPlot" class="mechanism-trend-plot" viewBox="0 0 420 240" role="img" aria-label="Tip angle θ0 over crank angle for FEA and PRB">
                   <rect x="0" y="0" width="420" height="240" fill="transparent"></rect>
                   <g id="mechanismXTrendGrid"></g>
                   <g id="mechanismXTrendAxes"></g>
@@ -422,7 +422,7 @@
                 <dd id="mechanismKbar">-</dd>
               </div>
               <div class="summary-row">
-                <dt>theta1 / theta2 / theta3</dt>
+                <dt>θ1 / θ2 / θ3</dt>
                 <dd id="mechanismThetas">-</dd>
               </div>
               <div class="summary-row">
@@ -510,7 +510,7 @@
 
               <article class="content-card materials-trend-card">
                 <div class="materials-trend-wrap">
-                  <svg id="materialsThetaTrendPlot" class="materials-trend-plot" viewBox="0 0 420 180" role="img" aria-label="Medical theta0 over time">
+                  <svg id="materialsThetaTrendPlot" class="materials-trend-plot" viewBox="0 0 420 180" role="img" aria-label="Medical θ0 over time">
                     <rect x="0" y="0" width="420" height="180" fill="transparent"></rect>
                     <g id="materialsThetaTrendGrid"></g>
                     <g id="materialsThetaTrendAxes"></g>
@@ -523,18 +523,6 @@
                 </div>
               </article>
 
-              <article class="content-card materials-trend-card">
-                <div class="materials-trend-wrap">
-                  <svg id="materialsDemandTrendPlot" class="materials-trend-plot" viewBox="0 0 420 180" role="img" aria-label="Equivalent PRB moment demand over time">
-                    <rect x="0" y="0" width="420" height="180" fill="transparent"></rect>
-                    <g id="materialsDemandTrendGrid"></g>
-                    <g id="materialsDemandTrendAxes"></g>
-                    <path id="materialsDemandTrendLine" class="materials-trend-line materials-trend-line-demand" d=""></path>
-                    <line id="materialsDemandTrendCursor" class="materials-trend-cursor" x1="0" y1="0" x2="0" y2="0"></line>
-                    <circle id="materialsDemandTrendPoint" class="materials-trend-point materials-trend-point-demand" r="3.2"></circle>
-                  </svg>
-                </div>
-              </article>
             </div>
           </div>
 
@@ -620,28 +608,20 @@
                   <dd id="materialsTargetXY">-</dd>
                 </div>
                 <div class="summary-row">
-                  <dt>theta0 desired / actual</dt>
+                  <dt>θ0 desired / actual</dt>
                   <dd id="materialsThetaTip">-</dd>
                 </div>
                 <div class="summary-row">
-                  <dt>theta1 / theta2 / theta3</dt>
+                  <dt>θ1 / θ2 / θ3</dt>
                   <dd id="materialsThetas">-</dd>
                 </div>
                 <div class="summary-row">
-                  <dt>tau1 / tau2 / tau3</dt>
+                  <dt>τ1 / τ2 / τ3</dt>
                   <dd id="materialsTau">-</dd>
                 </div>
                 <div class="summary-row">
-                  <dt>spring energy</dt>
-                  <dd id="materialsEnergy">-</dd>
-                </div>
-                <div class="summary-row">
-                  <dt>eq. moment demand</dt>
-                  <dd id="materialsDemand">-</dd>
-                </div>
-                <div class="summary-row">
                   <dt>force / moment</dt>
-                  <dd id="materialsForceMoment">Equivalent PRB moment only</dd>
+                  <dd id="materialsForceMoment">-</dd>
                 </div>
                 <div class="summary-row">
                   <dt>tracking error</dt>
