@@ -480,6 +480,30 @@
     return niceNormalizedStep * magnitude;
   }
 
+  function isAbortError(error) {
+    return error && (error.name === "AbortError" || error.message === "The operation was aborted.");
+  }
+
+  async function requestJson(endpoint, options = {}) {
+    if (window.StaticPyBackend && typeof window.StaticPyBackend.request === "function") {
+      try {
+        return await window.StaticPyBackend.request(endpoint, options);
+      } catch (error) {
+        if (isAbortError(error)) {
+          throw error;
+        }
+        console.warn("Falling back to HTTP fetch for endpoint", endpoint, error);
+      }
+    }
+
+    const response = await fetch(endpoint, options);
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || `Request failed for ${endpoint}`);
+    }
+    return data;
+  }
+
   function renderSummaryRows(container, rows) {
     if (!container) {
       return;
@@ -689,12 +713,8 @@
       return Promise.resolve();
     }
 
-    return fetch(ATLAS_CONFIG.reportEndpoint)
-      .then((response) => response.json().then((data) => ({ ok: response.ok, data })))
-      .then(({ ok, data }) => {
-        if (!ok) {
-          throw new Error(data.error || "Report atlas request failed.");
-        }
+    return requestJson(ATLAS_CONFIG.reportEndpoint)
+      .then((data) => {
         reportAtlasCache = data;
         renderReportAtlas(reportAtlasCache);
       })
@@ -753,13 +773,8 @@
       `${ATLAS_CONFIG.endpoint}?kappa=${encodeURIComponent(kappa)}&phi_deg=${encodeURIComponent(phiDeg)}`
       + `&${buildBeamQuery()}`;
 
-    fetch(endpoint, { signal: atlasRequestController.signal })
-      .then((response) => response.json().then((data) => ({ ok: response.ok, data })))
-      .then(({ ok, data }) => {
-        if (!ok) {
-          throw new Error(data.error || "Atlas request failed.");
-        }
-
+    requestJson(endpoint, { signal: atlasRequestController.signal })
+      .then((data) => {
         const fullAValues = data.geometric_a_over_l;
         const fullBValues = data.geometric_b_over_l;
         const allowableAValues = data.allowable_a_over_l;
@@ -781,7 +796,7 @@
         updateAllowableLoadsPanel();
       })
       .catch((error) => {
-        if (error.name === "AbortError") {
+        if (isAbortError(error)) {
           return;
         }
         thetaMaxRad.textContent = "Unavailable";
@@ -817,13 +832,8 @@
       `/api/atlas-loads?kappa=${encodeURIComponent(kappa)}&phi_deg=${encodeURIComponent(phiDeg)}`
       + `&theta0_deg=${encodeURIComponent(theta0Deg)}&${buildBeamQuery()}`;
 
-    fetch(endpoint, { signal: allowableLoadRequestController.signal })
-      .then((response) => response.json().then((data) => ({ ok: response.ok, data })))
-      .then(({ ok, data }) => {
-        if (!ok) {
-          throw new Error(data.error || "Atlas loads request failed.");
-        }
-
+    requestJson(endpoint, { signal: allowableLoadRequestController.signal })
+      .then((data) => {
         const thetaMax = Number(data.limits.theta0_limit_deg);
         thetaAllowableSlider.max = thetaMax.toFixed(1);
         thetaAllowableInput.max = thetaMax.toFixed(1);
@@ -846,7 +856,7 @@
         }
       })
       .catch((error) => {
-        if (error.name === "AbortError") {
+        if (isAbortError(error)) {
           return;
         }
         allowableForce.textContent = "Unavailable";
@@ -1491,13 +1501,8 @@
       return;
     }
 
-    fetch(PRB_CONFIG.endpoint)
-      .then((response) => response.json().then((data) => ({ ok: response.ok, data })))
-      .then(({ ok, data }) => {
-        if (!ok) {
-          throw new Error(data.error || "Section 4 workspace request failed.");
-        }
-
+    requestJson(PRB_CONFIG.endpoint)
+      .then((data) => {
         prbWorkspaceData = data;
         if (prbParameterSource) {
           prbParameterSource.textContent = String(data.parameter_source);
@@ -2210,14 +2215,10 @@
       return;
     }
 
-    fetch(endpoint)
-      .then((response) => response.json().then((data) => ({ ok: response.ok, data })))
-      .then(({ ok, data }) => {
+    requestJson(endpoint)
+      .then((data) => {
         if (requestSequence !== materialsRequestSequence) {
           return;
-        }
-        if (!ok) {
-          throw new Error(data.error || "Medical experiment request failed.");
         }
 
         materialsExperimentCache = data;
@@ -2825,13 +2826,8 @@
       return;
     }
 
-    fetch(MECHANISM_CONFIG.endpoint)
-      .then((response) => response.json().then((data) => ({ ok: response.ok, data })))
-      .then(({ ok, data }) => {
-        if (!ok) {
-          throw new Error(data.error || "Section 520 overlay request failed.");
-        }
-
+    requestJson(MECHANISM_CONFIG.endpoint)
+      .then((data) => {
         mechanismOverlayData = data;
         mechanismBounds = buildMechanismBounds(data);
         mechanismTrendBounds = buildMechanismTrendBounds(data);
@@ -2948,6 +2944,11 @@
     });
   }
 
+  if (window.StaticPyBackend && typeof window.StaticPyBackend.prime === "function") {
+    window.StaticPyBackend.prime().catch((error) => {
+      console.error("Unable to initialize the in-browser Python backend.", error);
+    });
+  }
   initializeAtlasPanel();
   setActiveTab("atlas");
 }());
