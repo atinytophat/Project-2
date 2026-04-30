@@ -38,8 +38,8 @@ def fit_section46_stiffness(kbar_samples: np.ndarray) -> np.ndarray:
 
 
 def plot_section46(
-    theta0_values: np.ndarray,
     theta_prb_samples: np.ndarray,
+    torque_samples: np.ndarray,
     kbar: np.ndarray,
     gammas: np.ndarray,
 ) -> None:
@@ -50,11 +50,17 @@ def plot_section46(
     fit_labels = [r"fit of $\tau_1$", r"fit of $\tau_2$", r"fit of $\tau_3$"]
 
     for idx in range(3):
-        ax.plot(theta_prb_samples[idx], theta0_values, "o", markersize=3.5, color=colors[idx], label=labels[idx])
-        ax.plot(theta0_values / kbar[idx], theta0_values, "-", linewidth=1.8, color=colors[idx], label=fit_labels[idx])
+        theta_series = theta_prb_samples[idx]
+        tau_series = torque_samples[idx]
+        sort_index = np.argsort(theta_series)
+        theta_sorted = theta_series[sort_index]
+        theta_fit = np.linspace(float(theta_sorted[0]), float(theta_sorted[-1]), 200)
+
+        ax.plot(theta_series, tau_series, "o", markersize=3.5, color=colors[idx], label=labels[idx])
+        ax.plot(theta_fit, kbar[idx] * theta_fit, "-", linewidth=1.8, color=colors[idx], label=fit_labels[idx])
 
     ax.set_xlabel(r"$\Theta_i$")
-    ax.set_ylabel(r"$\theta_0$")
+    ax.set_ylabel(r"$\tau_i$")
     ax.set_title("Section 4.6 Pure-Force Fit")
     ax.grid(True, alpha=0.25)
     ax.legend(fontsize=9)
@@ -81,6 +87,7 @@ def main() -> None:
     gammas = get_gammas()
     theta0_values, theta_prb_samples, kbar_samples = pure_force_theta_samples(gammas, num_theta_samples)
     kbar = fit_section46_stiffness(kbar_samples)
+    torque_samples = theta_prb_samples * kbar_samples
 
     print("Section 4.6 pure-force fit")
     print(f"gammas = [{gammas[0]:.2f} {gammas[1]:.2f} {gammas[2]:.2f} {gammas[3]:.2f}]")
@@ -88,7 +95,7 @@ def main() -> None:
     print(f"k2 = {kbar[1]:.5f}")
     print(f"k3 = {kbar[2]:.5f}")
 
-    plot_section46(theta0_values, theta_prb_samples, kbar, gammas)
+    plot_section46(theta_prb_samples, torque_samples, kbar, gammas)
 
 
 if __name__ == "__main__":

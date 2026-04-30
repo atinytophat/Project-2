@@ -875,6 +875,16 @@ def get_section4_workspace_payload() -> dict[str, object]:
                 [float(value) for value in force_theta_prb_samples[row_index, :force_sample_count]]
                 for row_index in range(3)
             ],
+            "torque": [
+                [
+                    float(value)
+                    for value in (
+                        force_theta_prb_samples[row_index, :force_sample_count]
+                        * force_kbar_samples[row_index, :force_sample_count]
+                    )
+                ]
+                for row_index in range(3)
+            ],
             "k1": [float(value) for value in force_kbar_samples[0, :force_sample_count]],
             "k2": [float(value) for value in force_kbar_samples[1, :force_sample_count]],
             "k3": [float(value) for value in force_kbar_samples[2, :force_sample_count]],

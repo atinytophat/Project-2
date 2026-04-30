@@ -1270,7 +1270,7 @@
 
     const isAverageMode = modeKey === "average";
     const data = isAverageMode ? prbWorkspaceData.average : prbWorkspaceData[`${modeKey}_fit`];
-    if (!isAverageMode) {
+    if (modeKey === "moment") {
       const theta0Rad = data.theta0_rad || [];
       const thetaPrb = data.theta_prb || [];
       const fitK = data.fit_k || [];
@@ -1295,6 +1295,49 @@
         const fitX = theta0Rad.map((value) => Number(value) / Number(fitK[index]));
         prbSeries.appendChild(createSvgNode("path", {
           d: buildPrbPath(fitX, theta0Rad, bounds),
+          class: "prb-line",
+          stroke: PRB_SERIES_COLORS[index],
+        }));
+      });
+
+      buildPrbLegend([
+        { label: "actual Theta1 / fit theta0-k1", color: PRB_SERIES_COLORS[0] },
+        { label: "actual Theta2 / fit theta0-k2", color: PRB_SERIES_COLORS[1] },
+        { label: "actual Theta3 / fit theta0-k3", color: PRB_SERIES_COLORS[2] },
+      ]);
+      return;
+    }
+
+    if (modeKey === "force") {
+      const thetaPrb = data.theta_prb || [];
+      const torque = data.torque || [];
+      const fitK = data.fit_k || [];
+      const xValues = thetaPrb.flat();
+      const yValues = torque;
+      const bounds = buildPrbBounds(xValues, yValues);
+      drawPrbChartFrame(bounds, "Theta_i (rad)", "tau_i");
+
+      thetaPrb.forEach((series, index) => {
+        const torqueSeries = torque[index] || [];
+        const pointNodes = series.map((value, pointIndex) => createSvgNode("circle", {
+          cx: prbMapX(Number(value), bounds),
+          cy: prbMapY(Number(torqueSeries[pointIndex]), bounds),
+          r: 2.3,
+          class: "prb-marker",
+          fill: PRB_SERIES_COLORS[index],
+          opacity: "0.78",
+        }));
+        pointNodes.forEach((node) => prbSeries.appendChild(node));
+
+        const thetaSorted = [...series].map(Number).sort((leftValue, rightValue) => leftValue - rightValue);
+        const thetaMin = thetaSorted[0];
+        const thetaMax = thetaSorted[thetaSorted.length - 1];
+        const fitX = Array.from({ length: 200 }, (_, pointIndex) => (
+          thetaMin + ((thetaMax - thetaMin) * pointIndex) / 199
+        ));
+        const fitY = fitX.map((value) => Number(fitK[index]) * Number(value));
+        prbSeries.appendChild(createSvgNode("path", {
+          d: buildPrbPath(fitX, fitY, bounds),
           class: "prb-line",
           stroke: PRB_SERIES_COLORS[index],
         }));
