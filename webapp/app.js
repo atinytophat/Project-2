@@ -182,7 +182,6 @@
   const mechanismAValue = document.getElementById("mechanismAValue");
   const mechanismErrors = document.getElementById("mechanismErrors");
   const mechanismLoadValue = document.getElementById("mechanismLoadValue");
-  const mechanismResidual = document.getElementById("mechanismResidual");
   const materialsPlot = document.getElementById("materialsPlot");
   const materialsGrid = document.getElementById("materialsGrid");
   const materialsAxes = document.getElementById("materialsAxes");
@@ -204,6 +203,12 @@
   const materialsThetaTrendCursor = document.getElementById("materialsThetaTrendCursor");
   const materialsThetaTrendPointTarget = document.getElementById("materialsThetaTrendPointTarget");
   const materialsThetaTrendPointActual = document.getElementById("materialsThetaTrendPointActual");
+  const materialsMomentTrendPlot = document.getElementById("materialsMomentTrendPlot");
+  const materialsMomentTrendGrid = document.getElementById("materialsMomentTrendGrid");
+  const materialsMomentTrendAxes = document.getElementById("materialsMomentTrendAxes");
+  const materialsMomentTrendLine = document.getElementById("materialsMomentTrendLine");
+  const materialsMomentTrendCursor = document.getElementById("materialsMomentTrendCursor");
+  const materialsMomentTrendPoint = document.getElementById("materialsMomentTrendPoint");
   const materialsExperimentTitle = document.getElementById("materialsExperimentTitle");
   const materialsSliderLabel = document.getElementById("materialsSliderLabel");
   const materialsFrameSlider = document.getElementById("materialsFrameSlider");
@@ -304,6 +309,10 @@
     return Number(value) * 180 / Math.PI;
   }
 
+  function formatDegrees(value, digits = 2) {
+    return `${Number(value).toFixed(digits)}\u00b0`;
+  }
+
   function wrapAngleDegrees(value) {
     const wrappedValue = Number(value) % 360;
     return wrappedValue < 0 ? wrappedValue + 360 : wrappedValue;
@@ -330,6 +339,33 @@
   function angleDistanceDegrees(leftValue, rightValue) {
     const wrappedDelta = Math.abs(wrapAngleDegrees(leftValue) - wrapAngleDegrees(rightValue));
     return Math.min(wrappedDelta, 360 - wrappedDelta);
+  }
+
+  function applyUiNotationLabels() {
+    const setText = (selector, text) => {
+      const node = document.querySelector(selector);
+      if (node) {
+        node.textContent = text;
+      }
+    };
+
+    setText('label[for="phiSlider"] .control-label-row span:first-child', 'Phi (°)');
+    setText('#panel-atlas [data-detail-panel="theta"] .summary-row:nth-of-type(1) dt', 'θ0 max');
+    setText('#panel-atlas [data-detail-panel="theta"] .summary-row:nth-of-type(2) dt', 'θ0 selected');
+    setText('label[for="thetaAllowableSlider"] .control-label-row span:first-child', 'θ0 (°)');
+    setText('#atlasReportView .summary-row:nth-of-type(2) dd', '9° to 171°');
+    setText('#panel-mechanism .mechanism-trend-card:nth-of-type(2) h3', 'θ0 vs crank angle');
+    setText('#panel-mechanism .mechanism-summary-list .summary-row:nth-of-type(3) dt', 'θ1 / θ2 / θ3');
+    setText('#panel-materials .summary-row:nth-of-type(4) dt', 'θ0 desired / actual');
+    setText('#panel-materials .summary-row:nth-of-type(5) dt', 'θ1 / θ2 / θ3');
+    setText('#panel-materials .summary-row:nth-of-type(6) dt', 'τ1 / τ2 / τ3');
+
+    if (mechanismXTrendPlot) {
+      mechanismXTrendPlot.setAttribute('aria-label', 'Tip angle θ0 over crank angle for FEA and PRB');
+    }
+    if (materialsThetaTrendPlot) {
+      materialsThetaTrendPlot.setAttribute('aria-label', 'Medical θ0 over time');
+    }
   }
 
   function getPositiveNumber(inputElement, fallbackValue) {
@@ -980,7 +1016,7 @@
         const thetaMaxDeg = Number(
           data.theta0_max_deg !== undefined ? data.theta0_max_deg : radiansToDegrees(data.theta0_max_rad),
         );
-        thetaMaxRad.textContent = `${thetaMaxDeg.toFixed(2)} deg`;
+        thetaMaxRad.textContent = formatDegrees(thetaMaxDeg);
         startPoint.textContent = `(${startA.toFixed(3)}, ${startB.toFixed(3)})`;
         endPoint.textContent = `(${endA.toFixed(3)}, ${endB.toFixed(3)})`;
 
@@ -1040,7 +1076,7 @@
         allowableAOverL.textContent = Number(data.state.a_over_l).toFixed(3);
         allowableBOverL.textContent = Number(data.state.b_over_l).toFixed(3);
         if (thetaSelectedDeg) {
-          thetaSelectedDeg.textContent = `${Number(data.state.theta0_deg).toFixed(2)} deg`;
+          thetaSelectedDeg.textContent = formatDegrees(Number(data.state.theta0_deg));
         }
         endPoint.textContent = `(${Number(data.state.a_over_l).toFixed(3)}, ${Number(data.state.b_over_l).toFixed(3)})`;
         if (atlasSelectedPoint) {
@@ -1409,7 +1445,7 @@
         ["moment samples", String(prbWorkspaceData.search.moment_samples)],
         ["force samples", String(prbWorkspaceData.search.force_samples)],
         ["force fit fraction", prbWorkspaceData.search.force_fit_fraction.toFixed(2)],
-        ["θ stress limit", `${prbWorkspaceData.search.theta_stress_limit_deg.toFixed(2)} deg`],
+        ["θ stress limit", formatDegrees(prbWorkspaceData.search.theta_stress_limit_deg)],
         ["objective", prbWorkspaceData.search.objective.toExponential(3)],
       ]);
       renderPrbSearchPlot();
@@ -1424,7 +1460,7 @@
       }
       renderSummaryRows(prbStageSummary, [
         ["sample count", String(prbWorkspaceData.moment_fit.theta_deg.length)],
-        ["θ max", `${Math.max(...prbWorkspaceData.moment_fit.theta_deg).toFixed(2)} deg`],
+        ["θ max", formatDegrees(Math.max(...prbWorkspaceData.moment_fit.theta_deg))],
         ["k1", prbWorkspaceData.moment_fit.fit_k[0].toFixed(3)],
         ["k2", prbWorkspaceData.moment_fit.fit_k[1].toFixed(3)],
         ["k3", prbWorkspaceData.moment_fit.fit_k[2].toFixed(3)],
@@ -1441,7 +1477,7 @@
       }
       renderSummaryRows(prbStageSummary, [
         ["sample count", String(prbWorkspaceData.force_fit.theta_deg.length)],
-        ["θ max", `${Math.max(...prbWorkspaceData.force_fit.theta_deg).toFixed(2)} deg`],
+        ["θ max", formatDegrees(Math.max(...prbWorkspaceData.force_fit.theta_deg))],
         ["k1", prbWorkspaceData.force_fit.fit_k[0].toFixed(3)],
         ["k2", prbWorkspaceData.force_fit.fit_k[1].toFixed(3)],
         ["k3", prbWorkspaceData.force_fit.fit_k[2].toFixed(3)],
@@ -1565,7 +1601,7 @@
       })).textContent = previewGroup.labels[index];
       prbAnnotations.appendChild(createSvgNode("text", {
         x: panelLeft + 10, y: panelTop + 28, class: "prb-output-label",
-      })).textContent = `tip ${Number(caseData.max_tip_error_pct).toFixed(2)}% | slope ${Number(caseData.max_slope_error_deg).toFixed(2)} deg`;
+      })).textContent = `tip ${Number(caseData.max_tip_error_pct).toFixed(2)}% | slope ${formatDegrees(Number(caseData.max_slope_error_deg))}`;
 
       if (col === 0) {
         prbAnnotations.appendChild(createSvgNode("text", {
@@ -1636,9 +1672,9 @@
       ["view", previewGroup.subtitle],
       ["case count", String(previewGroup.cases.length)],
       ["worst tip error", `${Number(worstCase.case.max_tip_error_pct).toFixed(2)}%`],
-      ["worst slope error", `${Number(worstCase.case.max_slope_error_deg).toFixed(2)} deg`],
+      ["worst slope error", formatDegrees(Number(worstCase.case.max_slope_error_deg))],
       ["worst case", worstCase.label],
-      ["θ0 at worst tip", `${Number(worstCase.case.theta0_at_max_tip_error_deg).toFixed(2)} deg`],
+      ["θ0 at worst tip", formatDegrees(Number(worstCase.case.theta0_at_max_tip_error_deg))],
     ]);
   }
 
@@ -1874,6 +1910,7 @@
     const yActual = data.frames.map((frame) => Number(frame.tip_y));
     const thetaDesired = data.frames.map((frame) => Number(frame.theta0_desired_deg ?? frame.theta_tip_deg));
     const thetaActual = data.frames.map((frame) => Number(frame.theta_tip_deg));
+    const momentValues = data.frames.map((frame) => Number(frame.moment_magnitude || 0));
 
     return {
       time: {
@@ -1882,6 +1919,7 @@
       },
       y: computeRangeBounds([...yDesired, ...yActual], { includeZero: true }),
       theta: computeRangeBounds([...thetaDesired, ...thetaActual], { includeZero: true }),
+      moment: computeRangeBounds(momentValues, { includeZero: true }),
     };
   }
 
@@ -1981,9 +2019,11 @@
     const yActualPoints = timePoints.map((time, index) => ({ x: time, y: Number(materialsMotionData.frames[index].tip_y) }));
     const thetaTargetPoints = timePoints.map((time, index) => ({ x: time, y: Number(materialsMotionData.frames[index].theta0_desired_deg ?? materialsMotionData.frames[index].theta_tip_deg) }));
     const thetaActualPoints = timePoints.map((time, index) => ({ x: time, y: Number(materialsMotionData.frames[index].theta_tip_deg) }));
+    const momentPoints = timePoints.map((time, index) => ({ x: time, y: Number(materialsMotionData.frames[index].moment_magnitude || 0) }));
 
     drawMaterialsTrendFrame(materialsYTrendGrid, materialsYTrendAxes, materialsYTrendPlot, materialsTrendBounds.time, materialsTrendBounds.y, "y / L");
-    drawMaterialsTrendFrame(materialsThetaTrendGrid, materialsThetaTrendAxes, materialsThetaTrendPlot, materialsTrendBounds.time, materialsTrendBounds.theta, "\u03b80 (deg)");
+    drawMaterialsTrendFrame(materialsThetaTrendGrid, materialsThetaTrendAxes, materialsThetaTrendPlot, materialsTrendBounds.time, materialsTrendBounds.theta, "\u03b80 (\u00b0)");
+    drawMaterialsTrendFrame(materialsMomentTrendGrid, materialsMomentTrendAxes, materialsMomentTrendPlot, materialsTrendBounds.time, materialsTrendBounds.moment, "M (N\u00b7m)");
 
     if (materialsYTrendTarget) {
       materialsYTrendTarget.setAttribute("d", buildMaterialsTrendPath(yTargetPoints, materialsTrendBounds.time, materialsTrendBounds.y, materialsYTrendPlot));
@@ -1996,6 +2036,9 @@
     }
     if (materialsThetaTrendActual) {
       materialsThetaTrendActual.setAttribute("d", buildMaterialsTrendPath(thetaActualPoints, materialsTrendBounds.time, materialsTrendBounds.theta, materialsThetaTrendPlot));
+    }
+    if (materialsMomentTrendLine) {
+      materialsMomentTrendLine.setAttribute("d", buildMaterialsTrendPath(momentPoints, materialsTrendBounds.time, materialsTrendBounds.moment, materialsMomentTrendPlot));
     }
   }
 
@@ -2058,6 +2101,17 @@
       timeValue,
       Number(frame.theta0_desired_deg ?? frame.theta_tip_deg),
       Number(frame.theta_tip_deg),
+    );
+    updateSelection(
+      materialsMomentTrendPlot,
+      materialsTrendBounds.time,
+      materialsTrendBounds.moment,
+      materialsMomentTrendCursor,
+      materialsMomentTrendPoint,
+      null,
+      timeValue,
+      Number(frame.moment_magnitude || 0),
+      Number(frame.moment_magnitude || 0),
     );
   }
 
@@ -2277,13 +2331,13 @@
     }
     if (materialsThetaTip) {
       if (Number.isFinite(Number(frame.theta0_desired_deg))) {
-        materialsThetaTip.textContent = `${Number(frame.theta0_desired_deg).toFixed(2)} / ${Number(frame.theta_tip_deg).toFixed(2)} deg`;
+        materialsThetaTip.textContent = `${formatDegrees(Number(frame.theta0_desired_deg))} / ${formatDegrees(Number(frame.theta_tip_deg))}`;
       } else {
-        materialsThetaTip.textContent = `${Number(frame.theta_tip_deg).toFixed(2)} deg`;
+        materialsThetaTip.textContent = formatDegrees(Number(frame.theta_tip_deg));
       }
     }
     if (materialsThetas) {
-      materialsThetas.textContent = frame.theta.map((value) => `${(Number(value) * 180 / Math.PI).toFixed(1)} deg`).join(" / ");
+      materialsThetas.textContent = frame.theta.map((value) => formatDegrees(Number(value) * 180 / Math.PI, 1)).join(" / ");
     }
     if (materialsTau) {
       const tauValues = Array.isArray(frame.tau) ? frame.tau : [0, 0, 0];
@@ -2682,7 +2736,7 @@
 
     axesNode.appendChild(createSvgNode("text", {
       x: right - 6, y: bottom - 8, "text-anchor": "end", class: "mechanism-trend-axis-label",
-    })).textContent = "crank angle (deg)";
+    })).textContent = "crank angle (°)";
 
     const yAxisLabel = createSvgNode("text", {
       x: left + 18, y: top + 16, class: "mechanism-trend-axis-label",
@@ -2727,7 +2781,7 @@
       mechanismXTrendAxes,
       mechanismXTrendPlot,
       mechanismTrendBounds.thetaBounds,
-      "\u03b80 (deg)",
+      "\u03b80 (\u00b0)",
     );
 
     if (mechanismYTrendFEA) {
@@ -3003,15 +3057,14 @@
     mechanismAngleSlider.value = displayAngle.toFixed(1);
     mechanismAngleInput.value = displayAngle.toFixed(1);
     if (mechanismFrameAngles) {
-      mechanismFrameAngles.textContent = `${feaAngleDeg.toFixed(2)} / ${prbAngleDeg.toFixed(2)} deg`;
+      mechanismFrameAngles.textContent = `${formatDegrees(feaAngleDeg)} / ${formatDegrees(prbAngleDeg)}`;
     }
-    mechanismThetas.textContent = thetaRow.map((value) => `${(Number(value) * 180 / Math.PI).toFixed(1)} deg`).join(" / ");
-    mechanismTipSlope.textContent = `${feaTipDeg.toFixed(2)} / ${prbTipDeg.toFixed(2)} deg`;
+    mechanismThetas.textContent = thetaRow.map((value) => formatDegrees(Number(value) * 180 / Math.PI, 1)).join(" / ");
+    mechanismTipSlope.textContent = `${formatDegrees(feaTipDeg)} / ${formatDegrees(prbTipDeg)}`;
     mechanismQValue.textContent = `${formatPair(feaQ)} / ${formatPair(qPoint)}`;
     mechanismAValue.textContent = `${formatPair(feaA)} / ${formatPair(aPoint)}`;
     mechanismErrors.textContent = `${(100 * aError).toFixed(2)} / ${(100 * qError).toFixed(2)}`;
     mechanismLoadValue.textContent = `${Number(loadRow[0]).toFixed(3)} / ${Number(loadRow[1]).toFixed(3)} / ${Number(loadRow[2]).toFixed(3)}`;
-    mechanismResidual.textContent = Number(prbMotion.residual_norm[prbIndex]).toExponential(2);
     updateMechanismTrendSelection(
       feaAngleDeg,
       prbAngleDeg,
@@ -3188,6 +3241,7 @@
     });
   }
 
+  applyUiNotationLabels();
   initializeAtlasPanel();
   setActiveTab("atlas");
 }());

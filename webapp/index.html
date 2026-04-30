@@ -91,7 +91,7 @@
 
                     <label class="control-block" for="phiSlider">
                       <span class="control-label-row">
-                        <span>Phi (deg)</span>
+                        <span>Phi (&deg;)</span>
                         <input id="phiInput" class="value-input" type="number" min="1" max="179" step="1" value="90.0" />
                       </span>
                       <input id="phiSlider" type="range" min="1" max="179" step="1" value="90" />
@@ -144,11 +144,11 @@
                       <dl class="summary-list">
                         <div class="summary-row">
                           <dt>θ0 max</dt>
-                          <dd id="thetaMaxRad">0.00 deg</dd>
+                          <dd id="thetaMaxRad">0.00&deg;</dd>
                         </div>
                         <div class="summary-row">
                           <dt>θ0 selected</dt>
-                          <dd id="thetaSelectedDeg">0.00 deg</dd>
+                          <dd id="thetaSelectedDeg">0.00&deg;</dd>
                         </div>
                         <div class="summary-row">
                           <dt>Start point</dt>
@@ -167,7 +167,7 @@
 
                       <label class="control-block" for="thetaAllowableSlider">
                         <span class="control-label-row">
-                          <span>θ0 (deg)</span>
+                          <span>θ0 (&deg;)</span>
                           <input id="thetaAllowableInput" class="value-input" type="number" min="0" max="45.0" step="0.1" value="0.0" />
                         </span>
                         <input id="thetaAllowableSlider" type="range" min="0" max="45.0" step="0.1" value="0.0" />
@@ -208,7 +208,7 @@
                       </div>
                       <div class="summary-row">
                         <dt>Force angles</dt>
-                        <dd>9 deg to 171 deg</dd>
+                        <dd>9&deg; to 171&deg;</dd>
                       </div>
                     </dl>
                   </article>
@@ -394,7 +394,7 @@
 
             <label class="control-block" for="mechanismAngleSlider">
               <span class="control-label-row">
-                <span>Crank angle (deg)</span>
+                <span>Crank angle (&deg;)</span>
                 <input id="mechanismAngleInput" class="value-input" type="number" min="0" max="360" step="0.5" value="0.0" />
               </span>
               <input id="mechanismAngleSlider" type="range" min="0" max="360" step="0.5" value="0.0" />
@@ -444,10 +444,6 @@
               <div class="summary-row">
                 <dt>Fx / Fy / M</dt>
                 <dd id="mechanismLoadValue">-</dd>
-              </div>
-              <div class="summary-row">
-                <dt>residual norm</dt>
-                <dd id="mechanismResidual">-</dd>
               </div>
             </dl>
           </article>
@@ -519,6 +515,19 @@
                     <line id="materialsThetaTrendCursor" class="materials-trend-cursor" x1="0" y1="0" x2="0" y2="0"></line>
                     <circle id="materialsThetaTrendPointTarget" class="materials-trend-point materials-trend-point-target" r="3.2"></circle>
                     <circle id="materialsThetaTrendPointActual" class="materials-trend-point materials-trend-point-actual" r="3.2"></circle>
+                  </svg>
+                </div>
+              </article>
+
+              <article class="content-card materials-trend-card">
+                <div class="materials-trend-wrap">
+                  <svg id="materialsMomentTrendPlot" class="materials-trend-plot" viewBox="0 0 420 180" role="img" aria-label="Medical moment over time">
+                    <rect x="0" y="0" width="420" height="180" fill="transparent"></rect>
+                    <g id="materialsMomentTrendGrid"></g>
+                    <g id="materialsMomentTrendAxes"></g>
+                    <path id="materialsMomentTrendLine" class="materials-trend-line materials-trend-line-demand" d=""></path>
+                    <line id="materialsMomentTrendCursor" class="materials-trend-cursor" x1="0" y1="0" x2="0" y2="0"></line>
+                    <circle id="materialsMomentTrendPoint" class="materials-trend-point materials-trend-point-demand" r="3.2"></circle>
                   </svg>
                 </div>
               </article>
