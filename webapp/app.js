@@ -262,6 +262,7 @@
   let materialsJointPool = [];
   let materialsTargetPoint = null;
   let materialsTipPoint = null;
+  let activeZoomTarget = null;
 
   function createSvgNode(tagName, attrs) {
     const node = document.createElementNS("http://www.w3.org/2000/svg", tagName);
@@ -359,6 +360,72 @@
     if (materialsThetaTrendPlot) {
       materialsThetaTrendPlot.setAttribute('aria-label', 'Medical θ0 over time');
     }
+  }
+
+  function setPlotZoomState(target, isZoomed) {
+    if (!target) {
+      return;
+    }
+    target.classList.toggle("plot-zoomed", isZoomed);
+    const button = target.querySelector(".plot-zoom-button");
+    if (button) {
+      const label = target.dataset.zoomLabel || "graph";
+      button.textContent = isZoomed ? "Close" : "Zoom";
+      button.setAttribute("aria-label", `${isZoomed ? "Close" : "Zoom"} ${label}`);
+    }
+  }
+
+  function closeActivePlotZoom() {
+    if (!activeZoomTarget) {
+      return;
+    }
+    setPlotZoomState(activeZoomTarget, false);
+    activeZoomTarget = null;
+    document.body.classList.remove("plot-zoom-open");
+  }
+
+  function togglePlotZoom(target) {
+    if (!target) {
+      return;
+    }
+    const shouldOpen = !target.classList.contains("plot-zoomed");
+    if (activeZoomTarget && activeZoomTarget !== target) {
+      setPlotZoomState(activeZoomTarget, false);
+    }
+    activeZoomTarget = shouldOpen ? target : null;
+    setPlotZoomState(target, shouldOpen);
+    document.body.classList.toggle("plot-zoom-open", shouldOpen);
+  }
+
+  function ensurePlotZoomControls(root = document) {
+    const zoomTargets = root.querySelectorAll(
+      ".atlas-svg-wrap, .prb-svg-wrap, .mechanism-svg-wrap, .mechanism-trend-wrap, .materials-svg-wrap, .materials-trend-wrap, .report-panel",
+    );
+
+    zoomTargets.forEach((target) => {
+      if (target.dataset.zoomReady === "true") {
+        return;
+      }
+
+      const labelSource = target.querySelector("svg[aria-label]") || target.querySelector(".report-panel-title");
+      const zoomLabel = labelSource?.getAttribute?.("aria-label") || labelSource?.textContent?.trim() || "graph";
+
+      target.dataset.zoomReady = "true";
+      target.dataset.zoomLabel = zoomLabel;
+      target.classList.add("plot-zoom-target");
+
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "plot-zoom-button";
+      button.textContent = "Zoom";
+      button.setAttribute("aria-label", `Zoom ${zoomLabel}`);
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        togglePlotZoom(target);
+      });
+      target.appendChild(button);
+    });
   }
 
   function getPositiveNumber(inputElement, fallbackValue) {
@@ -923,6 +990,7 @@
     reportData.panels.forEach((panelData) => {
       atlasReportGrid.appendChild(buildReportPanelSvg(panelData));
     });
+    ensurePlotZoomControls(atlasReportGrid);
   }
 
   function setDetailMode(modeKey) {
@@ -956,6 +1024,7 @@
           errorCard.className = "report-panel";
           errorCard.textContent = "Unable to load report atlas.";
           atlasReportGrid.appendChild(errorCard);
+          ensurePlotZoomControls(atlasReportGrid);
         }
         console.error(error);
       });
@@ -3247,7 +3316,14 @@
     });
   }
 
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") {
+      closeActivePlotZoom();
+    }
+  });
+
   applyUiNotationLabels();
+  ensurePlotZoomControls();
   initializeAtlasPanel();
   setActiveTab("atlas");
 }());

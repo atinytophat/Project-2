@@ -1381,6 +1381,59 @@ body {
   margin-top: 14px;
 }
 
+body.plot-zoom-open::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.96);
+  z-index: 5000;
+}
+
+.plot-zoom-target {
+  position: relative;
+}
+
+.plot-zoom-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 6;
+  border: 1px solid rgba(34, 52, 78, 0.14);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--ink);
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.plot-zoomed {
+  position: fixed !important;
+  inset: 20px !important;
+  z-index: 5001 !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: none !important;
+  max-height: none !important;
+  padding: 16px !important;
+  border-radius: 20px !important;
+  border: 1px solid var(--line) !important;
+  background: #ffffff !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px;
+  overflow: hidden !important;
+}
+
+.plot-zoomed > svg,
+.plot-zoomed > .report-panel-svg {
+  width: 100% !important;
+  height: 100% !important;
+  flex: 1 1 auto !important;
+}
+
 @media (max-width: 1100px) {
   body {
     overflow: auto;
