@@ -1500,6 +1500,7 @@ body.plot-zoom-open::before {
 
 .plot-zoom-target {
   position: relative;
+  cursor: zoom-in;
 }
 
 .plot-zoom-button {
@@ -1539,6 +1540,7 @@ body.plot-zoom-open::before {
   flex-direction: column !important;
   gap: 10px;
   overflow: auto !important;
+  cursor: zoom-out;
 }
 
 .plot-zoomed > svg,

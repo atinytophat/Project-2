@@ -1423,7 +1423,20 @@ def section520_solve_configuration(
     previous_theta: np.ndarray | None,
 ) -> np.ndarray:
     guess_pool: list[np.ndarray] = []
-    for guess in (previous_theta, section520_initial_guess(crank_angle_rad), np.zeros(3, dtype=float)):
+    continuation_guesses: list[np.ndarray | None] = [previous_theta]
+    if previous_theta is not None:
+        previous_array = np.array(previous_theta, dtype=float)
+        continuation_guesses.extend(
+            [
+                previous_array + np.array([0.0, -0.01, 0.0], dtype=float),
+                previous_array + np.array([0.0, -0.05, 0.0], dtype=float),
+                previous_array + np.array([0.0, -0.10, 0.0], dtype=float),
+                previous_array + np.array([0.0, 0.01, 0.0], dtype=float),
+                previous_array + np.array([0.0, 0.05, 0.0], dtype=float),
+            ]
+        )
+
+    for guess in (*continuation_guesses, section520_initial_guess(crank_angle_rad), np.zeros(3, dtype=float)):
         if guess is None:
             continue
         guess_array = np.array(guess, dtype=float)
@@ -1432,6 +1445,9 @@ def section520_solve_configuration(
 
     best_result = None
     best_norm = math.inf
+    best_successful_theta: np.ndarray | None = None
+    best_successful_score = math.inf
+    previous_reference = None if previous_theta is None else np.array(previous_theta, dtype=float)
     for guess in guess_pool:
         result = least_squares(
             section520_residual,
@@ -1446,8 +1462,17 @@ def section520_solve_configuration(
         if residual_norm < best_norm:
             best_result = result
             best_norm = residual_norm
-        if result.success and residual_norm < 1.0e-9:
-            return np.array(result.x, dtype=float)
+        if result.success and residual_norm < 1.0e-8:
+            if previous_reference is None:
+                candidate_score = residual_norm
+            else:
+                candidate_score = float(np.linalg.norm(np.array(result.x, dtype=float) - previous_reference))
+            if candidate_score < best_successful_score:
+                best_successful_score = candidate_score
+                best_successful_theta = np.array(result.x, dtype=float)
+
+    if best_successful_theta is not None:
+        return best_successful_theta
 
     if best_result is None or best_norm > 1.0e-7:
         raise RuntimeError(

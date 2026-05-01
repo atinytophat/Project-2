@@ -48,7 +48,7 @@
     "#c17c1f", "#6a5acd", "#0f766e", "#d45d5d", "#43536e",
   ];
   const PRB_SERIES_COLORS = ["#0c8aa4", "#ef8c54", "#2f8f6d"];
-  const STATIC_VERSION = "20260501k";
+  const STATIC_VERSION = "20260501l";
   const MATERIAL_PRESETS = {
     pebax: {
       displayName: "PEBAX",
@@ -423,7 +423,7 @@
     return target.querySelector("svg, .report-panel-svg");
   }
 
-  function applyPlotZoomScale(target, scaleValue) {
+  function applyPlotZoomScale(target, scaleValue, originX = 0, originY = 0) {
     if (!target) {
       return;
     }
@@ -432,6 +432,7 @@
     target.dataset.zoomScale = String(clampedScale);
     if (visual) {
       visual.classList.add("plot-zoom-visual");
+      visual.style.transformOrigin = `${originX}px ${originY}px`;
       visual.style.transform = `scale(${clampedScale})`;
     }
   }
@@ -493,9 +494,12 @@
           togglePlotZoom(target);
         }
         event.preventDefault();
+        const rect = target.getBoundingClientRect();
+        const originX = event.clientX - rect.left + target.scrollLeft;
+        const originY = event.clientY - rect.top + target.scrollTop;
         const currentScale = Number(target.dataset.zoomScale || 1);
         const nextScale = event.deltaY < 0 ? currentScale + 0.2 : currentScale - 0.2;
-        applyPlotZoomScale(target, nextScale);
+        applyPlotZoomScale(target, nextScale, originX, originY);
       }, { passive: false });
 
       target.addEventListener("dblclick", (event) => {
