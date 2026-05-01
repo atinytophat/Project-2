@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Compliant Design Workspace</title>
-  <link rel="stylesheet" href="./styles.css?v=20260501g" />
+  <link rel="stylesheet" href="./styles.css?v=20260501h" />
 </head>
 <body>
   <div class="app-shell">
@@ -359,8 +359,10 @@
                 <div class="mechanism-component-tabs" role="tablist" aria-label="Top mechanism trend component">
                   <button id="mechanismTrendModeY" class="mechanism-component-tab active" type="button" data-mechanism-trend-mode="y" aria-selected="true">Qy</button>
                   <button id="mechanismTrendModeX" class="mechanism-component-tab" type="button" data-mechanism-trend-mode="x" aria-selected="false">Qx</button>
+                  <button id="mechanismTrendModeM" class="mechanism-component-tab" type="button" data-mechanism-trend-mode="m" aria-selected="false">|Q|</button>
                 </div>
               </div>
+              <div class="mechanism-trend-readout" id="mechanismTopTrendError">Q error: -</div>
               <div class="mechanism-trend-wrap">
                 <svg id="mechanismYTrendPlot" class="mechanism-trend-plot" viewBox="0 0 420 240" role="img" aria-label="Tip deflection component over crank angle for FEA and PRB">
                   <rect x="0" y="0" width="420" height="240" fill="transparent"></rect>
@@ -649,7 +651,7 @@
     </main>
   </div>
 
-  <script src="./py_backend.js?v=20260501g"></script>
-  <script src="./app.js?v=20260501g"></script>
+  <script src="./py_backend.js?v=20260501h"></script>
+  <script src="./app.js?v=20260501h"></script>
 </body>
 </html>

@@ -1101,6 +1101,20 @@ body {
   border-color: rgba(12, 138, 164, 0.28);
 }
 
+.mechanism-trend-readout {
+  align-self: flex-start;
+  margin-top: 6px;
+  margin-bottom: 8px;
+  padding: 5px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(67, 83, 110, 0.18);
+  background: #ffffff;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
 .mechanism-trend-wrap {
   flex: 1;
   min-height: 0;

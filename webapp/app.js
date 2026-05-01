@@ -48,7 +48,7 @@
     "#c17c1f", "#6a5acd", "#0f766e", "#d45d5d", "#43536e",
   ];
   const PRB_SERIES_COLORS = ["#0c8aa4", "#ef8c54", "#2f8f6d"];
-  const STATIC_VERSION = "20260501g";
+  const STATIC_VERSION = "20260501h";
   const MATERIAL_PRESETS = {
     pebax: {
       displayName: "PEBAX",
@@ -140,6 +140,7 @@
   const mechanismYTrendPointFEA = document.getElementById("mechanismYTrendPointFEA");
   const mechanismYTrendPointPRB = document.getElementById("mechanismYTrendPointPRB");
   const mechanismTopTrendTitle = document.getElementById("mechanismTopTrendTitle");
+  const mechanismTopTrendError = document.getElementById("mechanismTopTrendError");
   const mechanismTrendModeButtons = Array.from(document.querySelectorAll("[data-mechanism-trend-mode]"));
   const mechanismXTrendPlot = document.getElementById("mechanismXTrendPlot");
   const mechanismXTrendGrid = document.getElementById("mechanismXTrendGrid");
@@ -3033,7 +3034,7 @@
   }
 
   function setMechanismTopTrendMode(modeKey) {
-    mechanismTopTrendMode = modeKey === "x" ? "x" : "y";
+    mechanismTopTrendMode = ["x", "y", "m"].includes(modeKey) ? modeKey : "y";
     mechanismTrendModeButtons.forEach((button) => {
       const isActive = button.dataset.mechanismTrendMode === mechanismTopTrendMode;
       button.classList.toggle("active", isActive);
@@ -3042,7 +3043,9 @@
     if (mechanismTopTrendTitle) {
       mechanismTopTrendTitle.textContent = mechanismTopTrendMode === "x"
         ? "Qx vs crank angle"
-        : "Qy vs crank angle";
+        : mechanismTopTrendMode === "m"
+          ? "|Q| vs crank angle"
+          : "Qy vs crank angle";
     }
     if (mechanismOverlayData && mechanismTrendBounds) {
       renderMechanismTrendPlots();
@@ -3066,8 +3069,11 @@
           Number(prbQ[0]),
           Number(feaQ[1]),
           Number(prbQ[1]),
+          computePositionMagnitude(feaQ),
+          computePositionMagnitude(prbQ),
           computeFeaTipAngleDegrees(feaFlex),
           radiansToDegrees(mechanismOverlayData.prb_motion.theta[prbIndex].reduce((sum, value) => sum + Number(value), 0)),
+          100 * Math.hypot(Number(prbQ[0]) - Number(feaQ[0]), Number(prbQ[1]) - Number(feaQ[1])),
         );
       }
     }
@@ -3308,11 +3314,21 @@
       return;
     }
 
-    const trendKey = mechanismTopTrendMode === "x" ? "qx" : "qy";
+    const trendKey = mechanismTopTrendMode === "x"
+      ? "qx"
+      : mechanismTopTrendMode === "m"
+        ? "positionMagnitude"
+        : "qy";
     const trendBounds = mechanismTopTrendMode === "x"
       ? mechanismTrendBounds.qxBounds
-      : mechanismTrendBounds.qyBounds;
-    const trendLabel = mechanismTopTrendMode === "x" ? "Qx / l" : "Qy / l";
+      : mechanismTopTrendMode === "m"
+        ? mechanismTrendBounds.positionBounds
+        : mechanismTrendBounds.qyBounds;
+    const trendLabel = mechanismTopTrendMode === "x"
+      ? "Qx / l"
+      : mechanismTopTrendMode === "m"
+        ? "|Q| / l"
+        : "Qy / l";
     const feaPositionPoints = mechanismTrendBounds.feaFrames.map((frame) => ({
       angle: frame.angle,
       value: frame[trendKey],
@@ -3359,12 +3375,22 @@
     }
   }
 
-  function updateMechanismTrendSelection(feaAngleDeg, prbAngleDeg, feaQx, prbQx, feaQy, prbQy, feaTheta0Deg, prbTheta0Deg) {
+  function updateMechanismTrendSelection(feaAngleDeg, prbAngleDeg, feaQx, prbQx, feaQy, prbQy, feaQMagnitude, prbQMagnitude, feaTheta0Deg, prbTheta0Deg, qErrorPct = null) {
     const topBounds = mechanismTopTrendMode === "x"
       ? mechanismTrendBounds?.qxBounds
-      : mechanismTrendBounds?.qyBounds;
-    const feaTopValue = mechanismTopTrendMode === "x" ? feaQx : feaQy;
-    const prbTopValue = mechanismTopTrendMode === "x" ? prbQx : prbQy;
+      : mechanismTopTrendMode === "m"
+        ? mechanismTrendBounds?.positionBounds
+        : mechanismTrendBounds?.qyBounds;
+    const feaTopValue = mechanismTopTrendMode === "x"
+      ? feaQx
+      : mechanismTopTrendMode === "m"
+        ? feaQMagnitude
+        : feaQy;
+    const prbTopValue = mechanismTopTrendMode === "x"
+      ? prbQx
+      : mechanismTopTrendMode === "m"
+        ? prbQMagnitude
+        : prbQy;
     const updatePlotSelection = (plotElement, bounds, cursorNode, feaPointNode, prbPointNode, feaValue, prbValue) => {
       if (!plotElement || !bounds) {
         return;
@@ -3415,6 +3441,9 @@
       Number(feaTheta0Deg),
       Number(prbTheta0Deg),
     );
+    if (mechanismTopTrendError) {
+      mechanismTopTrendError.textContent = qErrorPct === null ? "Q error: -" : `Q error: ${Number(qErrorPct).toFixed(2)}%`;
+    }
   }
 
   function drawMechanismFrame() {
@@ -3600,6 +3629,8 @@
     const prbTipDeg = radiansToDegrees(thetaRow.reduce((sum, value) => sum + Number(value), 0));
     const aError = Math.hypot(Number(aPoint[0]) - Number(feaA[0]), Number(aPoint[1]) - Number(feaA[1]));
     const qError = Math.hypot(Number(qPoint[0]) - Number(feaQ[0]), Number(qPoint[1]) - Number(feaQ[1]));
+    const feaQMagnitude = computePositionMagnitude(feaQ);
+    const prbQMagnitude = computePositionMagnitude(qPoint);
 
     mechanismCurrentFrameIndex = feaIndex;
     mechanismCurrentAngleDeg = feaAngleDeg;
@@ -3666,8 +3697,11 @@
       Number(qPoint[0]),
       Number(feaQ[1]),
       Number(qPoint[1]),
+      feaQMagnitude,
+      prbQMagnitude,
       feaTipDeg,
       prbTipDeg,
+      100 * qError,
     );
     applyMechanismVisibility();
   }
