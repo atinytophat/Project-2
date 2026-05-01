@@ -268,6 +268,9 @@
   let materialsFyArrow = null;
   let materialsMomentArc = null;
   let materialsMomentHead = null;
+  let materialsFxLabel = null;
+  let materialsFyLabel = null;
+  let materialsMomentLabel = null;
   let activeZoomTarget = null;
 
   function createSvgNode(tagName, attrs) {
@@ -276,6 +279,18 @@
       node.setAttribute(key, String(value));
     });
     return node;
+  }
+
+  function ensureSvgTitle(node) {
+    if (!node) {
+      return null;
+    }
+    let titleNode = node.querySelector("title");
+    if (!titleNode) {
+      titleNode = document.createElementNS("http://www.w3.org/2000/svg", "title");
+      node.appendChild(titleNode);
+    }
+    return titleNode;
   }
 
   function ensureCirclePool(container, pool, count, attrsFactory) {
@@ -2460,6 +2475,39 @@
       fill: "none",
       d: "",
     });
+    materialsFxLabel = createSvgNode("text", {
+      class: "materials-axis-label",
+      fill: "#1f5c99",
+      "font-size": "12",
+      "font-weight": "800",
+      "text-anchor": "middle",
+      "dominant-baseline": "middle",
+      style: "cursor: help;",
+    });
+    materialsFxLabel.textContent = "Fx";
+    ensureSvgTitle(materialsFxLabel);
+    materialsFyLabel = createSvgNode("text", {
+      class: "materials-axis-label",
+      fill: "#2f8f6d",
+      "font-size": "12",
+      "font-weight": "800",
+      "text-anchor": "middle",
+      "dominant-baseline": "middle",
+      style: "cursor: help;",
+    });
+    materialsFyLabel.textContent = "Fy";
+    ensureSvgTitle(materialsFyLabel);
+    materialsMomentLabel = createSvgNode("text", {
+      class: "materials-axis-label",
+      fill: "#b15d85",
+      "font-size": "12",
+      "font-weight": "800",
+      "text-anchor": "middle",
+      "dominant-baseline": "middle",
+      style: "cursor: help;",
+    });
+    materialsMomentLabel.textContent = "M";
+    ensureSvgTitle(materialsMomentLabel);
 
     materialsDynamic.appendChild(materialsTargetPoint);
     materialsDynamic.appendChild(materialsTipPoint);
@@ -2467,6 +2515,9 @@
     materialsDynamic.appendChild(materialsFyArrow);
     materialsDynamic.appendChild(materialsMomentArc);
     materialsDynamic.appendChild(materialsMomentHead);
+    materialsDynamic.appendChild(materialsFxLabel);
+    materialsDynamic.appendChild(materialsFyLabel);
+    materialsDynamic.appendChild(materialsMomentLabel);
   }
 
   function renderMaterialsState(frameIndex) {
@@ -2534,12 +2585,31 @@
       );
       materialsFxArrow.style.display = Math.abs(fxLength) > 1 ? "" : "none";
     }
+    if (materialsFxLabel) {
+      const labelX = tipX + (fxLength >= 0 ? fxLength + 16 : fxLength - 16);
+      materialsFxLabel.setAttribute("x", labelX.toFixed(2));
+      materialsFxLabel.setAttribute("y", (tipY - 10).toFixed(2));
+      materialsFxLabel.style.display = Math.abs(fxLength) > 1 ? "" : "none";
+      const titleNode = ensureSvgTitle(materialsFxLabel);
+      if (titleNode) {
+        titleNode.textContent = `Fx = ${fxValue.toFixed(4)} N`;
+      }
+    }
     if (materialsFyArrow) {
       materialsFyArrow.setAttribute(
         "d",
         buildArrowPath(tipX, tipY, tipX, tipY - fyLength, 7),
       );
       materialsFyArrow.style.display = Math.abs(fyLength) > 1 ? "" : "none";
+    }
+    if (materialsFyLabel) {
+      materialsFyLabel.setAttribute("x", (tipX + 14).toFixed(2));
+      materialsFyLabel.setAttribute("y", (tipY - fyLength - (fyLength >= 0 ? 14 : -14)).toFixed(2));
+      materialsFyLabel.style.display = Math.abs(fyLength) > 1 ? "" : "none";
+      const titleNode = ensureSvgTitle(materialsFyLabel);
+      if (titleNode) {
+        titleNode.textContent = `Fy = ${fyValue.toFixed(4)} N`;
+      }
     }
     const momentReference = Math.max(Number(materialsBounds.maxTipMoment || 1), 1e-6);
     const momentRadius = 18 + 10 * Math.min(Math.abs(tipMomentValue) / momentReference, 1);
@@ -2561,6 +2631,15 @@
         materialsMomentHead.style.display = "none";
       }
     }
+    if (materialsMomentLabel) {
+      materialsMomentLabel.setAttribute("x", (tipX + momentRadius + 14).toFixed(2));
+      materialsMomentLabel.setAttribute("y", (tipY + 2).toFixed(2));
+      materialsMomentLabel.style.display = Math.abs(tipMomentValue) > 1e-8 ? "" : "none";
+      const titleNode = ensureSvgTitle(materialsMomentLabel);
+      if (titleNode) {
+        titleNode.textContent = `M_tip = ${tipMomentValue.toFixed(5)} N·m`;
+      }
+    }
     materialsDynamic.appendChild(materialsTargetPoint);
     materialsDynamic.appendChild(materialsTipPoint);
     if (materialsFxArrow) {
@@ -2574,6 +2653,15 @@
     }
     if (materialsMomentHead) {
       materialsDynamic.appendChild(materialsMomentHead);
+    }
+    if (materialsFxLabel) {
+      materialsDynamic.appendChild(materialsFxLabel);
+    }
+    if (materialsFyLabel) {
+      materialsDynamic.appendChild(materialsFyLabel);
+    }
+    if (materialsMomentLabel) {
+      materialsDynamic.appendChild(materialsMomentLabel);
     }
 
     if (materialsFrameSlider) {
