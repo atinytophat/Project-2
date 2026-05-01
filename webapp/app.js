@@ -48,6 +48,7 @@
     "#c17c1f", "#6a5acd", "#0f766e", "#d45d5d", "#43536e",
   ];
   const PRB_SERIES_COLORS = ["#0c8aa4", "#ef8c54", "#2f8f6d"];
+  const STATIC_VERSION = "20260501a";
   const MATERIAL_PRESETS = {
     pebax: {
       displayName: "PEBAX",
@@ -61,14 +62,14 @@
     },
   };
   const STATIC_DATA_PATHS = {
-    atlasDefault: "./data/atlas-default.json",
-    atlasLoadsDefault: "./data/atlas-loads-default.json",
-    atlasReport: "./data/atlas-report.json",
-    section4Workspace: "./data/section4-workspace.json",
-    section520Overlay: "./data/section520-overlay.json",
-    medicalDefault: "./data/medical-default.json",
-    medicalPebax: "./data/medical-pebax.json",
-    medicalTpu: "./data/medical-tpu.json",
+    atlasDefault: `./data/atlas-default.json?v=${STATIC_VERSION}`,
+    atlasLoadsDefault: `./data/atlas-loads-default.json?v=${STATIC_VERSION}`,
+    atlasReport: `./data/atlas-report.json?v=${STATIC_VERSION}`,
+    section4Workspace: `./data/section4-workspace.json?v=${STATIC_VERSION}`,
+    section520Overlay: `./data/section520-overlay.json?v=${STATIC_VERSION}`,
+    medicalDefault: `./data/medical-default.json?v=${STATIC_VERSION}`,
+    medicalPebax: `./data/medical-pebax.json?v=${STATIC_VERSION}`,
+    medicalTpu: `./data/medical-tpu.json?v=${STATIC_VERSION}`,
   };
 
   const tabButtons = Array.from(document.querySelectorAll("[data-tab-target]"));
