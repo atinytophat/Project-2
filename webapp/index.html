@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Compliant Design Workspace</title>
-  <link rel="stylesheet" href="./styles.css?v=20260501f" />
+  <link rel="stylesheet" href="./styles.css?v=20260501g" />
 </head>
 <body>
   <div class="app-shell">
@@ -354,9 +354,15 @@
           <div class="mechanism-trend-stack">
             <article class="content-card mechanism-trend-card">
               <div class="card-kicker">Tip comparison</div>
-              <h3>Position vector magnitude vs crank angle</h3>
+              <div class="mechanism-trend-header">
+                <h3 id="mechanismTopTrendTitle">Qy vs crank angle</h3>
+                <div class="mechanism-component-tabs" role="tablist" aria-label="Top mechanism trend component">
+                  <button id="mechanismTrendModeY" class="mechanism-component-tab active" type="button" data-mechanism-trend-mode="y" aria-selected="true">Qy</button>
+                  <button id="mechanismTrendModeX" class="mechanism-component-tab" type="button" data-mechanism-trend-mode="x" aria-selected="false">Qx</button>
+                </div>
+              </div>
               <div class="mechanism-trend-wrap">
-                <svg id="mechanismYTrendPlot" class="mechanism-trend-plot" viewBox="0 0 420 240" role="img" aria-label="Tip position vector magnitude over crank angle for FEA and PRB">
+                <svg id="mechanismYTrendPlot" class="mechanism-trend-plot" viewBox="0 0 420 240" role="img" aria-label="Tip deflection component over crank angle for FEA and PRB">
                   <rect x="0" y="0" width="420" height="240" fill="transparent"></rect>
                   <g id="mechanismYTrendGrid"></g>
                   <g id="mechanismYTrendAxes"></g>
@@ -643,7 +649,7 @@
     </main>
   </div>
 
-  <script src="./py_backend.js?v=20260501f"></script>
-  <script src="./app.js?v=20260501f"></script>
+  <script src="./py_backend.js?v=20260501g"></script>
+  <script src="./app.js?v=20260501g"></script>
 </body>
 </html>

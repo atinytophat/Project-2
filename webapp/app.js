@@ -48,7 +48,7 @@
     "#c17c1f", "#6a5acd", "#0f766e", "#d45d5d", "#43536e",
   ];
   const PRB_SERIES_COLORS = ["#0c8aa4", "#ef8c54", "#2f8f6d"];
-  const STATIC_VERSION = "20260501f";
+  const STATIC_VERSION = "20260501g";
   const MATERIAL_PRESETS = {
     pebax: {
       displayName: "PEBAX",
@@ -139,6 +139,8 @@
   const mechanismYTrendCursor = document.getElementById("mechanismYTrendCursor");
   const mechanismYTrendPointFEA = document.getElementById("mechanismYTrendPointFEA");
   const mechanismYTrendPointPRB = document.getElementById("mechanismYTrendPointPRB");
+  const mechanismTopTrendTitle = document.getElementById("mechanismTopTrendTitle");
+  const mechanismTrendModeButtons = Array.from(document.querySelectorAll("[data-mechanism-trend-mode]"));
   const mechanismXTrendPlot = document.getElementById("mechanismXTrendPlot");
   const mechanismXTrendGrid = document.getElementById("mechanismXTrendGrid");
   const mechanismXTrendAxes = document.getElementById("mechanismXTrendAxes");
@@ -246,6 +248,7 @@
   let mechanismBounds = null;
   let mechanismCurrentFrameIndex = 0;
   let mechanismCurrentAngleDeg = 0;
+  let mechanismTopTrendMode = "y";
   let mechanismAnimationTimer = null;
   let mechanismTrendBounds = null;
   let mechanismInterpolationData = null;
@@ -2997,6 +3000,14 @@
       ...feaFrames.map((frame) => frame.positionMagnitude),
       ...prbFrames.map((frame) => frame.positionMagnitude),
     ];
+    const qxValues = [
+      ...feaFrames.map((frame) => frame.qx),
+      ...prbFrames.map((frame) => frame.qx),
+    ];
+    const qyValues = [
+      ...feaFrames.map((frame) => frame.qy),
+      ...prbFrames.map((frame) => frame.qy),
+    ];
     const thetaValues = [
       ...feaFrames.map((frame) => frame.theta0Deg),
       ...prbFrames.map((frame) => frame.theta0Deg),
@@ -3015,8 +3026,51 @@
       feaFrames,
       prbFrames,
       positionBounds: computeBounds(positionValues),
+      qxBounds: computeBounds(qxValues),
+      qyBounds: computeBounds(qyValues),
       thetaBounds: computeBounds(thetaValues),
     };
+  }
+
+  function setMechanismTopTrendMode(modeKey) {
+    mechanismTopTrendMode = modeKey === "x" ? "x" : "y";
+    mechanismTrendModeButtons.forEach((button) => {
+      const isActive = button.dataset.mechanismTrendMode === mechanismTopTrendMode;
+      button.classList.toggle("active", isActive);
+      button.setAttribute("aria-selected", isActive ? "true" : "false");
+    });
+    if (mechanismTopTrendTitle) {
+      mechanismTopTrendTitle.textContent = mechanismTopTrendMode === "x"
+        ? "Qx vs crank angle"
+        : "Qy vs crank angle";
+    }
+    if (mechanismOverlayData && mechanismTrendBounds) {
+      renderMechanismTrendPlots();
+      const frame = mechanismOverlayData.fea_frames[mechanismCurrentFrameIndex] || mechanismOverlayData.fea_frames[0];
+      if (frame) {
+        const prbIndex = Number.isFinite(Number(frame.matched_prb_index))
+          ? clamp(
+            Number(frame.matched_prb_index),
+            0,
+            Math.max(0, mechanismOverlayData.prb_motion.angle_deg.length - 1),
+          )
+          : findNearestPrbStateIndex(Number(frame.crank_angle_deg));
+        const feaScale = 1 / Number(mechanismOverlayData.prb_scale_to_fea || 1);
+        const feaQ = frame.parts["FLEX-1"].deformed_xy[frame.parts["FLEX-1"].deformed_xy.length - 1].map((value) => Number(value) * feaScale);
+        const prbQ = mechanismOverlayData.prb_motion.Q[prbIndex];
+        const feaFlex = frame.parts["FLEX-1"].deformed_xy.map((point) => point.map((value) => Number(value) * feaScale));
+        updateMechanismTrendSelection(
+          Number(frame.crank_angle_deg),
+          Number(mechanismOverlayData.prb_motion.angle_deg[prbIndex]),
+          Number(feaQ[0]),
+          Number(prbQ[0]),
+          Number(feaQ[1]),
+          Number(prbQ[1]),
+          computeFeaTipAngleDegrees(feaFlex),
+          radiansToDegrees(mechanismOverlayData.prb_motion.theta[prbIndex].reduce((sum, value) => sum + Number(value), 0)),
+        );
+      }
+    }
   }
 
   function interpolateScalar(leftValue, rightValue, blend) {
@@ -3254,13 +3308,18 @@
       return;
     }
 
+    const trendKey = mechanismTopTrendMode === "x" ? "qx" : "qy";
+    const trendBounds = mechanismTopTrendMode === "x"
+      ? mechanismTrendBounds.qxBounds
+      : mechanismTrendBounds.qyBounds;
+    const trendLabel = mechanismTopTrendMode === "x" ? "Qx / l" : "Qy / l";
     const feaPositionPoints = mechanismTrendBounds.feaFrames.map((frame) => ({
       angle: frame.angle,
-      value: frame.positionMagnitude,
+      value: frame[trendKey],
     }));
     const prbPositionPoints = mechanismTrendBounds.prbFrames.map((frame) => ({
       angle: frame.angle,
-      value: frame.positionMagnitude,
+      value: frame[trendKey],
     }));
     const feaThetaPoints = mechanismTrendBounds.feaFrames.map((frame) => ({
       angle: frame.angle,
@@ -3275,8 +3334,8 @@
       mechanismYTrendGrid,
       mechanismYTrendAxes,
       mechanismYTrendPlot,
-      mechanismTrendBounds.positionBounds,
-      "|Q| / l",
+      trendBounds,
+      trendLabel,
     );
     drawMechanismTrendFrame(
       mechanismXTrendGrid,
@@ -3287,10 +3346,10 @@
     );
 
     if (mechanismYTrendFEA) {
-      mechanismYTrendFEA.setAttribute("d", buildTrendPath(feaPositionPoints, mechanismTrendBounds.positionBounds, mechanismYTrendPlot));
+      mechanismYTrendFEA.setAttribute("d", buildTrendPath(feaPositionPoints, trendBounds, mechanismYTrendPlot));
     }
     if (mechanismYTrendPRB) {
-      mechanismYTrendPRB.setAttribute("d", buildTrendPath(prbPositionPoints, mechanismTrendBounds.positionBounds, mechanismYTrendPlot));
+      mechanismYTrendPRB.setAttribute("d", buildTrendPath(prbPositionPoints, trendBounds, mechanismYTrendPlot));
     }
     if (mechanismXTrendFEA) {
       mechanismXTrendFEA.setAttribute("d", buildTrendPath(feaThetaPoints, mechanismTrendBounds.thetaBounds, mechanismXTrendPlot));
@@ -3300,7 +3359,12 @@
     }
   }
 
-  function updateMechanismTrendSelection(feaAngleDeg, prbAngleDeg, feaPositionMagnitude, prbPositionMagnitude, feaTheta0Deg, prbTheta0Deg) {
+  function updateMechanismTrendSelection(feaAngleDeg, prbAngleDeg, feaQx, prbQx, feaQy, prbQy, feaTheta0Deg, prbTheta0Deg) {
+    const topBounds = mechanismTopTrendMode === "x"
+      ? mechanismTrendBounds?.qxBounds
+      : mechanismTrendBounds?.qyBounds;
+    const feaTopValue = mechanismTopTrendMode === "x" ? feaQx : feaQy;
+    const prbTopValue = mechanismTopTrendMode === "x" ? prbQx : prbQy;
     const updatePlotSelection = (plotElement, bounds, cursorNode, feaPointNode, prbPointNode, feaValue, prbValue) => {
       if (!plotElement || !bounds) {
         return;
@@ -3335,12 +3399,12 @@
 
     updatePlotSelection(
       mechanismYTrendPlot,
-      mechanismTrendBounds?.positionBounds,
+      topBounds,
       mechanismYTrendCursor,
       mechanismYTrendPointFEA,
       mechanismYTrendPointPRB,
-      Number(feaPositionMagnitude),
-      Number(prbPositionMagnitude),
+      Number(feaTopValue),
+      Number(prbTopValue),
     );
     updatePlotSelection(
       mechanismXTrendPlot,
@@ -3534,8 +3598,6 @@
     const feaQ = feaFlex[feaFlex.length - 1];
     const feaTipDeg = computeFeaTipAngleDegrees(feaFlex);
     const prbTipDeg = radiansToDegrees(thetaRow.reduce((sum, value) => sum + Number(value), 0));
-    const feaPositionMagnitude = computePositionMagnitude(feaQ);
-    const prbPositionMagnitude = computePositionMagnitude(qPoint);
     const aError = Math.hypot(Number(aPoint[0]) - Number(feaA[0]), Number(aPoint[1]) - Number(feaA[1]));
     const qError = Math.hypot(Number(qPoint[0]) - Number(feaQ[0]), Number(qPoint[1]) - Number(feaQ[1]));
 
@@ -3600,8 +3662,10 @@
     updateMechanismTrendSelection(
       feaAngleDeg,
       prbAngleDeg,
-      feaPositionMagnitude,
-      prbPositionMagnitude,
+      Number(feaQ[0]),
+      Number(qPoint[0]),
+      Number(feaQ[1]),
+      Number(qPoint[1]),
       feaTipDeg,
       prbTipDeg,
     );
@@ -3718,6 +3782,11 @@
         if (mechanismAnimateButton) {
           mechanismAnimateButton.addEventListener("click", toggleMechanismAnimation);
         }
+        mechanismTrendModeButtons.forEach((button) => {
+          button.addEventListener("click", () => {
+            setMechanismTopTrendMode(button.dataset.mechanismTrendMode);
+          });
+        });
 
         renderMechanismFrameIndex(0);
         mechanismLoaded = true;

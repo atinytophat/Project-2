@@ -1071,6 +1071,36 @@ body {
   min-height: 0;
 }
 
+.mechanism-trend-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.mechanism-component-tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mechanism-component-tab {
+  border: 1px solid rgba(34, 52, 78, 0.12);
+  background: #ffffff;
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.mechanism-component-tab.active {
+  color: var(--ink);
+  border-color: rgba(12, 138, 164, 0.28);
+}
+
 .mechanism-trend-wrap {
   flex: 1;
   min-height: 0;
