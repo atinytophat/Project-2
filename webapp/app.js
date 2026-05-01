@@ -223,6 +223,9 @@
   const materialsThetas = document.getElementById("materialsThetas");
   const materialsTau = document.getElementById("materialsTau");
   const materialsForceMoment = document.getElementById("materialsForceMoment");
+  const materialsFxBadge = document.getElementById("materialsFxBadge");
+  const materialsFyBadge = document.getElementById("materialsFyBadge");
+  const materialsMomentBadge = document.getElementById("materialsMomentBadge");
   const materialsTrackingError = document.getElementById("materialsTrackingError");
   const materialsTraceSpan = document.getElementById("materialsTraceSpan");
   let atlasRequestController = null;
@@ -2694,6 +2697,15 @@
         materialsForceMoment.textContent = "Force/moment solve pending";
       }
     }
+    if (materialsFxBadge) {
+      materialsFxBadge.title = `Fx = ${Number(frame.force_x || 0).toFixed(4)} N`;
+    }
+    if (materialsFyBadge) {
+      materialsFyBadge.title = `Fy = ${Number(frame.force_y || 0).toFixed(4)} N`;
+    }
+    if (materialsMomentBadge) {
+      materialsMomentBadge.title = `M_tip = ${Number(frame.tip_moment || 0).toFixed(5)} N·m`;
+    }
     if (materialsTrackingError) {
       materialsTrackingError.textContent = Number(frame.tracking_error || 0).toFixed(5);
     }
@@ -2855,6 +2867,15 @@
         }
         if (materialsForceMoment) {
           materialsForceMoment.textContent = "Unavailable";
+        }
+        if (materialsFxBadge) {
+          materialsFxBadge.title = "Fx unavailable";
+        }
+        if (materialsFyBadge) {
+          materialsFyBadge.title = "Fy unavailable";
+        }
+        if (materialsMomentBadge) {
+          materialsMomentBadge.title = "M unavailable";
         }
         if (materialsMomentValue) {
           materialsMomentValue.textContent = "M_net = Unavailable";
@@ -3457,7 +3478,16 @@
     }
 
     const interpolatedState = interpolateMechanismStateAtAngle(angleDeg);
-    if (!interpolatedState) {
+    if (!interpolatedState || !interpolatedState.fea || !interpolatedState.prb) {
+      const fallbackIndex = findNearestMechanismFrameIndex(angleDeg);
+      if (!mechanismOverlayData.fea_frames[fallbackIndex]) {
+        return;
+      }
+      const fallbackFrame = mechanismOverlayData.fea_frames[fallbackIndex];
+      const fallbackAngle = Number(fallbackFrame.crank_angle_deg);
+      if (Number.isFinite(fallbackAngle) && Math.abs(fallbackAngle - angleDeg) > 1e-6) {
+        renderMechanismState(fallbackAngle);
+      }
       return;
     }
 

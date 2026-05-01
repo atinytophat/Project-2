@@ -410,6 +410,45 @@ body {
   border: 1px solid var(--line);
   background: #ffffff;
   overflow: hidden;
+  position: relative;
+}
+
+.materials-load-labels {
+  position: absolute;
+  top: 10px;
+  left: 12px;
+  z-index: 3;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.materials-load-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(34, 52, 78, 0.14);
+  background: #ffffff;
+  color: var(--ink);
+  font-size: 0.72rem;
+  font-weight: 800;
+  cursor: help;
+}
+
+.materials-load-badge-fx {
+  color: #1f5c99;
+}
+
+.materials-load-badge-fy {
+  color: #2f8f6d;
+}
+
+.materials-load-badge-m {
+  color: #b15d85;
 }
 
 .materials-plot {
