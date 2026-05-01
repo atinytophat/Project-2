@@ -3490,34 +3490,52 @@
     return bestIndex;
   }
 
+  function findNearestPrbStateIndex(angleDeg) {
+    if (!mechanismOverlayData || !mechanismOverlayData.prb_motion || !Array.isArray(mechanismOverlayData.prb_motion.angle_deg)) {
+      return 0;
+    }
+    const targetAngle = wrapAngleDegrees(angleDeg);
+    let bestIndex = 0;
+    let bestDistance = Number.POSITIVE_INFINITY;
+
+    mechanismOverlayData.prb_motion.angle_deg.forEach((angleValue, index) => {
+      const currentDistance = angleDistanceDegrees(targetAngle, Number(angleValue));
+      if (currentDistance < bestDistance) {
+        bestDistance = currentDistance;
+        bestIndex = index;
+      }
+    });
+
+    return bestIndex;
+  }
+
   function renderMechanismState(angleDeg) {
-    if (!mechanismOverlayData || !mechanismBounds || !mechanismInterpolationData) {
+    if (!mechanismOverlayData || !mechanismBounds) {
       return;
     }
 
-    const feaState = findNearestSeriesEntry(mechanismInterpolationData.feaFrames, angleDeg);
-    const prbState = findNearestSeriesEntry(mechanismInterpolationData.prbFrames, angleDeg);
-    if (!feaState || !prbState) {
-      return;
-    }
-
-    const feaAngleDeg = wrapAngleDegrees(feaState.angle);
-    const prbAngleDeg = wrapAngleDegrees(prbState.angle);
-    const feaCrank = feaState.crank;
-    const feaCoupler = feaState.coupler;
-    const feaFlex = feaState.flex;
-    const feaA = feaState.aPoint;
-    const feaQ = feaState.qPoint;
-    const feaTipDeg = feaState.theta0Deg;
-    const feaPositionMagnitude = feaState.positionMagnitude;
-    const chain = prbState.chain;
-    const qPoint = prbState.qPoint;
-    const aPoint = prbState.aPoint;
-    const crankPoint = prbState.crankPoint;
-    const thetaRow = prbState.theta;
-    const loadRow = prbState.load;
-    const prbTipDeg = prbState.theta0Deg;
-    const prbPositionMagnitude = prbState.positionMagnitude;
+    const feaIndex = findNearestMechanismFrameIndex(angleDeg);
+    const frame = mechanismOverlayData.fea_frames[feaIndex];
+    const feaScale = 1 / Number(mechanismOverlayData.prb_scale_to_fea || 1);
+    const prbIndex = findNearestPrbStateIndex(angleDeg);
+    const prbMotion = mechanismOverlayData.prb_motion;
+    const chain = prbMotion.chain[prbIndex];
+    const qPoint = prbMotion.Q[prbIndex];
+    const aPoint = prbMotion.A[prbIndex];
+    const crankPoint = prbMotion.crank_tip[prbIndex];
+    const thetaRow = prbMotion.theta[prbIndex];
+    const loadRow = prbMotion.load[prbIndex];
+    const prbAngleDeg = Number(prbMotion.angle_deg[prbIndex]);
+    const feaAngleDeg = Number(frame.crank_angle_deg);
+    const feaCrank = frame.parts["CRANK-1"].deformed_xy.map((point) => point.map((value) => Number(value) * feaScale));
+    const feaCoupler = frame.parts["COUP-1"].deformed_xy.map((point) => point.map((value) => Number(value) * feaScale));
+    const feaFlex = frame.parts["FLEX-1"].deformed_xy.map((point) => point.map((value) => Number(value) * feaScale));
+    const feaA = feaCrank[feaCrank.length - 1];
+    const feaQ = feaFlex[feaFlex.length - 1];
+    const feaTipDeg = computeFeaTipAngleDegrees(feaFlex);
+    const prbTipDeg = radiansToDegrees(thetaRow.reduce((sum, value) => sum + Number(value), 0));
+    const feaPositionMagnitude = computePositionMagnitude(feaQ);
+    const prbPositionMagnitude = computePositionMagnitude(qPoint);
     const aError = Math.hypot(Number(aPoint[0]) - Number(feaA[0]), Number(aPoint[1]) - Number(feaA[1]));
     const qError = Math.hypot(Number(qPoint[0]) - Number(feaQ[0]), Number(qPoint[1]) - Number(feaQ[1]));
 
