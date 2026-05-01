@@ -48,7 +48,7 @@
     "#c17c1f", "#6a5acd", "#0f766e", "#d45d5d", "#43536e",
   ];
   const PRB_SERIES_COLORS = ["#0c8aa4", "#ef8c54", "#2f8f6d"];
-  const STATIC_VERSION = "20260501b";
+  const STATIC_VERSION = "20260501c";
   const MATERIAL_PRESETS = {
     pebax: {
       displayName: "PEBAX",
@@ -2977,11 +2977,11 @@
     const feaScale = 1 / Number(overlayData.prb_scale_to_fea || 1);
     const feaFrames = overlayData.fea_frames.map((frame) => ({
       angle: wrapAngleDegrees(Number(frame.crank_angle_deg)),
-      qx: Number(frame.parts["FLEX-1"].deformed_xy.at(-1)[0]) * feaScale,
-      qy: Number(frame.parts["FLEX-1"].deformed_xy.at(-1)[1]) * feaScale,
+      qx: Number(frame.parts["FLEX-1"].deformed_xy[frame.parts["FLEX-1"].deformed_xy.length - 1][0]) * feaScale,
+      qy: Number(frame.parts["FLEX-1"].deformed_xy[frame.parts["FLEX-1"].deformed_xy.length - 1][1]) * feaScale,
       positionMagnitude: Math.hypot(
-        Number(frame.parts["FLEX-1"].deformed_xy.at(-1)[0]) * feaScale,
-        Number(frame.parts["FLEX-1"].deformed_xy.at(-1)[1]) * feaScale,
+        Number(frame.parts["FLEX-1"].deformed_xy[frame.parts["FLEX-1"].deformed_xy.length - 1][0]) * feaScale,
+        Number(frame.parts["FLEX-1"].deformed_xy[frame.parts["FLEX-1"].deformed_xy.length - 1][1]) * feaScale,
       ),
       theta0Deg: computeFeaTipAngleDegrees(
         frame.parts["FLEX-1"].deformed_xy.map((point) => [
@@ -3674,9 +3674,14 @@
           mechanismParameterSource.textContent = String(data.parameter_source);
         }
         mechanismBounds = buildMechanismBounds(data);
-        mechanismTrendBounds = buildMechanismTrendBounds(data);
         drawMechanismFrame();
-        renderMechanismTrendPlots();
+        try {
+          mechanismTrendBounds = buildMechanismTrendBounds(data);
+          renderMechanismTrendPlots();
+        } catch (trendError) {
+          mechanismTrendBounds = null;
+          console.error("Section 5 trend plot setup failed.", trendError);
+        }
 
         if (mechanismAngleSlider && mechanismAngleInput) {
           mechanismAngleSlider.min = "0";
