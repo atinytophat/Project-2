@@ -48,7 +48,7 @@
     "#c17c1f", "#6a5acd", "#0f766e", "#d45d5d", "#43536e",
   ];
   const PRB_SERIES_COLORS = ["#0c8aa4", "#ef8c54", "#2f8f6d"];
-  const STATIC_VERSION = "20260501h";
+  const STATIC_VERSION = "20260501i";
   const MATERIAL_PRESETS = {
     pebax: {
       displayName: "PEBAX",
@@ -3073,7 +3073,6 @@
           computePositionMagnitude(prbQ),
           computeFeaTipAngleDegrees(feaFlex),
           radiansToDegrees(mechanismOverlayData.prb_motion.theta[prbIndex].reduce((sum, value) => sum + Number(value), 0)),
-          100 * Math.hypot(Number(prbQ[0]) - Number(feaQ[0]), Number(prbQ[1]) - Number(feaQ[1])),
         );
       }
     }
@@ -3375,7 +3374,7 @@
     }
   }
 
-  function updateMechanismTrendSelection(feaAngleDeg, prbAngleDeg, feaQx, prbQx, feaQy, prbQy, feaQMagnitude, prbQMagnitude, feaTheta0Deg, prbTheta0Deg, qErrorPct = null) {
+  function updateMechanismTrendSelection(feaAngleDeg, prbAngleDeg, feaQx, prbQx, feaQy, prbQy, feaQMagnitude, prbQMagnitude, feaTheta0Deg, prbTheta0Deg) {
     const topBounds = mechanismTopTrendMode === "x"
       ? mechanismTrendBounds?.qxBounds
       : mechanismTopTrendMode === "m"
@@ -3391,6 +3390,12 @@
       : mechanismTopTrendMode === "m"
         ? prbQMagnitude
         : prbQy;
+    const trendErrorLabel = mechanismTopTrendMode === "x"
+      ? "Qx error"
+      : mechanismTopTrendMode === "m"
+        ? "|Q| error"
+        : "Qy error";
+    const trendErrorPct = Math.abs(Number(prbTopValue) - Number(feaTopValue)) * 100;
     const updatePlotSelection = (plotElement, bounds, cursorNode, feaPointNode, prbPointNode, feaValue, prbValue) => {
       if (!plotElement || !bounds) {
         return;
@@ -3442,7 +3447,7 @@
       Number(prbTheta0Deg),
     );
     if (mechanismTopTrendError) {
-      mechanismTopTrendError.textContent = qErrorPct === null ? "Q error: -" : `Q error: ${Number(qErrorPct).toFixed(2)}%`;
+      mechanismTopTrendError.textContent = `${trendErrorLabel}: ${trendErrorPct.toFixed(2)}%`;
     }
   }
 
@@ -3701,7 +3706,6 @@
       prbQMagnitude,
       feaTipDeg,
       prbTipDeg,
-      100 * qError,
     );
     applyMechanismVisibility();
   }
