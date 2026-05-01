@@ -2,7 +2,7 @@
   "use strict";
 
   const TAB_METADATA = {
-    atlas: "Section 2 Atlas",
+    atlas: "Section 2: Atlas",
     prb: "Section 4: PRB 3R Parameters",
     mechanism: "Section 5: FEA Verification",
     materials: "Medical Steering Study",
@@ -48,7 +48,7 @@
     "#c17c1f", "#6a5acd", "#0f766e", "#d45d5d", "#43536e",
   ];
   const PRB_SERIES_COLORS = ["#0c8aa4", "#ef8c54", "#2f8f6d"];
-  const STATIC_VERSION = "20260501m";
+  const STATIC_VERSION = "20260501n";
   const MATERIAL_PRESETS = {
     pebax: {
       displayName: "PEBAX",
@@ -1891,6 +1891,16 @@
         x1: mapX(0), y1: innerTop, x2: mapX(0), y2: innerBottom, class: "prb-output-axis-line",
       }));
 
+      caseData.actual_x.forEach((value, pointIndex) => {
+        prbSeries.appendChild(createSvgNode("circle", {
+          cx: mapX(value),
+          cy: mapY(caseData.actual_y[pointIndex]),
+          r: "1.9",
+          fill: "#ef8c54",
+          opacity: "0.92",
+        }));
+      });
+
       const prbPath = caseData.prb_x.map((value, pointIndex) => {
         const command = pointIndex === 0 ? "M" : "L";
         return `${command} ${mapX(value).toFixed(2)} ${mapY(caseData.prb_y[pointIndex]).toFixed(2)}`;
@@ -1901,16 +1911,6 @@
         stroke: "#0c8aa4",
         "stroke-width": "2.0",
       }));
-
-      caseData.actual_x.forEach((value, pointIndex) => {
-        prbSeries.appendChild(createSvgNode("circle", {
-          cx: mapX(value),
-          cy: mapY(caseData.actual_y[pointIndex]),
-          r: "1.9",
-          fill: "#1f2c40",
-          opacity: "0.82",
-        }));
-      });
 
       prbAnnotations.appendChild(createSvgNode("text", {
         x: panelLeft + 10, y: panelTop + 14, class: "prb-output-title",
@@ -1933,7 +1933,7 @@
 
     buildPrbLegend([
       { label: "PRB model", color: "#0c8aa4" },
-      { label: "Numerical integration", color: "#1f2c40" },
+      { label: "Numerical integration", color: "#ef8c54" },
     ]);
   }
 
@@ -2585,21 +2585,6 @@
 
     materialsStatic.replaceChildren();
 
-    const undeformedPoints = [
-      [0.0, 0.0],
-      [materialsMotionData.gammas[0], 0.0],
-      [materialsMotionData.gammas[0] + materialsMotionData.gammas[1], 0.0],
-      [materialsMotionData.gammas[0] + materialsMotionData.gammas[1] + materialsMotionData.gammas[2], 0.0],
-      [1.0, 0.0],
-    ];
-    materialsStatic.appendChild(createSvgNode("path", {
-      d: buildMaterialsPath(undeformedPoints, activeBounds),
-      class: "materials-line",
-      stroke: "#8a96a7",
-      "stroke-dasharray": "9 8",
-      "stroke-width": "1.8",
-    }));
-
     materialsStatic.appendChild(createSvgNode("path", {
       d: buildMaterialsPath(materialsMotionData.target_path, activeBounds),
       class: "materials-line",
@@ -2609,14 +2594,6 @@
       opacity: "0.9",
     }));
 
-    if (Array.isArray(materialsMotionData.actual_path) && materialsMotionData.actual_path.length > 1) {
-      materialsStatic.appendChild(createSvgNode("path", {
-        d: buildMaterialsPath(materialsMotionData.actual_path, activeBounds),
-        class: "materials-line",
-        stroke: "rgba(12, 138, 164, 0.34)",
-        "stroke-width": "1.8",
-      }));
-    }
   }
 
   function zoomMaterialsMainPlot(event) {
