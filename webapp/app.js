@@ -3,9 +3,9 @@
 
   const TAB_METADATA = {
     atlas: "Section 2 Atlas",
-    prb: "Section 4 PRB",
-    mechanism: "Section 5 Mechanism",
-    materials: "Material Library",
+    prb: "Section 4: PRB 3R Parameters",
+    mechanism: "Section 5: FEA Verification",
+    materials: "Medical Steering Study",
   };
   const ATLAS_CONFIG = {
     xMin: -0.7,
@@ -48,7 +48,7 @@
     "#c17c1f", "#6a5acd", "#0f766e", "#d45d5d", "#43536e",
   ];
   const PRB_SERIES_COLORS = ["#0c8aa4", "#ef8c54", "#2f8f6d"];
-  const STATIC_VERSION = "20260501i";
+  const STATIC_VERSION = "20260501j";
   const MATERIAL_PRESETS = {
     pebax: {
       displayName: "PEBAX",
@@ -67,9 +67,13 @@
     atlasReport: `./data/atlas-report.json?v=${STATIC_VERSION}`,
     section4Workspace: `./data/section4-workspace.json?v=${STATIC_VERSION}`,
     section520Overlay: `./data/section520-overlay.json?v=${STATIC_VERSION}`,
+    section520OverlayReport: `./data/section520-overlay-report.json?v=${STATIC_VERSION}`,
     medicalDefault: `./data/medical-default.json?v=${STATIC_VERSION}`,
+    medicalDefaultReport: `./data/medical-default-report.json?v=${STATIC_VERSION}`,
     medicalPebax: `./data/medical-pebax.json?v=${STATIC_VERSION}`,
+    medicalPebaxReport: `./data/medical-pebax-report.json?v=${STATIC_VERSION}`,
     medicalTpu: `./data/medical-tpu.json?v=${STATIC_VERSION}`,
+    medicalTpuReport: `./data/medical-tpu-report.json?v=${STATIC_VERSION}`,
   };
 
   const tabButtons = Array.from(document.querySelectorAll("[data-tab-target]"));
@@ -168,6 +172,7 @@
   const mechanismShowFEA = document.getElementById("mechanismShowFEA");
   const mechanismShowPRB = document.getElementById("mechanismShowPRB");
   const mechanismAnimateButton = document.getElementById("mechanismAnimateButton");
+  const mechanismKbarSourceButtons = Array.from(document.querySelectorAll("[data-mechanism-kbar-source]"));
   const mechanismParameterSource = document.getElementById("mechanismParameterSource");
   const mechanismGammas = document.getElementById("mechanismGammas");
   const mechanismKbar = document.getElementById("mechanismKbar");
@@ -219,6 +224,7 @@
   const materialsYoungsModulusInput = document.getElementById("materialsYoungsModulusInput");
   const materialsYieldStrengthInput = document.getElementById("materialsYieldStrengthInput");
   const materialsPresetButtons = Array.from(document.querySelectorAll("[data-material-preset]"));
+  const materialsKbarSourceButtons = Array.from(document.querySelectorAll("[data-materials-kbar-source]"));
   const materialsPresetNote = document.getElementById("materialsPresetNote");
   const materialsGammas = document.getElementById("materialsGammas");
   const materialsKbar = document.getElementById("materialsKbar");
@@ -245,14 +251,16 @@
   let prbWorkspaceData = null;
   let prbLoaded = false;
   let mechanismOverlayData = null;
+  let mechanismPanelInitialized = false;
   let mechanismLoaded = false;
   let mechanismBounds = null;
   let mechanismCurrentFrameIndex = 0;
   let mechanismCurrentAngleDeg = 0;
   let mechanismTopTrendMode = "y";
+  let mechanismKbarSource = "computed";
   let mechanismAnimationTimer = null;
   let mechanismTrendBounds = null;
-  let mechanismInterpolationData = null;
+  let mechanismRequestSequence = 0;
   let mechanismFEAFlexNodePool = [];
   let mechanismJointPointPool = [];
   let materialsPanelInitialized = false;
@@ -261,6 +269,7 @@
   let materialsMotionData = null;
   let materialsBounds = null;
   let materialsCurrentFrameIndex = 0;
+  let materialsKbarSource = "computed";
   let materialsAnimationTimer = null;
   let materialsTrendBounds = null;
   let materialsReloadTimer = null;
@@ -402,6 +411,29 @@
       button.textContent = isZoomed ? "Close" : "Zoom";
       button.setAttribute("aria-label", `${isZoomed ? "Close" : "Zoom"} ${label}`);
     }
+    if (!isZoomed) {
+      applyPlotZoomScale(target, 1);
+    }
+  }
+
+  function getPlotZoomVisual(target) {
+    if (!target) {
+      return null;
+    }
+    return target.querySelector("svg, .report-panel-svg");
+  }
+
+  function applyPlotZoomScale(target, scaleValue) {
+    if (!target) {
+      return;
+    }
+    const visual = getPlotZoomVisual(target);
+    const clampedScale = clamp(Number(scaleValue) || 1, 1, 6);
+    target.dataset.zoomScale = String(clampedScale);
+    if (visual) {
+      visual.classList.add("plot-zoom-visual");
+      visual.style.transform = `scale(${clampedScale})`;
+    }
   }
 
   function closeActivePlotZoom() {
@@ -441,6 +473,7 @@
 
       target.dataset.zoomReady = "true";
       target.dataset.zoomLabel = zoomLabel;
+      target.dataset.zoomScale = "1";
       target.classList.add("plot-zoom-target");
 
       const button = document.createElement("button");
@@ -454,6 +487,21 @@
         togglePlotZoom(target);
       });
       target.appendChild(button);
+
+      target.addEventListener("wheel", (event) => {
+        if (!target.classList.contains("plot-zoomed")) {
+          togglePlotZoom(target);
+        }
+        event.preventDefault();
+        const currentScale = Number(target.dataset.zoomScale || 1);
+        const nextScale = event.deltaY < 0 ? currentScale + 0.2 : currentScale - 0.2;
+        applyPlotZoomScale(target, nextScale);
+      }, { passive: false });
+
+      target.addEventListener("dblclick", (event) => {
+        event.preventDefault();
+        applyPlotZoomScale(target, 1);
+      });
     });
   }
 
@@ -507,6 +555,7 @@
     const motion = getMedicalMotionParameters();
     const beam = getMedicalBeamParameters();
     const params = [
+      `kbar_source=${encodeURIComponent(materialsKbarSource)}`,
       `tip_amplitude=${encodeURIComponent(motion.tip_amplitude)}`,
       `core_motion_time=${encodeURIComponent(motion.core_motion_time)}`,
       `beam_length=${encodeURIComponent(beam.beam_length)}`,
@@ -516,6 +565,26 @@
       `sigma_max=${encodeURIComponent(beam.sigma_max_mpa * 1e6)}`,
     ].join("&");
     return `${MATERIALS_CONFIG.endpoint}&${params}`;
+  }
+
+  function buildMechanismOverlayEndpoint() {
+    return `${MECHANISM_CONFIG.endpoint}?kbar_source=${encodeURIComponent(mechanismKbarSource)}`;
+  }
+
+  function updateMechanismKbarSourceButtons() {
+    mechanismKbarSourceButtons.forEach((button) => {
+      const isActive = button.dataset.mechanismKbarSource === mechanismKbarSource;
+      button.classList.toggle("active", isActive);
+      button.setAttribute("aria-pressed", isActive ? "true" : "false");
+    });
+  }
+
+  function updateMaterialsKbarSourceButtons() {
+    materialsKbarSourceButtons.forEach((button) => {
+      const isActive = button.dataset.materialsKbarSource === materialsKbarSource;
+      button.classList.toggle("active", isActive);
+      button.setAttribute("aria-pressed", isActive ? "true" : "false");
+    });
   }
 
   function setMaterialsPresetNote(message) {
@@ -720,12 +789,15 @@
       const url = new URL(endpoint, window.location.href);
       const path = url.pathname;
       const params = url.searchParams;
+      const kbarSource = params.get("kbar_source") === "report" ? "report" : "computed";
 
       if (path === "/api/section4-workspace") {
         return STATIC_DATA_PATHS.section4Workspace;
       }
       if (path === "/api/section520-overlay") {
-        return STATIC_DATA_PATHS.section520Overlay;
+        return kbarSource === "report"
+          ? STATIC_DATA_PATHS.section520OverlayReport
+          : STATIC_DATA_PATHS.section520Overlay;
       }
       if (path === "/api/atlas-report") {
         return STATIC_DATA_PATHS.atlasReport;
@@ -768,7 +840,9 @@
           && Number(params.get("youngs_modulus")) === 69000000000
           && Number(params.get("sigma_max")) === 276000000;
         if (isDefault) {
-          return STATIC_DATA_PATHS.medicalDefault;
+          return kbarSource === "report"
+            ? STATIC_DATA_PATHS.medicalDefaultReport
+            : STATIC_DATA_PATHS.medicalDefault;
         }
         const isPebax =
           params.get("mode") === "sinusoid"
@@ -780,7 +854,9 @@
           && Number(params.get("youngs_modulus")) === 513000000
           && Number(params.get("sigma_max")) === 56000000;
         if (isPebax) {
-          return STATIC_DATA_PATHS.medicalPebax;
+          return kbarSource === "report"
+            ? STATIC_DATA_PATHS.medicalPebaxReport
+            : STATIC_DATA_PATHS.medicalPebax;
         }
         const isTpu =
           params.get("mode") === "sinusoid"
@@ -792,7 +868,9 @@
           && Number(params.get("youngs_modulus")) === 22100000
           && Number(params.get("sigma_max")) === 53100000;
         if (isTpu) {
-          return STATIC_DATA_PATHS.medicalTpu;
+          return kbarSource === "report"
+            ? STATIC_DATA_PATHS.medicalTpuReport
+            : STATIC_DATA_PATHS.medicalTpu;
         }
       }
     } catch (error) {
@@ -2740,6 +2818,7 @@
     stopMaterialsAnimation();
     const endpoint = buildMedicalExperimentEndpoint();
     const requestSequence = ++materialsRequestSequence;
+    updateMaterialsKbarSourceButtons();
 
     if (materialsExperimentCache && materialsExperimentCacheKey === endpoint) {
       const data = materialsExperimentCache;
@@ -2919,6 +2998,18 @@
           applyMaterialPreset(button.dataset.materialPreset);
         });
       });
+      materialsKbarSourceButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          const nextSource = button.dataset.materialsKbarSource === "report" ? "report" : "computed";
+          if (nextSource === materialsKbarSource) {
+            return;
+          }
+          materialsKbarSource = nextSource;
+          updateMaterialsKbarSourceButtons();
+          stopMaterialsAnimation();
+          scheduleMaterialsReload();
+        });
+      });
       [
         materialsMotionTimeInput,
         materialsAmplitudeInput,
@@ -2947,6 +3038,7 @@
     if (!activeMaterialPresetKey && materialsPresetButtons.length > 0) {
       setMaterialsPresetNote(getMaterialsPresetStatus(""));
     }
+    updateMaterialsKbarSourceButtons();
     loadMaterialsMode();
   }
 
@@ -3765,13 +3857,18 @@
     }
   }
 
-  function initializeMechanismPanel() {
-    if (!mechanismPlot || mechanismLoaded) {
+  function loadMechanismPanelData() {
+    if (!mechanismPlot) {
       return;
     }
 
-    requestJson(MECHANISM_CONFIG.endpoint)
+    const requestSequence = ++mechanismRequestSequence;
+
+    requestJson(buildMechanismOverlayEndpoint())
       .then((data) => {
+        if (requestSequence !== mechanismRequestSequence) {
+          return;
+        }
         mechanismOverlayData = data;
         populateMechanismStaticSummary(data);
         if (mechanismParameterSource) {
@@ -3794,72 +3891,135 @@
           mechanismAngleInput.min = "0";
           mechanismAngleInput.max = "360";
           mechanismAngleInput.step = "0.5";
-
-          mechanismAngleSlider.addEventListener("input", () => {
-            renderMechanismFrameIndex(Number(mechanismAngleSlider.value));
-          });
-          mechanismAngleInput.addEventListener("input", () => {
-            const typedValue = Number(mechanismAngleInput.value);
-            if (Number.isFinite(typedValue)) {
-              renderMechanismState(typedValue);
-            }
-          });
-          mechanismAngleInput.addEventListener("keydown", (event) => {
-            if (event.key === "Enter") {
-              mechanismAngleInput.blur();
-            }
-          });
         }
-
-        if (mechanismShowFEA) {
-          mechanismShowFEA.addEventListener("change", applyMechanismVisibility);
-        }
-        if (mechanismShowPRB) {
-          mechanismShowPRB.addEventListener("change", applyMechanismVisibility);
-        }
-        if (mechanismAnimateButton) {
-          mechanismAnimateButton.addEventListener("click", toggleMechanismAnimation);
-        }
-        mechanismTrendModeButtons.forEach((button) => {
-          button.addEventListener("click", () => {
-            setMechanismTopTrendMode(button.dataset.mechanismTrendMode);
-          });
-        });
 
         renderMechanismFrameIndex(0);
         mechanismLoaded = true;
       })
       .catch((error) => {
+        if (requestSequence !== mechanismRequestSequence) {
+          return;
+        }
         stopMechanismAnimation();
         console.error(error);
         if (mechanismParameterSource) {
           mechanismParameterSource.textContent = "Unavailable";
         }
-        if (mechanismGammas && mechanismGammas.textContent.trim() === "-") {
+        if (mechanismGammas) {
           mechanismGammas.textContent = "Load failed";
         }
-        if (mechanismKbar && mechanismKbar.textContent.trim() === "-") {
+        if (mechanismKbar) {
           mechanismKbar.textContent = "Load failed";
         }
-        if (mechanismThetas && mechanismThetas.textContent.trim() === "-") {
+        if (mechanismThetas) {
           mechanismThetas.textContent = "Load failed";
         }
-        if (mechanismTipSlope && mechanismTipSlope.textContent.trim() === "-") {
+        if (mechanismTipSlope) {
           mechanismTipSlope.textContent = "Load failed";
         }
-        if (mechanismQValue && mechanismQValue.textContent.trim() === "-") {
+        if (mechanismQValue) {
           mechanismQValue.textContent = "Load failed";
         }
-        if (mechanismAValue && mechanismAValue.textContent.trim() === "-") {
+        if (mechanismAValue) {
           mechanismAValue.textContent = "Load failed";
         }
-        if (mechanismErrors && mechanismErrors.textContent.trim() === "-") {
+        if (mechanismErrors) {
           mechanismErrors.textContent = "Load failed";
         }
-        if (mechanismLoadValue && mechanismLoadValue.textContent.trim() === "-") {
+        if (mechanismLoadValue) {
           mechanismLoadValue.textContent = "Load failed";
         }
       });
+  }
+
+  function reloadMechanismPanel() {
+    stopMechanismAnimation();
+    mechanismLoaded = false;
+    mechanismOverlayData = null;
+    mechanismBounds = null;
+    mechanismTrendBounds = null;
+    if (mechanismGammas) {
+      mechanismGammas.textContent = "Loading";
+    }
+    if (mechanismKbar) {
+      mechanismKbar.textContent = "Loading";
+    }
+    if (mechanismThetas) {
+      mechanismThetas.textContent = "Loading";
+    }
+    if (mechanismTipSlope) {
+      mechanismTipSlope.textContent = "Loading";
+    }
+    if (mechanismQValue) {
+      mechanismQValue.textContent = "Loading";
+    }
+    if (mechanismAValue) {
+      mechanismAValue.textContent = "Loading";
+    }
+    if (mechanismErrors) {
+      mechanismErrors.textContent = "Loading";
+    }
+    if (mechanismLoadValue) {
+      mechanismLoadValue.textContent = "Loading";
+    }
+    loadMechanismPanelData();
+  }
+
+  function initializeMechanismPanel() {
+    if (!mechanismPlot) {
+      return;
+    }
+
+    if (!mechanismPanelInitialized) {
+      if (mechanismAngleSlider && mechanismAngleInput) {
+        mechanismAngleSlider.addEventListener("input", () => {
+          renderMechanismFrameIndex(Number(mechanismAngleSlider.value));
+        });
+        mechanismAngleInput.addEventListener("input", () => {
+          const typedValue = Number(mechanismAngleInput.value);
+          if (Number.isFinite(typedValue)) {
+            renderMechanismState(typedValue);
+          }
+        });
+        mechanismAngleInput.addEventListener("keydown", (event) => {
+          if (event.key === "Enter") {
+            mechanismAngleInput.blur();
+          }
+        });
+      }
+
+      if (mechanismShowFEA) {
+        mechanismShowFEA.addEventListener("change", applyMechanismVisibility);
+      }
+      if (mechanismShowPRB) {
+        mechanismShowPRB.addEventListener("change", applyMechanismVisibility);
+      }
+      if (mechanismAnimateButton) {
+        mechanismAnimateButton.addEventListener("click", toggleMechanismAnimation);
+      }
+      mechanismTrendModeButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          setMechanismTopTrendMode(button.dataset.mechanismTrendMode);
+        });
+      });
+      mechanismKbarSourceButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          const nextSource = button.dataset.mechanismKbarSource === "report" ? "report" : "computed";
+          if (nextSource === mechanismKbarSource) {
+            return;
+          }
+          mechanismKbarSource = nextSource;
+          updateMechanismKbarSourceButtons();
+          reloadMechanismPanel();
+        });
+      });
+      mechanismPanelInitialized = true;
+    }
+
+    updateMechanismKbarSourceButtons();
+    if (!mechanismLoaded) {
+      loadMechanismPanelData();
+    }
   }
 
   function initializeAtlasPanel() {

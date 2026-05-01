@@ -51,6 +51,7 @@ SECTION510_FIGURE12_FORCE_ANGLE_DEG = 90.0
 SECTION510_FIGURE13_FORCE_ANGLES_DEG = [30.0, 60.0, 120.0, 135.0, 150.0, 175.0]
 SECTION510_FIGURE13_LOAD_RATIO = 0.0
 SECTION510_NUM_LOCUS_POINTS = 90
+REPORT_TABLE1_KBAR = np.array([3.51, 2.99, 2.58], dtype=float)
 
 SECTION520_CRANK_START_DEG = 0.0
 SECTION520_CRANK_END_DEG = 360.0
@@ -65,9 +66,9 @@ SECTION520_TO_FEA_SCALE = 100.0
 
 FEA_PART_NAMES = ("CRANK-1", "COUP-1", "FLEX-1")
 
-SECTION520_PARAMETER_CACHE: dict[str, object] | None = None
-SECTION520_MOTION_CACHE: dict[str, object] | None = None
-SECTION520_OVERLAY_CACHE: dict[str, object] | None = None
+SECTION520_PARAMETER_CACHE: dict[str, dict[str, object]] = {}
+SECTION520_MOTION_CACHE: dict[str, dict[str, object]] = {}
+SECTION520_OVERLAY_CACHE: dict[str, dict[str, object]] = {}
 SECTION4_WORKSPACE_CACHE: dict[str, object] | None = None
 SECTION700_EXPERIMENT_CACHE: dict[str, dict[str, object]] = {}
 SECTION700_NUM_FRAMES = 81
@@ -729,9 +730,9 @@ def section510_evaluate_load_family(
     }
 
 
-def get_section520_parameters() -> tuple[np.ndarray, np.ndarray, str]:
-    global SECTION520_PARAMETER_CACHE
-    if SECTION520_PARAMETER_CACHE is None:
+def get_section520_parameters(stiffness_source: str = "computed") -> tuple[np.ndarray, np.ndarray, str]:
+    stiffness_key = "report" if str(stiffness_source).strip().lower() == "report" else "computed"
+    if stiffness_key not in SECTION520_PARAMETER_CACHE:
         result, _ = search_characteristic_radius_factors_eq23(
             SECTION4_L_OVER_T,
             SECTION4_SIGMA_OVER_E,
@@ -741,29 +742,34 @@ def get_section520_parameters() -> tuple[np.ndarray, np.ndarray, str]:
             SECTION4_FORCE_FIT_FRACTION,
         )
         gammas = result.gammas.copy()
-        kbar, stiffness_by_kappa = compute_load_independent_stiffness(
+        computed_kbar, stiffness_by_kappa = compute_load_independent_stiffness(
             gammas,
             SECTION500_KAPPA_VALUES,
             math.pi / 2.0,
             SECTION510_NUM_KAPPA_FIT_THETA_SAMPLES,
         )
-        SECTION520_PARAMETER_CACHE = {
+        if stiffness_key == "report":
+            kbar = REPORT_TABLE1_KBAR.copy()
+            stiffness_label = "report Table 1 stiffness set"
+        else:
+            kbar = computed_kbar
+            stiffness_label = "computed load-independent average"
+        SECTION520_PARAMETER_CACHE[stiffness_key] = {
             "gammas": gammas,
             "kbar": kbar,
-            "stiffness_label": "computed load-independent average",
+            "stiffness_label": stiffness_label,
             "stiffness_by_kappa": stiffness_by_kappa,
         }
 
     return (
-        np.array(SECTION520_PARAMETER_CACHE["gammas"], dtype=float),
-        np.array(SECTION520_PARAMETER_CACHE["kbar"], dtype=float),
-        str(SECTION520_PARAMETER_CACHE["stiffness_label"]),
+        np.array(SECTION520_PARAMETER_CACHE[stiffness_key]["gammas"], dtype=float),
+        np.array(SECTION520_PARAMETER_CACHE[stiffness_key]["kbar"], dtype=float),
+        str(SECTION520_PARAMETER_CACHE[stiffness_key]["stiffness_label"]),
     )
 
 
 def get_section4_workspace_payload() -> dict[str, object]:
     global SECTION4_WORKSPACE_CACHE
-    global SECTION520_PARAMETER_CACHE
     if SECTION4_WORKSPACE_CACHE is not None:
         return SECTION4_WORKSPACE_CACHE
 
@@ -827,8 +833,8 @@ def get_section4_workspace_payload() -> dict[str, object]:
     ]
     stiffness_label = "computed load-independent average"
 
-    if SECTION520_PARAMETER_CACHE is None:
-        SECTION520_PARAMETER_CACHE = {
+    if "computed" not in SECTION520_PARAMETER_CACHE:
+        SECTION520_PARAMETER_CACHE["computed"] = {
             "gammas": gammas.copy(),
             "kbar": kbar.copy(),
             "stiffness_label": stiffness_label,
@@ -929,9 +935,9 @@ def section700_joint_positions(theta: np.ndarray, gammas: np.ndarray) -> np.ndar
     return np.vstack([origin, p1, p2, p3, p4])
 
 
-def get_section700_parameters() -> tuple[np.ndarray, np.ndarray]:
+def get_section700_parameters(stiffness_source: str = "computed") -> tuple[np.ndarray, np.ndarray]:
     """Reuse the computed project PRB parameters for medical experiments."""
-    gammas, kbar, _ = get_section520_parameters()
+    gammas, kbar, _ = get_section520_parameters(stiffness_source)
     return np.asarray(gammas, dtype=float), np.asarray(kbar, dtype=float)
 
 
@@ -1244,6 +1250,7 @@ def get_section701_sinusoid_payload(
     tip_amplitude: float = SECTION701_TIP_AMPLITUDE,
     core_motion_time: float = SECTION701_CORE_MOTION_TIME,
     beam: dict[str, float] | None = None,
+    stiffness_source: str = "computed",
 ) -> dict[str, object]:
     beam_parameters = beam or {
         "beam_length": DEFAULT_BEAM_LENGTH,
@@ -1252,8 +1259,9 @@ def get_section701_sinusoid_payload(
         "youngs_modulus": DEFAULT_YOUNGS_MODULUS,
         "sigma_max": DEFAULT_SIGMA_MAX,
     }
+    stiffness_key = "report" if str(stiffness_source).strip().lower() == "report" else "computed"
     cache_key = (
-        f"sinusoid:{tip_amplitude:.6f}:{core_motion_time:.6f}:"
+        f"sinusoid:{stiffness_key}:{tip_amplitude:.6f}:{core_motion_time:.6f}:"
         f"{beam_parameters['beam_length']:.6f}:{beam_parameters['beam_width']:.6f}:"
         f"{beam_parameters['thickness']:.6f}:{beam_parameters['youngs_modulus']:.6f}:"
         f"{beam_parameters['sigma_max']:.6f}"
@@ -1261,7 +1269,7 @@ def get_section701_sinusoid_payload(
     if cache_key in SECTION700_EXPERIMENT_CACHE:
         return SECTION700_EXPERIMENT_CACHE[cache_key]
 
-    gammas, kbar = get_section700_parameters()
+    gammas, kbar = get_section700_parameters(stiffness_key)
     total_motion_time = float(core_motion_time) + 2.0 * float(SECTION701_END_HOLD_TIME)
     time_values = np.linspace(0.0, total_motion_time, SECTION700_NUM_FRAMES)
     y_desired_values, theta0_desired_values = section701_desired_tip_motion(
@@ -1448,12 +1456,17 @@ def section520_solve_configuration(
     return np.array(best_result.x, dtype=float)
 
 
-def section520_solve_motion() -> dict[str, object]:
-    global SECTION520_MOTION_CACHE
-    if SECTION520_MOTION_CACHE is not None:
-        return SECTION520_MOTION_CACHE
+def section520_solve_motion(stiffness_source: str = "computed") -> dict[str, object]:
+    stiffness_key = "report" if str(stiffness_source).strip().lower() == "report" else "computed"
+    if stiffness_key in SECTION520_MOTION_CACHE:
+        return SECTION520_MOTION_CACHE[stiffness_key]
 
-    gammas, kbar, stiffness_label = get_section520_parameters()
+    gammas, kbar, stiffness_label = get_section520_parameters(stiffness_key)
+    parameter_source = (
+        SECTION520_PARAMETER_SOURCE
+        if stiffness_key == "computed"
+        else "Section 4.4 gamma search with the report Table 1 stiffness set"
+    )
     crank_angle_values = np.linspace(
         math.radians(SECTION520_CRANK_START_DEG),
         math.radians(SECTION520_CRANK_END_DEG),
@@ -1493,8 +1506,8 @@ def section520_solve_motion() -> dict[str, object]:
         residual_rows.append(float(np.linalg.norm(residual, ord=2)))
         previous_theta = theta
 
-    SECTION520_MOTION_CACHE = {
-        "parameter_source": SECTION520_PARAMETER_SOURCE,
+    SECTION520_MOTION_CACHE[stiffness_key] = {
+        "parameter_source": parameter_source,
         "stiffness_label": stiffness_label,
         "gammas": [float(value) for value in gammas],
         "kbar": [float(value) for value in kbar],
@@ -1508,7 +1521,7 @@ def section520_solve_motion() -> dict[str, object]:
         "residual_norm": [float(value) for value in residual_rows],
         "B": [float(value) for value in SECTION520_B],
     }
-    return SECTION520_MOTION_CACHE
+    return SECTION520_MOTION_CACHE[stiffness_key]
 
 
 def parse_step_time(frame_label: str) -> float:
@@ -1588,12 +1601,12 @@ def wrap_angle_0_360(angle_deg: float) -> float:
     return wrapped
 
 
-def get_section520_overlay_payload() -> dict[str, object]:
-    global SECTION520_OVERLAY_CACHE
-    if SECTION520_OVERLAY_CACHE is not None:
-        return SECTION520_OVERLAY_CACHE
+def get_section520_overlay_payload(stiffness_source: str = "computed") -> dict[str, object]:
+    stiffness_key = "report" if str(stiffness_source).strip().lower() == "report" else "computed"
+    if stiffness_key in SECTION520_OVERLAY_CACHE:
+        return SECTION520_OVERLAY_CACHE[stiffness_key]
 
-    motion = section520_solve_motion()
+    motion = section520_solve_motion(stiffness_key)
     frames = load_verification_frames()
     prb_angles_deg = np.asarray(motion["angle_deg"], dtype=float)
 
@@ -1618,7 +1631,7 @@ def get_section520_overlay_payload() -> dict[str, object]:
             }
         )
 
-    SECTION520_OVERLAY_CACHE = {
+    SECTION520_OVERLAY_CACHE[stiffness_key] = {
         "parameter_source": motion["parameter_source"],
         "stiffness_label": motion["stiffness_label"],
         "gammas": motion["gammas"],
@@ -1627,7 +1640,7 @@ def get_section520_overlay_payload() -> dict[str, object]:
         "prb_motion": motion,
         "fea_frames": fea_frames_payload,
     }
-    return SECTION520_OVERLAY_CACHE
+    return SECTION520_OVERLAY_CACHE[stiffness_key]
 
 
 class AtlasRequestHandler(SimpleHTTPRequestHandler):
@@ -1725,6 +1738,7 @@ class AtlasRequestHandler(SimpleHTTPRequestHandler):
         try:
             params = parse_qs(query)
             mode = str(params.get("mode", ["sinusoid"])[0]).strip().lower()
+            stiffness_source = str(params.get("kbar_source", ["computed"])[0]).strip().lower()
             tip_amplitude = float(params.get("tip_amplitude", [SECTION701_TIP_AMPLITUDE])[0])
             core_motion_time = float(params.get("core_motion_time", [SECTION701_CORE_MOTION_TIME])[0])
             beam = read_beam_parameters(params)
@@ -1737,12 +1751,14 @@ class AtlasRequestHandler(SimpleHTTPRequestHandler):
                     tip_amplitude=tip_amplitude,
                     core_motion_time=core_motion_time,
                     beam=beam,
+                    stiffness_source=stiffness_source,
                 )
             else:
                 payload = get_section701_sinusoid_payload(
                     tip_amplitude=tip_amplitude,
                     core_motion_time=core_motion_time,
                     beam=beam,
+                    stiffness_source=stiffness_source,
                 )
             body = json.dumps(payload).encode("utf-8")
         except Exception as exc:
@@ -1825,7 +1841,9 @@ class AtlasRequestHandler(SimpleHTTPRequestHandler):
 
     def _handle_section520_overlay_api(self) -> None:
         try:
-            payload = get_section520_overlay_payload()
+            params = parse_qs(urlparse(self.path).query)
+            stiffness_source = str(params.get("kbar_source", ["computed"])[0]).strip().lower()
+            payload = get_section520_overlay_payload(stiffness_source)
             body = json.dumps(payload).encode("utf-8")
         except Exception as exc:
             body = json.dumps({"error": str(exc)}).encode("utf-8")

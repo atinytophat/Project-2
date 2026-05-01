@@ -59,12 +59,13 @@ body {
   background: #ffffff;
   color: var(--muted);
   border-radius: 12px 12px 0 0;
-  padding: 8px 14px;
+  padding: 8px 12px;
   font: inherit;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 800;
   cursor: pointer;
   transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
+  white-space: nowrap;
 }
 
 .tab-button:hover {
@@ -494,6 +495,31 @@ body {
 .materials-mode-tabs {
   display: flex;
   gap: 8px;
+}
+
+.source-toggle-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.source-toggle-button {
+  border: 1px solid var(--line);
+  background: #ffffff;
+  color: var(--muted);
+  border-radius: 12px;
+  padding: 7px 12px;
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.source-toggle-button.active {
+  background: #ffffff;
+  color: var(--ink);
+  border-color: rgba(12, 138, 164, 0.24);
 }
 
 .materials-mode-tab {
@@ -1492,6 +1518,11 @@ body.plot-zoom-open::before {
   cursor: pointer;
 }
 
+.plot-zoom-visual {
+  transform-origin: 0 0;
+  transition: transform 120ms ease;
+}
+
 .plot-zoomed {
   position: fixed !important;
   inset: 20px !important;
@@ -1507,7 +1538,7 @@ body.plot-zoom-open::before {
   display: flex !important;
   flex-direction: column !important;
   gap: 10px;
-  overflow: hidden !important;
+  overflow: auto !important;
 }
 
 .plot-zoomed > svg,

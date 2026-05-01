@@ -110,15 +110,33 @@ def build() -> None:
         core_motion_time=server.SECTION701_CORE_MOTION_TIME,
         beam=default_beam,
     )
+    medical_default_report = server.get_section701_sinusoid_payload(
+        tip_amplitude=server.SECTION701_TIP_AMPLITUDE,
+        core_motion_time=server.SECTION701_CORE_MOTION_TIME,
+        beam=default_beam,
+        stiffness_source="report",
+    )
     medical_pebax = server.get_section701_sinusoid_payload(
         tip_amplitude=server.SECTION701_TIP_AMPLITUDE,
         core_motion_time=server.SECTION701_CORE_MOTION_TIME,
         beam=pebax_beam,
     )
+    medical_pebax_report = server.get_section701_sinusoid_payload(
+        tip_amplitude=server.SECTION701_TIP_AMPLITUDE,
+        core_motion_time=server.SECTION701_CORE_MOTION_TIME,
+        beam=pebax_beam,
+        stiffness_source="report",
+    )
     medical_tpu = server.get_section701_sinusoid_payload(
         tip_amplitude=server.SECTION701_TIP_AMPLITUDE,
         core_motion_time=server.SECTION701_CORE_MOTION_TIME,
         beam=tpu_beam,
+    )
+    medical_tpu_report = server.get_section701_sinusoid_payload(
+        tip_amplitude=server.SECTION701_TIP_AMPLITUDE,
+        core_motion_time=server.SECTION701_CORE_MOTION_TIME,
+        beam=tpu_beam,
+        stiffness_source="report",
     )
 
     write_json(DATA_DIR / "atlas-default.json", atlas_default)
@@ -126,9 +144,13 @@ def build() -> None:
     write_json(DATA_DIR / "atlas-report.json", {"panels": report_panels})
     write_json(DATA_DIR / "section4-workspace.json", server.get_section4_workspace_payload())
     write_json(DATA_DIR / "section520-overlay.json", server.get_section520_overlay_payload())
+    write_json(DATA_DIR / "section520-overlay-report.json", server.get_section520_overlay_payload("report"))
     write_json(DATA_DIR / "medical-default.json", medical_default)
+    write_json(DATA_DIR / "medical-default-report.json", medical_default_report)
     write_json(DATA_DIR / "medical-pebax.json", medical_pebax)
+    write_json(DATA_DIR / "medical-pebax-report.json", medical_pebax_report)
     write_json(DATA_DIR / "medical-tpu.json", medical_tpu)
+    write_json(DATA_DIR / "medical-tpu-report.json", medical_tpu_report)
 
 
 if __name__ == "__main__":

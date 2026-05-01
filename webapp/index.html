@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Compliant Design Workspace</title>
-  <link rel="stylesheet" href="./styles.css?v=20260501i" />
+  <link rel="stylesheet" href="./styles.css?v=20260501j" />
 </head>
 <body>
   <div class="app-shell">
@@ -14,13 +14,13 @@
           Section 2 Atlas
         </button>
         <button class="tab-button" id="tab-prb" type="button" role="tab" aria-selected="false" aria-controls="panel-prb" data-tab-target="prb">
-          Section 4 PRB
+          Section 4: PRB 3R Parameters
         </button>
         <button class="tab-button" id="tab-mechanism" type="button" role="tab" aria-selected="false" aria-controls="panel-mechanism" data-tab-target="mechanism">
-          Section 5 Mechanism
+          Section 5: FEA Verification
         </button>
         <button class="tab-button" id="tab-materials" type="button" role="tab" aria-selected="false" aria-controls="panel-materials" data-tab-target="materials">
-          Material Library
+          Medical Steering Study
         </button>
       </div>
     </header>
@@ -400,6 +400,16 @@
             <h2 class="atlas-side-title">Mechanism Tools</h2>
             <h3>Interactive PRB and FEA comparison</h3>
 
+            <div class="card-kicker">Stiffness source</div>
+            <div class="source-toggle-row" role="group" aria-label="Section 5 stiffness source">
+              <button class="source-toggle-button active" type="button" data-mechanism-kbar-source="computed">
+                Computed
+              </button>
+              <button class="source-toggle-button" type="button" data-mechanism-kbar-source="report">
+                Report
+              </button>
+            </div>
+
             <label class="control-block" for="mechanismAngleSlider">
               <span class="control-label-row">
                 <span>Crank angle (&deg;)</span>
@@ -553,8 +563,18 @@
             <article class="content-card materials-summary-card">
               <div class="card-kicker">Medical experiments</div>
               <p class="eyebrow atlas-side-eyebrow">Medical path study</p>
-              <h2 class="atlas-side-title">Material Library</h2>
+              <h2 class="atlas-side-title">Medical Steering Study</h2>
               <h3 id="materialsExperimentTitle">Sinusoidal tip motion</h3>
+
+              <div class="card-kicker">Stiffness source</div>
+              <div class="source-toggle-row" role="group" aria-label="Medical stiffness source">
+                <button class="source-toggle-button active" type="button" data-materials-kbar-source="computed">
+                  Computed
+                </button>
+                <button class="source-toggle-button" type="button" data-materials-kbar-source="report">
+                  Report
+                </button>
+              </div>
 
               <div class="card-kicker">Material presets</div>
               <div class="materials-mode-tabs" role="group" aria-label="Medical material presets">
@@ -651,7 +671,7 @@
     </main>
   </div>
 
-  <script src="./py_backend.js?v=20260501i"></script>
-  <script src="./app.js?v=20260501i"></script>
+  <script src="./py_backend.js?v=20260501j"></script>
+  <script src="./app.js?v=20260501j"></script>
 </body>
 </html>
