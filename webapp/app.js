@@ -241,8 +241,10 @@
   let mechanismLoaded = false;
   let mechanismBounds = null;
   let mechanismCurrentFrameIndex = 0;
+  let mechanismCurrentAngleDeg = 0;
   let mechanismAnimationTimer = null;
   let mechanismTrendBounds = null;
+  let mechanismInterpolationData = null;
   let mechanismFEAFlexNodePool = [];
   let mechanismJointPointPool = [];
   let materialsPanelInitialized = false;
@@ -1873,17 +1875,13 @@
       plotBottom -= verticalPadding;
     }
 
-    const maxForceComponent = Math.max(
-      1e-6,
-      ...data.frames.flatMap((frame) => [
-        Math.abs(Number(frame.force_x || 0)),
-        Math.abs(Number(frame.force_y || 0)),
-      ]),
-    );
-    const maxTipMoment = Math.max(
-      1e-6,
-      ...data.frames.map((frame) => Math.abs(Number(frame.tip_moment || 0))),
-    );
+    const forceComponents = data.frames.flatMap((frame) => [
+      Number(frame.force_x || 0),
+      Number(frame.force_y || 0),
+    ]);
+    const tipMoments = data.frames.map((frame) => Number(frame.tip_moment || 0));
+    const maxForceComponent = computeAbsolutePercentile(forceComponents, 0.9);
+    const maxTipMoment = computeAbsolutePercentile(tipMoments, 0.9);
 
     return {
       xMin: Math.floor(xMin / 0.1) * 0.1,
@@ -2010,6 +2008,22 @@
       theta: computeRangeBounds([...thetaDesired, ...thetaActual], { includeZero: true }),
       moment: computeRangeBounds(momentValues, { includeZero: true }),
     };
+  }
+
+  function computeAbsolutePercentile(values, percentile = 0.9) {
+    const numericValues = values
+      .map((value) => Math.abs(Number(value)))
+      .filter((value) => Number.isFinite(value))
+      .sort((leftValue, rightValue) => leftValue - rightValue);
+    if (numericValues.length === 0) {
+      return 1;
+    }
+    const clampedPercentile = clamp(percentile, 0, 1);
+    const index = Math.min(
+      numericValues.length - 1,
+      Math.max(0, Math.round(clampedPercentile * (numericValues.length - 1))),
+    );
+    return Math.max(numericValues[index], 1e-6);
   }
 
   function buildMaterialsTrendPath(points, xBounds, yBounds, plotElement) {
@@ -2503,9 +2517,16 @@
     const fyValue = Number(frame.force_y || 0);
     const tipMomentValue = Number(frame.tip_moment || 0);
     const arrowMaxLength = 42;
-    const forceScale = arrowMaxLength / Math.max(Number(materialsBounds.maxForceComponent || 1), 1e-6);
-    const fxLength = fxValue * forceScale;
-    const fyLength = fyValue * forceScale;
+    const arrowMinLength = 14;
+    const forceReference = Math.max(Number(materialsBounds.maxForceComponent || 1), 1e-6);
+    const scaledFxLength = Math.abs(fxValue) * (arrowMaxLength / forceReference);
+    const scaledFyLength = Math.abs(fyValue) * (arrowMaxLength / forceReference);
+    const fxLength = Math.abs(fxValue) > 1e-8
+      ? Math.sign(fxValue) * clamp(scaledFxLength, arrowMinLength, arrowMaxLength)
+      : 0;
+    const fyLength = Math.abs(fyValue) > 1e-8
+      ? Math.sign(fyValue) * clamp(scaledFyLength, arrowMinLength, arrowMaxLength)
+      : 0;
     if (materialsFxArrow) {
       materialsFxArrow.setAttribute(
         "d",
@@ -2520,7 +2541,8 @@
       );
       materialsFyArrow.style.display = Math.abs(fyLength) > 1 ? "" : "none";
     }
-    const momentRadius = 18 + 10 * Math.min(Math.abs(tipMomentValue) / Math.max(Number(materialsBounds.maxTipMoment || 1), 1e-6), 1);
+    const momentReference = Math.max(Number(materialsBounds.maxTipMoment || 1), 1e-6);
+    const momentRadius = 18 + 10 * Math.min(Math.abs(tipMomentValue) / momentReference, 1);
     if (materialsMomentArc) {
       if (Math.abs(tipMomentValue) > 1e-8) {
         materialsMomentArc.setAttribute("d", buildMomentIndicatorPath(tipX, tipY, momentRadius, tipMomentValue >= 0));
@@ -2897,6 +2919,134 @@
     };
   }
 
+  function interpolateScalar(leftValue, rightValue, blend) {
+    return Number(leftValue) + (Number(rightValue) - Number(leftValue)) * blend;
+  }
+
+  function interpolatePoint(leftPoint, rightPoint, blend) {
+    return [
+      interpolateScalar(leftPoint[0], rightPoint[0], blend),
+      interpolateScalar(leftPoint[1], rightPoint[1], blend),
+    ];
+  }
+
+  function interpolatePointSeries(leftSeries, rightSeries, blend) {
+    return leftSeries.map((point, pointIndex) => interpolatePoint(point, rightSeries[pointIndex], blend));
+  }
+
+  function interpolateNumberSeries(leftSeries, rightSeries, blend) {
+    return leftSeries.map((value, valueIndex) => interpolateScalar(value, rightSeries[valueIndex], blend));
+  }
+
+  function findAngleBracket(series, targetAngle) {
+    const wrappedTarget = wrapAngleDegrees(targetAngle);
+    if (!Array.isArray(series) || series.length === 0) {
+      return { left: null, right: null, blend: 0 };
+    }
+    if (series.length === 1) {
+      return { left: series[0], right: series[0], blend: 0 };
+    }
+
+    for (let index = 0; index < series.length - 1; index += 1) {
+      const leftFrame = series[index];
+      const rightFrame = series[index + 1];
+      if (wrappedTarget >= leftFrame.angle && wrappedTarget <= rightFrame.angle) {
+        const span = Math.max(rightFrame.angle - leftFrame.angle, 1e-9);
+        return {
+          left: leftFrame,
+          right: rightFrame,
+          blend: (wrappedTarget - leftFrame.angle) / span,
+        };
+      }
+    }
+
+    const leftFrame = series[series.length - 1];
+    const rightFrame = series[0];
+    const rightAngleWrapped = rightFrame.angle + 360;
+    const adjustedTarget = wrappedTarget < leftFrame.angle ? wrappedTarget + 360 : wrappedTarget;
+    const span = Math.max(rightAngleWrapped - leftFrame.angle, 1e-9);
+    return {
+      left: leftFrame,
+      right: rightFrame,
+      blend: (adjustedTarget - leftFrame.angle) / span,
+    };
+  }
+
+  function buildMechanismInterpolationData(overlayData) {
+    const feaScale = 1 / Number(overlayData.prb_scale_to_fea || 1);
+    const feaFrames = overlayData.fea_frames.map((frame) => {
+      const crank = frame.parts["CRANK-1"].deformed_xy.map((point) => point.map((value) => Number(value) * feaScale));
+      const coupler = frame.parts["COUP-1"].deformed_xy.map((point) => point.map((value) => Number(value) * feaScale));
+      const flex = frame.parts["FLEX-1"].deformed_xy.map((point) => point.map((value) => Number(value) * feaScale));
+      const qPoint = flex[flex.length - 1];
+      const aPoint = crank[crank.length - 1];
+      return {
+        angle: wrapAngleDegrees(Number(frame.crank_angle_deg)),
+        crank,
+        coupler,
+        flex,
+        qPoint,
+        aPoint,
+        theta0Deg: computeFeaTipAngleDegrees(flex),
+        positionMagnitude: computePositionMagnitude(qPoint),
+      };
+    }).sort((leftFrame, rightFrame) => leftFrame.angle - rightFrame.angle);
+
+    const prbFrames = overlayData.prb_motion.angle_deg.map((angleDeg, index) => {
+      const qPoint = overlayData.prb_motion.Q[index].map(Number);
+      return {
+        angle: wrapAngleDegrees(Number(angleDeg)),
+        chain: overlayData.prb_motion.chain[index].map((point) => point.map(Number)),
+        qPoint,
+        aPoint: overlayData.prb_motion.A[index].map(Number),
+        crankPoint: overlayData.prb_motion.crank_tip[index].map(Number),
+        theta: overlayData.prb_motion.theta[index].map(Number),
+        load: overlayData.prb_motion.load[index].map(Number),
+        theta0Deg: radiansToDegrees(overlayData.prb_motion.theta[index].reduce((sum, value) => sum + Number(value), 0)),
+        positionMagnitude: computePositionMagnitude(qPoint),
+      };
+    }).sort((leftFrame, rightFrame) => leftFrame.angle - rightFrame.angle);
+
+    return { feaFrames, prbFrames };
+  }
+
+  function interpolateMechanismStateAtAngle(targetAngleDeg) {
+    if (!mechanismInterpolationData || !mechanismOverlayData) {
+      return null;
+    }
+
+    const feaBracket = findAngleBracket(mechanismInterpolationData.feaFrames, targetAngleDeg);
+    const prbBracket = findAngleBracket(mechanismInterpolationData.prbFrames, targetAngleDeg);
+    if (!feaBracket.left || !prbBracket.left) {
+      return null;
+    }
+
+    const fea = {
+      angle: wrapAngleDegrees(targetAngleDeg),
+      crank: interpolatePointSeries(feaBracket.left.crank, feaBracket.right.crank, feaBracket.blend),
+      coupler: interpolatePointSeries(feaBracket.left.coupler, feaBracket.right.coupler, feaBracket.blend),
+      flex: interpolatePointSeries(feaBracket.left.flex, feaBracket.right.flex, feaBracket.blend),
+      qPoint: interpolatePoint(feaBracket.left.qPoint, feaBracket.right.qPoint, feaBracket.blend),
+      aPoint: interpolatePoint(feaBracket.left.aPoint, feaBracket.right.aPoint, feaBracket.blend),
+      theta0Deg: interpolateScalar(feaBracket.left.theta0Deg, feaBracket.right.theta0Deg, feaBracket.blend),
+      positionMagnitude: interpolateScalar(feaBracket.left.positionMagnitude, feaBracket.right.positionMagnitude, feaBracket.blend),
+    };
+
+    const prb = {
+      angle: wrapAngleDegrees(targetAngleDeg),
+      chain: interpolatePointSeries(prbBracket.left.chain, prbBracket.right.chain, prbBracket.blend),
+      qPoint: interpolatePoint(prbBracket.left.qPoint, prbBracket.right.qPoint, prbBracket.blend),
+      aPoint: interpolatePoint(prbBracket.left.aPoint, prbBracket.right.aPoint, prbBracket.blend),
+      crankPoint: interpolatePoint(prbBracket.left.crankPoint, prbBracket.right.crankPoint, prbBracket.blend),
+      theta: interpolateNumberSeries(prbBracket.left.theta, prbBracket.right.theta, prbBracket.blend),
+      load: interpolateNumberSeries(prbBracket.left.load, prbBracket.right.load, prbBracket.blend),
+      theta0Deg: interpolateScalar(prbBracket.left.theta0Deg, prbBracket.right.theta0Deg, prbBracket.blend),
+      positionMagnitude: interpolateScalar(prbBracket.left.positionMagnitude, prbBracket.right.positionMagnitude, prbBracket.blend),
+    };
+
+    return { fea, prb };
+  }
+
   function buildTrendPath(points, bounds, plotElement) {
     const width = plotElement.viewBox.baseVal.width;
     const height = plotElement.viewBox.baseVal.height;
@@ -3213,37 +3363,37 @@
     return bestIndex;
   }
 
-  function renderMechanismState(index) {
-    if (!mechanismOverlayData || !mechanismBounds) {
+  function renderMechanismState(angleDeg) {
+    if (!mechanismOverlayData || !mechanismBounds || !mechanismInterpolationData) {
       return;
     }
 
-    const frameIndex = clamp(index, 0, mechanismOverlayData.fea_frames.length - 1);
-    const frame = mechanismOverlayData.fea_frames[frameIndex];
-    const feaScale = 1 / Number(mechanismOverlayData.prb_scale_to_fea || 1);
-    const prbIndex = Number(frame.matched_prb_index);
-    const prbMotion = mechanismOverlayData.prb_motion;
-    const chain = prbMotion.chain[prbIndex];
-    const qPoint = prbMotion.Q[prbIndex];
-    const aPoint = prbMotion.A[prbIndex];
-    const crankPoint = prbMotion.crank_tip[prbIndex];
-    const thetaRow = prbMotion.theta[prbIndex];
-    const loadRow = prbMotion.load[prbIndex];
-    const prbAngleDeg = Number(prbMotion.angle_deg[prbIndex]);
-    const feaAngleDeg = Number(frame.crank_angle_deg);
-    const feaCrank = frame.parts["CRANK-1"].deformed_xy.map((point) => point.map((value) => Number(value) * feaScale));
-    const feaCoupler = frame.parts["COUP-1"].deformed_xy.map((point) => point.map((value) => Number(value) * feaScale));
-    const feaFlex = frame.parts["FLEX-1"].deformed_xy.map((point) => point.map((value) => Number(value) * feaScale));
-    const feaA = feaCrank[feaCrank.length - 1];
-    const feaQ = feaFlex[feaFlex.length - 1];
-    const feaTipDeg = computeFeaTipAngleDegrees(feaFlex);
-    const prbTipDeg = radiansToDegrees(thetaRow.reduce((sum, value) => sum + Number(value), 0));
-    const feaPositionMagnitude = computePositionMagnitude(feaQ);
-    const prbPositionMagnitude = computePositionMagnitude(qPoint);
+    const interpolatedState = interpolateMechanismStateAtAngle(angleDeg);
+    if (!interpolatedState) {
+      return;
+    }
+
+    const feaAngleDeg = wrapAngleDegrees(angleDeg);
+    const prbAngleDeg = wrapAngleDegrees(angleDeg);
+    const feaCrank = interpolatedState.fea.crank;
+    const feaCoupler = interpolatedState.fea.coupler;
+    const feaFlex = interpolatedState.fea.flex;
+    const feaA = interpolatedState.fea.aPoint;
+    const feaQ = interpolatedState.fea.qPoint;
+    const feaTipDeg = interpolatedState.fea.theta0Deg;
+    const feaPositionMagnitude = interpolatedState.fea.positionMagnitude;
+    const chain = interpolatedState.prb.chain;
+    const qPoint = interpolatedState.prb.qPoint;
+    const aPoint = interpolatedState.prb.aPoint;
+    const crankPoint = interpolatedState.prb.crankPoint;
+    const thetaRow = interpolatedState.prb.theta;
+    const loadRow = interpolatedState.prb.load;
+    const prbTipDeg = interpolatedState.prb.theta0Deg;
+    const prbPositionMagnitude = interpolatedState.prb.positionMagnitude;
     const aError = Math.hypot(Number(aPoint[0]) - Number(feaA[0]), Number(aPoint[1]) - Number(feaA[1]));
     const qError = Math.hypot(Number(qPoint[0]) - Number(feaQ[0]), Number(qPoint[1]) - Number(feaQ[1]));
 
-    mechanismCurrentFrameIndex = frameIndex;
+    mechanismCurrentAngleDeg = feaAngleDeg;
 
     mechanismFEACrank.setAttribute("d", buildMechanismPath(feaCrank));
     mechanismFEACoupler.setAttribute("d", buildMechanismPath(feaCoupler));
@@ -3262,7 +3412,7 @@
     }
 
     mechanismPRBChain.setAttribute("d", buildMechanismPath(chain));
-    mechanismBALink.setAttribute("d", buildMechanismPath([prbMotion.B, crankPoint]));
+    mechanismBALink.setAttribute("d", buildMechanismPath([mechanismOverlayData.prb_motion.B, crankPoint]));
     mechanismAQLink.setAttribute("d", buildMechanismPath([aPoint, qPoint]));
 
     if (mechanismJointPoints) {
@@ -3279,8 +3429,8 @@
 
     mechanismOrigin.setAttribute("cx", mechanismMapX(0));
     mechanismOrigin.setAttribute("cy", mechanismMapY(0));
-    mechanismBAnchor.setAttribute("cx", mechanismMapX(Number(prbMotion.B[0])));
-    mechanismBAnchor.setAttribute("cy", mechanismMapY(Number(prbMotion.B[1])));
+    mechanismBAnchor.setAttribute("cx", mechanismMapX(Number(mechanismOverlayData.prb_motion.B[0])));
+    mechanismBAnchor.setAttribute("cy", mechanismMapY(Number(mechanismOverlayData.prb_motion.B[1])));
     mechanismQPoint.setAttribute("cx", mechanismMapX(Number(qPoint[0])));
     mechanismQPoint.setAttribute("cy", mechanismMapY(Number(qPoint[1])));
     mechanismAPoint.setAttribute("cx", mechanismMapX(Number(aPoint[0])));
@@ -3288,7 +3438,7 @@
     mechanismCrankPoint.setAttribute("cx", mechanismMapX(Number(crankPoint[0])));
     mechanismCrankPoint.setAttribute("cy", mechanismMapY(Number(crankPoint[1])));
 
-    const displayAngle = wrapAngleDegrees(feaAngleDeg);
+    const displayAngle = feaAngleDeg;
     mechanismAngleSlider.value = displayAngle.toFixed(1);
     mechanismAngleInput.value = displayAngle.toFixed(1);
     if (mechanismFrameAngles) {
@@ -3319,7 +3469,7 @@
     const maxValue = Number(mechanismAngleSlider.max);
     const stepValue = Number(mechanismAngleSlider.step || 0.5);
     const normalizedValue = snapToStep(clamp(value, minValue, maxValue), minValue, stepValue);
-    renderMechanismState(findNearestMechanismFrameIndex(normalizedValue));
+    renderMechanismState(normalizedValue);
   }
 
   function stopMechanismAnimation() {
@@ -3348,8 +3498,8 @@
     }
 
     mechanismAnimationTimer = window.setInterval(() => {
-      const nextIndex = (mechanismCurrentFrameIndex + 1) % mechanismOverlayData.fea_frames.length;
-      renderMechanismState(nextIndex);
+      const nextAngle = wrapAngleDegrees(mechanismCurrentAngleDeg + 0.5);
+      renderMechanismState(nextAngle);
     }, 80);
   }
 
@@ -3363,6 +3513,7 @@
         mechanismOverlayData = data;
         mechanismBounds = buildMechanismBounds(data);
         mechanismTrendBounds = buildMechanismTrendBounds(data);
+        mechanismInterpolationData = buildMechanismInterpolationData(data);
         drawMechanismFrame();
         renderMechanismTrendPlots();
         if (mechanismParameterSource) {
