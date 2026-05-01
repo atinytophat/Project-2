@@ -48,7 +48,7 @@
     "#c17c1f", "#6a5acd", "#0f766e", "#d45d5d", "#43536e",
   ];
   const PRB_SERIES_COLORS = ["#0c8aa4", "#ef8c54", "#2f8f6d"];
-  const STATIC_VERSION = "20260501e";
+  const STATIC_VERSION = "20260501f";
   const MATERIAL_PRESETS = {
     pebax: {
       displayName: "PEBAX",
@@ -1894,14 +1894,6 @@
       plotBottom -= verticalPadding;
     }
 
-    const forceComponents = data.frames.flatMap((frame) => [
-      Number(frame.force_x || 0),
-      Number(frame.force_y || 0),
-    ]);
-    const tipMoments = data.frames.map((frame) => Number(frame.tip_moment || 0));
-    const maxForceComponent = computeAbsolutePercentile(forceComponents, 0.9);
-    const maxTipMoment = computeAbsolutePercentile(tipMoments, 0.9);
-
     return {
       xMin: Math.floor(xMin / 0.1) * 0.1,
       xMax: Math.ceil(xMax / 0.1) * 0.1,
@@ -1913,8 +1905,6 @@
       plotRight,
       plotTop,
       plotBottom,
-      maxForceComponent,
-      maxTipMoment,
     };
   }
 
