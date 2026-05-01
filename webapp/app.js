@@ -262,6 +262,10 @@
   let materialsJointPool = [];
   let materialsTargetPoint = null;
   let materialsTipPoint = null;
+  let materialsFxArrow = null;
+  let materialsFyArrow = null;
+  let materialsMomentArc = null;
+  let materialsMomentHead = null;
   let activeZoomTarget = null;
 
   function createSvgNode(tagName, attrs) {
@@ -1869,6 +1873,18 @@
       plotBottom -= verticalPadding;
     }
 
+    const maxForceComponent = Math.max(
+      1e-6,
+      ...data.frames.flatMap((frame) => [
+        Math.abs(Number(frame.force_x || 0)),
+        Math.abs(Number(frame.force_y || 0)),
+      ]),
+    );
+    const maxTipMoment = Math.max(
+      1e-6,
+      ...data.frames.map((frame) => Math.abs(Number(frame.tip_moment || 0))),
+    );
+
     return {
       xMin: Math.floor(xMin / 0.1) * 0.1,
       xMax: Math.ceil(xMax / 0.1) * 0.1,
@@ -1880,6 +1896,8 @@
       plotRight,
       plotTop,
       plotBottom,
+      maxForceComponent,
+      maxTipMoment,
     };
   }
 
@@ -2206,6 +2224,60 @@
     }).join(" ");
   }
 
+  function buildArrowPath(startX, startY, endX, endY, headSize = 8) {
+    const dx = endX - startX;
+    const dy = endY - startY;
+    const length = Math.hypot(dx, dy);
+    if (length < 1e-6) {
+      return "";
+    }
+    const ux = dx / length;
+    const uy = dy / length;
+    const hx = endX - ux * headSize;
+    const hy = endY - uy * headSize;
+    const px = -uy;
+    const py = ux;
+    const leftX = hx + px * headSize * 0.55;
+    const leftY = hy + py * headSize * 0.55;
+    const rightX = hx - px * headSize * 0.55;
+    const rightY = hy - py * headSize * 0.55;
+    return [
+      `M ${startX.toFixed(2)} ${startY.toFixed(2)}`,
+      `L ${endX.toFixed(2)} ${endY.toFixed(2)}`,
+      `M ${leftX.toFixed(2)} ${leftY.toFixed(2)}`,
+      `L ${endX.toFixed(2)} ${endY.toFixed(2)}`,
+      `L ${rightX.toFixed(2)} ${rightY.toFixed(2)}`,
+    ].join(" ");
+  }
+
+  function buildMomentIndicatorPath(centerX, centerY, radius, isPositive) {
+    const startAngle = isPositive ? -0.35 * Math.PI : 0.35 * Math.PI;
+    const endAngle = isPositive ? 1.25 * Math.PI : -1.25 * Math.PI;
+    const startX = centerX + radius * Math.cos(startAngle);
+    const startY = centerY + radius * Math.sin(startAngle);
+    const endX = centerX + radius * Math.cos(endAngle);
+    const endY = centerY + radius * Math.sin(endAngle);
+    const largeArcFlag = 1;
+    const sweepFlag = isPositive ? 1 : 0;
+    return `M ${startX.toFixed(2)} ${startY.toFixed(2)} A ${radius.toFixed(2)} ${radius.toFixed(2)} 0 ${largeArcFlag} ${sweepFlag} ${endX.toFixed(2)} ${endY.toFixed(2)}`;
+  }
+
+  function buildMomentArrowHeadPath(centerX, centerY, radius, isPositive, headSize = 8) {
+    const endAngle = isPositive ? 1.25 * Math.PI : -1.25 * Math.PI;
+    const tangentAngle = endAngle + (isPositive ? Math.PI / 2 : -Math.PI / 2);
+    const tipX = centerX + radius * Math.cos(endAngle);
+    const tipY = centerY + radius * Math.sin(endAngle);
+    const backX = tipX - Math.cos(tangentAngle) * headSize;
+    const backY = tipY - Math.sin(tangentAngle) * headSize;
+    const px = -Math.sin(tangentAngle);
+    const py = Math.cos(tangentAngle);
+    const leftX = backX + px * headSize * 0.55;
+    const leftY = backY + py * headSize * 0.55;
+    const rightX = backX - px * headSize * 0.55;
+    const rightY = backY - py * headSize * 0.55;
+    return `M ${leftX.toFixed(2)} ${leftY.toFixed(2)} L ${tipX.toFixed(2)} ${tipY.toFixed(2)} L ${rightX.toFixed(2)} ${rightY.toFixed(2)}`;
+  }
+
   function drawMaterialsFrame(bounds) {
     if (!materialsPlot || !materialsGrid || !materialsAxes) {
       return;
@@ -2345,8 +2417,42 @@
       r: 3.4,
       fill: "#ef8c54",
     });
+
+    materialsFxArrow = createSvgNode("path", {
+      class: "materials-line",
+      stroke: "#1f5c99",
+      "stroke-width": "2.0",
+      fill: "none",
+      d: "",
+    });
+    materialsFyArrow = createSvgNode("path", {
+      class: "materials-line",
+      stroke: "#2f8f6d",
+      "stroke-width": "2.0",
+      fill: "none",
+      d: "",
+    });
+    materialsMomentArc = createSvgNode("path", {
+      class: "materials-line",
+      stroke: "#b15d85",
+      "stroke-width": "2.0",
+      fill: "none",
+      d: "",
+    });
+    materialsMomentHead = createSvgNode("path", {
+      class: "materials-line",
+      stroke: "#b15d85",
+      "stroke-width": "2.0",
+      fill: "none",
+      d: "",
+    });
+
     materialsDynamic.appendChild(materialsTargetPoint);
     materialsDynamic.appendChild(materialsTipPoint);
+    materialsDynamic.appendChild(materialsFxArrow);
+    materialsDynamic.appendChild(materialsFyArrow);
+    materialsDynamic.appendChild(materialsMomentArc);
+    materialsDynamic.appendChild(materialsMomentHead);
   }
 
   function renderMaterialsState(frameIndex) {
@@ -2391,8 +2497,62 @@
     materialsTargetPoint.setAttribute("cy", materialsMapY(Number(frame.target_y), materialsBounds));
     materialsTipPoint.setAttribute("cx", materialsMapX(Number(frame.tip_x), materialsBounds));
     materialsTipPoint.setAttribute("cy", materialsMapY(Number(frame.tip_y), materialsBounds));
+    const tipX = materialsMapX(Number(frame.tip_x), materialsBounds);
+    const tipY = materialsMapY(Number(frame.tip_y), materialsBounds);
+    const fxValue = Number(frame.force_x || 0);
+    const fyValue = Number(frame.force_y || 0);
+    const tipMomentValue = Number(frame.tip_moment || 0);
+    const arrowMaxLength = 42;
+    const forceScale = arrowMaxLength / Math.max(Number(materialsBounds.maxForceComponent || 1), 1e-6);
+    const fxLength = fxValue * forceScale;
+    const fyLength = fyValue * forceScale;
+    if (materialsFxArrow) {
+      materialsFxArrow.setAttribute(
+        "d",
+        buildArrowPath(tipX, tipY, tipX + fxLength, tipY, 7),
+      );
+      materialsFxArrow.style.display = Math.abs(fxLength) > 1 ? "" : "none";
+    }
+    if (materialsFyArrow) {
+      materialsFyArrow.setAttribute(
+        "d",
+        buildArrowPath(tipX, tipY, tipX, tipY - fyLength, 7),
+      );
+      materialsFyArrow.style.display = Math.abs(fyLength) > 1 ? "" : "none";
+    }
+    const momentRadius = 18 + 10 * Math.min(Math.abs(tipMomentValue) / Math.max(Number(materialsBounds.maxTipMoment || 1), 1e-6), 1);
+    if (materialsMomentArc) {
+      if (Math.abs(tipMomentValue) > 1e-8) {
+        materialsMomentArc.setAttribute("d", buildMomentIndicatorPath(tipX, tipY, momentRadius, tipMomentValue >= 0));
+        materialsMomentArc.style.display = "";
+      } else {
+        materialsMomentArc.setAttribute("d", "");
+        materialsMomentArc.style.display = "none";
+      }
+    }
+    if (materialsMomentHead) {
+      if (Math.abs(tipMomentValue) > 1e-8) {
+        materialsMomentHead.setAttribute("d", buildMomentArrowHeadPath(tipX, tipY, momentRadius, tipMomentValue >= 0, 7));
+        materialsMomentHead.style.display = "";
+      } else {
+        materialsMomentHead.setAttribute("d", "");
+        materialsMomentHead.style.display = "none";
+      }
+    }
     materialsDynamic.appendChild(materialsTargetPoint);
     materialsDynamic.appendChild(materialsTipPoint);
+    if (materialsFxArrow) {
+      materialsDynamic.appendChild(materialsFxArrow);
+    }
+    if (materialsFyArrow) {
+      materialsDynamic.appendChild(materialsFyArrow);
+    }
+    if (materialsMomentArc) {
+      materialsDynamic.appendChild(materialsMomentArc);
+    }
+    if (materialsMomentHead) {
+      materialsDynamic.appendChild(materialsMomentHead);
+    }
 
     if (materialsFrameSlider) {
       materialsFrameSlider.value = String(materialsCurrentFrameIndex);
