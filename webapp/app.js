@@ -48,7 +48,7 @@
     "#c17c1f", "#6a5acd", "#0f766e", "#d45d5d", "#43536e",
   ];
   const PRB_SERIES_COLORS = ["#0c8aa4", "#ef8c54", "#2f8f6d"];
-  const STATIC_VERSION = "20260501a";
+  const STATIC_VERSION = "20260501b";
   const MATERIAL_PRESETS = {
     pebax: {
       displayName: "PEBAX",
@@ -3649,6 +3649,18 @@
     }, 80);
   }
 
+  function populateMechanismStaticSummary(data) {
+    if (!data) {
+      return;
+    }
+    if (mechanismGammas && Array.isArray(data.gammas)) {
+      mechanismGammas.textContent = data.gammas.map((value) => Number(value).toFixed(2)).join(", ");
+    }
+    if (mechanismKbar && Array.isArray(data.kbar)) {
+      mechanismKbar.textContent = data.kbar.map((value) => Number(value).toFixed(3)).join(", ");
+    }
+  }
+
   function initializeMechanismPanel() {
     if (!mechanismPlot || mechanismLoaded) {
       return;
@@ -3657,16 +3669,14 @@
     requestJson(MECHANISM_CONFIG.endpoint)
       .then((data) => {
         mechanismOverlayData = data;
-        mechanismBounds = buildMechanismBounds(data);
-        mechanismTrendBounds = buildMechanismTrendBounds(data);
-        mechanismInterpolationData = buildMechanismInterpolationData(data);
-        drawMechanismFrame();
-        renderMechanismTrendPlots();
+        populateMechanismStaticSummary(data);
         if (mechanismParameterSource) {
           mechanismParameterSource.textContent = String(data.parameter_source);
         }
-        mechanismGammas.textContent = data.gammas.map((value) => Number(value).toFixed(2)).join(", ");
-        mechanismKbar.textContent = data.kbar.map((value) => Number(value).toFixed(3)).join(", ");
+        mechanismBounds = buildMechanismBounds(data);
+        mechanismTrendBounds = buildMechanismTrendBounds(data);
+        drawMechanismFrame();
+        renderMechanismTrendPlots();
 
         if (mechanismAngleSlider && mechanismAngleInput) {
           mechanismAngleSlider.min = "0";
@@ -3710,6 +3720,30 @@
         console.error(error);
         if (mechanismParameterSource) {
           mechanismParameterSource.textContent = "Unavailable";
+        }
+        if (mechanismGammas && mechanismGammas.textContent.trim() === "-") {
+          mechanismGammas.textContent = "Load failed";
+        }
+        if (mechanismKbar && mechanismKbar.textContent.trim() === "-") {
+          mechanismKbar.textContent = "Load failed";
+        }
+        if (mechanismThetas && mechanismThetas.textContent.trim() === "-") {
+          mechanismThetas.textContent = "Load failed";
+        }
+        if (mechanismTipSlope && mechanismTipSlope.textContent.trim() === "-") {
+          mechanismTipSlope.textContent = "Load failed";
+        }
+        if (mechanismQValue && mechanismQValue.textContent.trim() === "-") {
+          mechanismQValue.textContent = "Load failed";
+        }
+        if (mechanismAValue && mechanismAValue.textContent.trim() === "-") {
+          mechanismAValue.textContent = "Load failed";
+        }
+        if (mechanismErrors && mechanismErrors.textContent.trim() === "-") {
+          mechanismErrors.textContent = "Load failed";
+        }
+        if (mechanismLoadValue && mechanismLoadValue.textContent.trim() === "-") {
+          mechanismLoadValue.textContent = "Load failed";
         }
       });
   }
