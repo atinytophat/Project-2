@@ -48,7 +48,7 @@
     "#c17c1f", "#6a5acd", "#0f766e", "#d45d5d", "#43536e",
   ];
   const PRB_SERIES_COLORS = ["#0c8aa4", "#ef8c54", "#2f8f6d"];
-  const STATIC_VERSION = "20260501o";
+  const STATIC_VERSION = "20260501p";
   const MATERIAL_PRESETS = {
     pebax: {
       displayName: "PEBAX",
@@ -1549,8 +1549,6 @@
     prbAxes.replaceChildren();
     prbSeries.replaceChildren();
     prbAnnotations.replaceChildren();
-    const clipDefs = createSvgNode("defs", {});
-    prbSeries.appendChild(clipDefs);
 
     const bounds = { xMin: 0, xMax: 1, yMin: 0, yMax: 1 };
     const width = prbPlot.viewBox.baseVal.width;
@@ -1893,22 +1891,15 @@
         x1: mapX(0), y1: innerTop, x2: mapX(0), y2: innerBottom, class: "prb-output-axis-line",
       }));
 
-      const clipId = `prb-output-clip-${activePrbOutputMode}-${index}`;
-      const clipPath = createSvgNode("clipPath", { id: clipId });
-      clipPath.appendChild(createSvgNode("rect", {
-        x: innerLeft,
-        y: innerTop,
-        width: innerRight - innerLeft,
-        height: innerBottom - innerTop,
-      }));
-      clipDefs.appendChild(clipPath);
-      const caseSeriesGroup = createSvgNode("g", { "clip-path": `url(#${clipId})` });
-      prbSeries.appendChild(caseSeriesGroup);
-
       caseData.actual_x.forEach((value, pointIndex) => {
-        caseSeriesGroup.appendChild(createSvgNode("circle", {
-          cx: mapX(value),
-          cy: mapY(caseData.actual_y[pointIndex]),
+        const cx = mapX(value);
+        const cy = mapY(caseData.actual_y[pointIndex]);
+        if (cx < innerLeft || cx > innerRight || cy < innerTop || cy > innerBottom) {
+          return;
+        }
+        prbSeries.appendChild(createSvgNode("circle", {
+          cx,
+          cy,
           r: "1.9",
           fill: "#ef8c54",
           opacity: "0.92",
@@ -1919,7 +1910,7 @@
         const command = pointIndex === 0 ? "M" : "L";
         return `${command} ${mapX(value).toFixed(2)} ${mapY(caseData.prb_y[pointIndex]).toFixed(2)}`;
       }).join(" ");
-      caseSeriesGroup.appendChild(createSvgNode("path", {
+      prbSeries.appendChild(createSvgNode("path", {
         d: prbPath,
         fill: "none",
         stroke: "#0c8aa4",
