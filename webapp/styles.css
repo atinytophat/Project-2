@@ -1,5 +1,5 @@
 :root {
-  --bg: #eef3f7;
+  --bg: #ffffff;
   --surface: #ffffff;
   --surface-soft: #f6f9fc;
   --ink: #182437;
@@ -25,10 +25,7 @@ body {
   font-family: "Trebuchet MS", "Segoe UI", sans-serif;
   color: var(--ink);
   overflow: hidden;
-  background:
-    radial-gradient(circle at top left, rgba(12, 138, 164, 0.12) 0%, transparent 24%),
-    radial-gradient(circle at bottom right, rgba(239, 140, 84, 0.12) 0%, transparent 28%),
-    linear-gradient(180deg, #edf2f6 0%, #e3eaf1 100%);
+  background: #ffffff;
 }
 
 .app-shell {
