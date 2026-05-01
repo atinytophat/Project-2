@@ -17,7 +17,9 @@ import Section510_OptimalPRBComparison as section51
 # This is a prescribed-motion steering test for an intubation-inspired
 # compliant distal segment. The base of the normalized PRB beam is fixed at
 # (0, 0), and the undeformed tip lies at (1, 0).
-tip_amplitude = 0.10
+beam_length_m = 0.100
+tip_amplitude_mm = 10.0
+tip_amplitude = tip_amplitude_mm / (beam_length_m * 1000.0)
 num_time_points = 161
 core_motion_time = 8.0
 end_hold_time = 1.0

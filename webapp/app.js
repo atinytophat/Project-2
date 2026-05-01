@@ -48,7 +48,7 @@
     "#c17c1f", "#6a5acd", "#0f766e", "#d45d5d", "#43536e",
   ];
   const PRB_SERIES_COLORS = ["#0c8aa4", "#ef8c54", "#2f8f6d"];
-  const STATIC_VERSION = "20260501j";
+  const STATIC_VERSION = "20260501k";
   const MATERIAL_PRESETS = {
     pebax: {
       displayName: "PEBAX",
@@ -524,9 +524,12 @@
   }
 
   function getMedicalMotionParameters() {
+    const beamLengthMeters = getPositiveNumber(materialsLengthInput, 0.1);
+    const amplitudeMm = getPositiveNumber(materialsAmplitudeInput, 10.0);
     return {
       core_motion_time: getPositiveNumber(materialsMotionTimeInput, 8.0),
-      tip_amplitude: getPositiveNumber(materialsAmplitudeInput, 0.10),
+      tip_amplitude_mm: amplitudeMm,
+      tip_amplitude_normalized: amplitudeMm / (beamLengthMeters * 1000.0),
     };
   }
 
@@ -556,7 +559,7 @@
     const beam = getMedicalBeamParameters();
     const params = [
       `kbar_source=${encodeURIComponent(materialsKbarSource)}`,
-      `tip_amplitude=${encodeURIComponent(motion.tip_amplitude)}`,
+      `tip_amplitude=${encodeURIComponent(motion.tip_amplitude_normalized)}`,
       `core_motion_time=${encodeURIComponent(motion.core_motion_time)}`,
       `beam_length=${encodeURIComponent(beam.beam_length)}`,
       `beam_width=${encodeURIComponent(beam.beam_width)}`,
@@ -830,11 +833,14 @@
         }
       }
       if (path === "/api/medical-experiment") {
+        const beamLength = Number(params.get("beam_length"));
+        const tipAmplitude = Number(params.get("tip_amplitude"));
+        const tipAmplitudeMm = beamLength > 0 ? tipAmplitude * beamLength * 1000.0 : Number.NaN;
         const isDefault =
           params.get("mode") === "sinusoid"
-          && Number(params.get("tip_amplitude")) === 0.1
+          && Math.abs(tipAmplitudeMm - 10.0) <= 1.0e-6
           && Number(params.get("core_motion_time")) === 8
-          && Number(params.get("beam_length")) === 0.1
+          && beamLength === 0.1
           && Number(params.get("beam_width")) === 0.02
           && Number(params.get("thickness")) === 0.001
           && Number(params.get("youngs_modulus")) === 69000000000
@@ -846,9 +852,9 @@
         }
         const isPebax =
           params.get("mode") === "sinusoid"
-          && Number(params.get("tip_amplitude")) === 0.1
+          && Math.abs(tipAmplitudeMm - 10.0) <= 1.0e-6
           && Number(params.get("core_motion_time")) === 8
-          && Number(params.get("beam_length")) === 0.1
+          && beamLength === 0.1
           && Number(params.get("beam_width")) === 0.02
           && Number(params.get("thickness")) === 0.001
           && Number(params.get("youngs_modulus")) === 513000000
@@ -860,9 +866,9 @@
         }
         const isTpu =
           params.get("mode") === "sinusoid"
-          && Number(params.get("tip_amplitude")) === 0.1
+          && Math.abs(tipAmplitudeMm - 10.0) <= 1.0e-6
           && Number(params.get("core_motion_time")) === 8
-          && Number(params.get("beam_length")) === 0.1
+          && beamLength === 0.1
           && Number(params.get("beam_width")) === 0.02
           && Number(params.get("thickness")) === 0.001
           && Number(params.get("youngs_modulus")) === 22100000
@@ -2845,8 +2851,8 @@
       if (materialsMotionTimeInput && Number.isFinite(Number(data.core_motion_time))) {
         materialsMotionTimeInput.value = Number(data.core_motion_time).toFixed(1);
       }
-      if (materialsAmplitudeInput && Number.isFinite(Number(data.tip_amplitude))) {
-        materialsAmplitudeInput.value = Number(data.tip_amplitude).toFixed(2);
+      if (materialsAmplitudeInput && Number.isFinite(Number(data.tip_amplitude)) && Number(data.beam_length) > 0) {
+        materialsAmplitudeInput.value = (Number(data.tip_amplitude) * Number(data.beam_length) * 1000.0).toFixed(1);
       }
       if (materialsTraceSpan) {
         materialsTraceSpan.textContent = `x ${Number(data.x_min).toFixed(2)} to ${Number(data.x_max).toFixed(2)}, y ${Number(data.y_min).toFixed(2)} to ${Number(data.y_max).toFixed(2)}`;
@@ -2896,8 +2902,8 @@
         if (materialsMotionTimeInput && Number.isFinite(Number(data.core_motion_time))) {
           materialsMotionTimeInput.value = Number(data.core_motion_time).toFixed(1);
         }
-        if (materialsAmplitudeInput && Number.isFinite(Number(data.tip_amplitude))) {
-          materialsAmplitudeInput.value = Number(data.tip_amplitude).toFixed(2);
+        if (materialsAmplitudeInput && Number.isFinite(Number(data.tip_amplitude)) && Number(data.beam_length) > 0) {
+          materialsAmplitudeInput.value = (Number(data.tip_amplitude) * Number(data.beam_length) * 1000.0).toFixed(1);
         }
         if (materialsTraceSpan) {
           materialsTraceSpan.textContent = `x ${Number(data.x_min).toFixed(2)} to ${Number(data.x_max).toFixed(2)}, y ${Number(data.y_min).toFixed(2)} to ${Number(data.y_max).toFixed(2)}`;
