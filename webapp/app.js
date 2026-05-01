@@ -48,7 +48,7 @@
     "#c17c1f", "#6a5acd", "#0f766e", "#d45d5d", "#43536e",
   ];
   const PRB_SERIES_COLORS = ["#0c8aa4", "#ef8c54", "#2f8f6d"];
-  const STATIC_VERSION = "20260501d";
+  const STATIC_VERSION = "20260501e";
   const MATERIAL_PRESETS = {
     pebax: {
       displayName: "PEBAX",
@@ -3833,5 +3833,8 @@
   applyUiNotationLabels();
   ensurePlotZoomControls();
   initializeAtlasPanel();
+  initializePrbPanel();
+  initializeMechanismPanel();
+  initializeMaterialsPanel();
   setActiveTab("atlas");
 }());
