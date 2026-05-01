@@ -1466,3 +1466,30 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* Final flattening override for plot/window surfaces. */
+.screen-panel,
+.content-card,
+.atlas-svg-wrap,
+.prb-svg-wrap,
+.prb-output-svg-wrap,
+.mechanism-svg-wrap,
+.mechanism-trend-wrap,
+.materials-svg-wrap,
+.materials-trend-wrap,
+.report-panel,
+.materials-table-wrap,
+.atlas-legend,
+.materials-trend-readout,
+.tab-button,
+.atlas-mode-tab,
+.atlas-detail-tab,
+.materials-mode-tab,
+.prb-stage-tab,
+.prb-output-tab,
+.mechanism-animate-button {
+  background: #ffffff !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
