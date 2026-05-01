@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Compliant Design Workspace</title>
-  <link rel="stylesheet" href="./styles.css?v=20260501l" />
+  <link rel="stylesheet" href="./styles.css?v=20260501m" />
 </head>
 <body>
   <div class="app-shell">
@@ -464,6 +464,26 @@
                 <dd id="mechanismLoadValue">-</dd>
               </div>
             </dl>
+
+            <div class="card-kicker">Largest errors</div>
+            <div class="mechanism-comparison-wrap">
+              <table class="mechanism-comparison-table" aria-label="Computed vs report PRB overlay errors">
+                <thead>
+                  <tr>
+                    <th>kbar source</th>
+                    <th>max |ΔQx| [%L]</th>
+                    <th>max |ΔQy| [%L]</th>
+                    <th>max |ΔQ| [%L]</th>
+                    <th>max |Δθ0| [°]</th>
+                  </tr>
+                </thead>
+                <tbody id="mechanismComparisonBody">
+                  <tr>
+                    <td colspan="5">Loading</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </article>
         </div>
       </section>
@@ -672,6 +692,6 @@
   </div>
 
   <script src="./py_backend.js?v=20260501l"></script>
-  <script src="./app.js?v=20260501l"></script>
+  <script src="./app.js?v=20260501m"></script>
 </body>
 </html>

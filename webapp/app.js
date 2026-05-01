@@ -48,7 +48,7 @@
     "#c17c1f", "#6a5acd", "#0f766e", "#d45d5d", "#43536e",
   ];
   const PRB_SERIES_COLORS = ["#0c8aa4", "#ef8c54", "#2f8f6d"];
-  const STATIC_VERSION = "20260501l";
+  const STATIC_VERSION = "20260501m";
   const MATERIAL_PRESETS = {
     pebax: {
       displayName: "PEBAX",
@@ -183,6 +183,7 @@
   const mechanismAValue = document.getElementById("mechanismAValue");
   const mechanismErrors = document.getElementById("mechanismErrors");
   const mechanismLoadValue = document.getElementById("mechanismLoadValue");
+  const mechanismComparisonBody = document.getElementById("mechanismComparisonBody");
   const materialsPlot = document.getElementById("materialsPlot");
   const materialsGrid = document.getElementById("materialsGrid");
   const materialsAxes = document.getElementById("materialsAxes");
@@ -253,25 +254,35 @@
   let mechanismOverlayData = null;
   let mechanismPanelInitialized = false;
   let mechanismLoaded = false;
+  let mechanismFullBounds = null;
+  let mechanismViewBounds = null;
   let mechanismBounds = null;
   let mechanismCurrentFrameIndex = 0;
   let mechanismCurrentAngleDeg = 0;
   let mechanismTopTrendMode = "y";
   let mechanismKbarSource = "computed";
   let mechanismAnimationTimer = null;
+  let mechanismTopTrendView = null;
+  let mechanismBottomTrendView = null;
   let mechanismTrendBounds = null;
   let mechanismRequestSequence = 0;
+  let mechanismComparisonLoaded = false;
   let mechanismFEAFlexNodePool = [];
   let mechanismJointPointPool = [];
   let materialsPanelInitialized = false;
   let materialsExperimentCache = null;
   let materialsExperimentCacheKey = "";
   let materialsMotionData = null;
+  let materialsFullBounds = null;
+  let materialsViewBounds = null;
   let materialsBounds = null;
   let materialsCurrentFrameIndex = 0;
   let materialsKbarSource = "computed";
   let materialsAnimationTimer = null;
   let materialsTrendBounds = null;
+  let materialsYTrendView = null;
+  let materialsThetaTrendView = null;
+  let materialsMomentTrendView = null;
   let materialsReloadTimer = null;
   let materialsRequestSequence = 0;
   let activeMaterialPresetKey = "";
@@ -323,6 +334,103 @@
 
   function clamp(value, minValue, maxValue) {
     return Math.min(maxValue, Math.max(minValue, value));
+  }
+
+  function cloneRange(range) {
+    return {
+      min: Number(range.min),
+      max: Number(range.max),
+    };
+  }
+
+  function cloneViewBounds(bounds) {
+    return { ...bounds };
+  }
+
+  function createViewRange(xRange, yRange) {
+    return {
+      xMin: Number(xRange.min),
+      xMax: Number(xRange.max),
+      yMin: Number(yRange.min),
+      yMax: Number(yRange.max),
+    };
+  }
+
+  function fitEqualAspectBounds(xMin, xMax, yMin, yMax, config, width, height) {
+    const usableWidth = width - config.marginLeft - config.marginRight;
+    const usableHeight = height - config.marginTop - config.marginBottom;
+    const targetAspect = usableWidth / usableHeight;
+    const xSpan = Math.max(Number(xMax) - Number(xMin), 1e-6);
+    const ySpan = Math.max(Number(yMax) - Number(yMin), 1e-6);
+    const dataAspect = xSpan / ySpan;
+
+    let plotLeft = config.marginLeft;
+    let plotRight = width - config.marginRight;
+    let plotTop = config.marginTop;
+    let plotBottom = height - config.marginBottom;
+
+    if (dataAspect < targetAspect) {
+      const effectiveWidth = usableHeight * dataAspect;
+      const sidePadding = 0.5 * (usableWidth - effectiveWidth);
+      plotLeft += sidePadding;
+      plotRight -= sidePadding;
+    } else if (dataAspect > targetAspect) {
+      const effectiveHeight = usableWidth / dataAspect;
+      const verticalPadding = 0.5 * (usableHeight - effectiveHeight);
+      plotTop += verticalPadding;
+      plotBottom -= verticalPadding;
+    }
+
+    return {
+      xMin: Number(xMin),
+      xMax: Number(xMax),
+      yMin: Number(yMin),
+      yMax: Number(yMax),
+      xSpan,
+      ySpan,
+      plotLeft,
+      plotRight,
+      plotTop,
+      plotBottom,
+    };
+  }
+
+  function getSvgPointFromEvent(svgElement, event) {
+    const rect = svgElement.getBoundingClientRect();
+    const viewWidth = svgElement.viewBox.baseVal.width || rect.width;
+    const viewHeight = svgElement.viewBox.baseVal.height || rect.height;
+    return {
+      x: ((event.clientX - rect.left) / rect.width) * viewWidth,
+      y: ((event.clientY - rect.top) / rect.height) * viewHeight,
+    };
+  }
+
+  function zoomRangeAroundPoint(currentRange, fullRange, centerValue, zoomFactor, minSpanFraction = 0.04) {
+    const fullSpan = Math.max(Number(fullRange.max) - Number(fullRange.min), 1e-9);
+    const currentSpan = Math.max(Number(currentRange.max) - Number(currentRange.min), 1e-9);
+    const minSpan = Math.max(fullSpan * minSpanFraction, 1e-4);
+    const nextSpan = clamp(currentSpan * zoomFactor, minSpan, fullSpan);
+    const anchorRatio = clamp((Number(centerValue) - Number(currentRange.min)) / currentSpan, 0, 1);
+
+    let nextMin = Number(centerValue) - anchorRatio * nextSpan;
+    let nextMax = nextMin + nextSpan;
+
+    if (nextMin < Number(fullRange.min)) {
+      nextMax += Number(fullRange.min) - nextMin;
+      nextMin = Number(fullRange.min);
+    }
+    if (nextMax > Number(fullRange.max)) {
+      nextMin -= nextMax - Number(fullRange.max);
+      nextMax = Number(fullRange.max);
+    }
+
+    nextMin = Math.max(nextMin, Number(fullRange.min));
+    nextMax = Math.min(nextMax, Number(fullRange.max));
+
+    return {
+      min: nextMin,
+      max: nextMax,
+    };
   }
 
   function snapToStep(value, minValue, step) {
@@ -506,6 +614,26 @@
         event.preventDefault();
         applyPlotZoomScale(target, 1);
       });
+    });
+  }
+
+  function registerDataZoom(svgElement, onWheelZoom, onResetZoom) {
+    if (!svgElement || svgElement.dataset.dataZoomReady === "true") {
+      return;
+    }
+    svgElement.dataset.dataZoomReady = "true";
+    svgElement.addEventListener("wheel", (event) => {
+      event.stopPropagation();
+      if (typeof onWheelZoom === "function") {
+        onWheelZoom(event);
+      }
+    }, { passive: false });
+    svgElement.addEventListener("dblclick", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      if (typeof onResetZoom === "function") {
+        onResetZoom();
+      }
     });
   }
 
@@ -1943,61 +2071,12 @@
     const rawXMax = Math.max(...xs);
     const rawYMin = Math.min(...ys);
     const rawYMax = Math.max(...ys);
-    let xMin = rawXMin;
-    let xMax = rawXMax;
-    let yMin = rawYMin;
-    let yMax = rawYMax;
-    let xSpan = xMax - xMin;
-    let ySpan = yMax - yMin;
     const padding = 0.12;
-    const usableWidth = 860 - MECHANISM_CONFIG.marginLeft - MECHANISM_CONFIG.marginRight;
-    const usableHeight = 520 - MECHANISM_CONFIG.marginTop - MECHANISM_CONFIG.marginBottom;
-    const targetAspect = usableWidth / usableHeight;
-
-    xMin -= padding;
-    xMax += padding;
-    yMin -= padding;
-    yMax += padding;
-    xSpan = xMax - xMin;
-    ySpan = yMax - yMin;
-
-    xMin = -0.5;
-    xMax = 1.3;
-    xSpan = xMax - xMin;
-    yMax = 1.1;
-    yMin = -0.3;
-    ySpan = yMax - yMin;
-
-    const dataAspect = xSpan / ySpan;
-    let plotLeft = MECHANISM_CONFIG.marginLeft;
-    let plotRight = 860 - MECHANISM_CONFIG.marginRight;
-    let plotTop = MECHANISM_CONFIG.marginTop;
-    let plotBottom = 520 - MECHANISM_CONFIG.marginBottom;
-
-    if (dataAspect < targetAspect) {
-      const effectiveWidth = usableHeight * dataAspect;
-      const sidePadding = 0.5 * (usableWidth - effectiveWidth);
-      plotLeft += sidePadding;
-      plotRight -= sidePadding;
-    } else if (dataAspect > targetAspect) {
-      const effectiveHeight = usableWidth / dataAspect;
-      const verticalPadding = 0.5 * (usableHeight - effectiveHeight);
-      plotTop += verticalPadding;
-      plotBottom -= verticalPadding;
-    }
-
-    return {
-      xMin: Math.floor(xMin / 0.1) * 0.1,
-      xMax: Math.ceil(xMax / 0.1) * 0.1,
-      yMin: Math.floor(yMin / 0.1) * 0.1,
-      yMax: Math.ceil(yMax / 0.1) * 0.1,
-      xSpan,
-      ySpan,
-      plotLeft,
-      plotRight,
-      plotTop,
-      plotBottom,
-    };
+    const xMin = Math.floor((Math.min(rawXMin - padding, -0.5)) / 0.1) * 0.1;
+    const xMax = Math.ceil((Math.max(rawXMax + padding, 1.3)) / 0.1) * 0.1;
+    const yMin = Math.floor((Math.min(rawYMin - padding, -0.3)) / 0.1) * 0.1;
+    const yMax = Math.ceil((Math.max(rawYMax + padding, 1.1)) / 0.1) * 0.1;
+    return fitEqualAspectBounds(xMin, xMax, yMin, yMax, MECHANISM_CONFIG, 860, 520);
   }
 
   function computeMaterialsBounds(data) {
@@ -2225,24 +2304,70 @@
     const thetaActualPoints = timePoints.map((time, index) => ({ x: time, y: Number(materialsMotionData.frames[index].theta_tip_deg) }));
     const momentPoints = timePoints.map((time, index) => ({ x: time, y: Number(materialsMotionData.frames[index].base_net_moment || 0) }));
 
-    drawMaterialsTrendFrame(materialsYTrendGrid, materialsYTrendAxes, materialsYTrendPlot, materialsTrendBounds.time, materialsTrendBounds.y, "y / L");
-    drawMaterialsTrendFrame(materialsThetaTrendGrid, materialsThetaTrendAxes, materialsThetaTrendPlot, materialsTrendBounds.time, materialsTrendBounds.theta, "\u03b80 (\u00b0)");
-    drawMaterialsTrendFrame(materialsMomentTrendGrid, materialsMomentTrendAxes, materialsMomentTrendPlot, materialsTrendBounds.time, materialsTrendBounds.moment, "M_net (N\u00b7m)");
+    drawMaterialsTrendFrame(
+      materialsYTrendGrid,
+      materialsYTrendAxes,
+      materialsYTrendPlot,
+      materialsYTrendView?.x || materialsTrendBounds.time,
+      materialsYTrendView?.y || materialsTrendBounds.y,
+      "y / L",
+    );
+    drawMaterialsTrendFrame(
+      materialsThetaTrendGrid,
+      materialsThetaTrendAxes,
+      materialsThetaTrendPlot,
+      materialsThetaTrendView?.x || materialsTrendBounds.time,
+      materialsThetaTrendView?.y || materialsTrendBounds.theta,
+      "\u03b80 (\u00b0)",
+    );
+    drawMaterialsTrendFrame(
+      materialsMomentTrendGrid,
+      materialsMomentTrendAxes,
+      materialsMomentTrendPlot,
+      materialsMomentTrendView?.x || materialsTrendBounds.time,
+      materialsMomentTrendView?.y || materialsTrendBounds.moment,
+      "M_net (N\u00b7m)",
+    );
 
     if (materialsYTrendTarget) {
-      materialsYTrendTarget.setAttribute("d", buildMaterialsTrendPath(yTargetPoints, materialsTrendBounds.time, materialsTrendBounds.y, materialsYTrendPlot));
+      materialsYTrendTarget.setAttribute("d", buildMaterialsTrendPath(
+        yTargetPoints,
+        materialsYTrendView?.x || materialsTrendBounds.time,
+        materialsYTrendView?.y || materialsTrendBounds.y,
+        materialsYTrendPlot,
+      ));
     }
     if (materialsYTrendActual) {
-      materialsYTrendActual.setAttribute("d", buildMaterialsTrendPath(yActualPoints, materialsTrendBounds.time, materialsTrendBounds.y, materialsYTrendPlot));
+      materialsYTrendActual.setAttribute("d", buildMaterialsTrendPath(
+        yActualPoints,
+        materialsYTrendView?.x || materialsTrendBounds.time,
+        materialsYTrendView?.y || materialsTrendBounds.y,
+        materialsYTrendPlot,
+      ));
     }
     if (materialsThetaTrendTarget) {
-      materialsThetaTrendTarget.setAttribute("d", buildMaterialsTrendPath(thetaTargetPoints, materialsTrendBounds.time, materialsTrendBounds.theta, materialsThetaTrendPlot));
+      materialsThetaTrendTarget.setAttribute("d", buildMaterialsTrendPath(
+        thetaTargetPoints,
+        materialsThetaTrendView?.x || materialsTrendBounds.time,
+        materialsThetaTrendView?.y || materialsTrendBounds.theta,
+        materialsThetaTrendPlot,
+      ));
     }
     if (materialsThetaTrendActual) {
-      materialsThetaTrendActual.setAttribute("d", buildMaterialsTrendPath(thetaActualPoints, materialsTrendBounds.time, materialsTrendBounds.theta, materialsThetaTrendPlot));
+      materialsThetaTrendActual.setAttribute("d", buildMaterialsTrendPath(
+        thetaActualPoints,
+        materialsThetaTrendView?.x || materialsTrendBounds.time,
+        materialsThetaTrendView?.y || materialsTrendBounds.theta,
+        materialsThetaTrendPlot,
+      ));
     }
     if (materialsMomentTrendLine) {
-      materialsMomentTrendLine.setAttribute("d", buildMaterialsTrendPath(momentPoints, materialsTrendBounds.time, materialsTrendBounds.moment, materialsMomentTrendPlot));
+      materialsMomentTrendLine.setAttribute("d", buildMaterialsTrendPath(
+        momentPoints,
+        materialsMomentTrendView?.x || materialsTrendBounds.time,
+        materialsMomentTrendView?.y || materialsTrendBounds.moment,
+        materialsMomentTrendPlot,
+      ));
     }
   }
 
@@ -2286,8 +2411,8 @@
     const timeValue = Number(frame.time);
     updateSelection(
       materialsYTrendPlot,
-      materialsTrendBounds.time,
-      materialsTrendBounds.y,
+      materialsYTrendView?.x || materialsTrendBounds.time,
+      materialsYTrendView?.y || materialsTrendBounds.y,
       materialsYTrendCursor,
       materialsYTrendPointTarget,
       materialsYTrendPointActual,
@@ -2297,8 +2422,8 @@
     );
     updateSelection(
       materialsThetaTrendPlot,
-      materialsTrendBounds.time,
-      materialsTrendBounds.theta,
+      materialsThetaTrendView?.x || materialsTrendBounds.time,
+      materialsThetaTrendView?.y || materialsTrendBounds.theta,
       materialsThetaTrendCursor,
       materialsThetaTrendPointTarget,
       materialsThetaTrendPointActual,
@@ -2308,8 +2433,8 @@
     );
     updateSelection(
       materialsMomentTrendPlot,
-      materialsTrendBounds.time,
-      materialsTrendBounds.moment,
+      materialsMomentTrendView?.x || materialsTrendBounds.time,
+      materialsMomentTrendView?.y || materialsTrendBounds.moment,
       materialsMomentTrendCursor,
       materialsMomentTrendPoint,
       null,
@@ -2323,13 +2448,15 @@
   }
 
   function materialsMapX(value, bounds) {
-    const ratio = (value - bounds.xMin) / (bounds.xMax - bounds.xMin);
-    return bounds.plotLeft + ratio * (bounds.plotRight - bounds.plotLeft);
+    const activeBounds = bounds || materialsViewBounds || materialsBounds;
+    const ratio = (value - activeBounds.xMin) / (activeBounds.xMax - activeBounds.xMin);
+    return activeBounds.plotLeft + ratio * (activeBounds.plotRight - activeBounds.plotLeft);
   }
 
   function materialsMapY(value, bounds) {
-    const ratio = (value - bounds.yMin) / (bounds.yMax - bounds.yMin);
-    return bounds.plotBottom - ratio * (bounds.plotBottom - bounds.plotTop);
+    const activeBounds = bounds || materialsViewBounds || materialsBounds;
+    const ratio = (value - activeBounds.yMin) / (activeBounds.yMax - activeBounds.yMin);
+    return activeBounds.plotBottom - ratio * (activeBounds.plotBottom - activeBounds.plotTop);
   }
 
   function buildMaterialsPath(points, bounds) {
@@ -2454,6 +2581,7 @@
     if (!materialsStatic || !materialsMotionData || !materialsBounds) {
       return;
     }
+    const activeBounds = materialsViewBounds || materialsBounds;
 
     materialsStatic.replaceChildren();
 
@@ -2465,7 +2593,7 @@
       [1.0, 0.0],
     ];
     materialsStatic.appendChild(createSvgNode("path", {
-      d: buildMaterialsPath(undeformedPoints, materialsBounds),
+      d: buildMaterialsPath(undeformedPoints, activeBounds),
       class: "materials-line",
       stroke: "#8a96a7",
       "stroke-dasharray": "9 8",
@@ -2473,7 +2601,7 @@
     }));
 
     materialsStatic.appendChild(createSvgNode("path", {
-      d: buildMaterialsPath(materialsMotionData.target_path, materialsBounds),
+      d: buildMaterialsPath(materialsMotionData.target_path, activeBounds),
       class: "materials-line",
       stroke: "#ef8c54",
       "stroke-dasharray": "8 7",
@@ -2483,12 +2611,173 @@
 
     if (Array.isArray(materialsMotionData.actual_path) && materialsMotionData.actual_path.length > 1) {
       materialsStatic.appendChild(createSvgNode("path", {
-        d: buildMaterialsPath(materialsMotionData.actual_path, materialsBounds),
+        d: buildMaterialsPath(materialsMotionData.actual_path, activeBounds),
         class: "materials-line",
         stroke: "rgba(12, 138, 164, 0.34)",
         "stroke-width": "1.8",
       }));
     }
+  }
+
+  function zoomMaterialsMainPlot(event) {
+    if (!materialsPlot || !materialsViewBounds || !materialsFullBounds || !materialsMotionData) {
+      return;
+    }
+    const point = getSvgPointFromEvent(materialsPlot, event);
+    if (
+      point.x < materialsViewBounds.plotLeft || point.x > materialsViewBounds.plotRight
+      || point.y < materialsViewBounds.plotTop || point.y > materialsViewBounds.plotBottom
+    ) {
+      return;
+    }
+    event.preventDefault();
+    const xRatio = (point.x - materialsViewBounds.plotLeft) / (materialsViewBounds.plotRight - materialsViewBounds.plotLeft);
+    const yRatio = (materialsViewBounds.plotBottom - point.y) / (materialsViewBounds.plotBottom - materialsViewBounds.plotTop);
+    const dataX = materialsViewBounds.xMin + xRatio * (materialsViewBounds.xMax - materialsViewBounds.xMin);
+    const dataY = materialsViewBounds.yMin + yRatio * (materialsViewBounds.yMax - materialsViewBounds.yMin);
+    const factor = event.deltaY < 0 ? 0.86 : 1.16;
+    const xRange = zoomRangeAroundPoint(
+      { min: materialsViewBounds.xMin, max: materialsViewBounds.xMax },
+      { min: materialsFullBounds.xMin, max: materialsFullBounds.xMax },
+      dataX,
+      factor,
+      0.06,
+    );
+    const yRange = zoomRangeAroundPoint(
+      { min: materialsViewBounds.yMin, max: materialsViewBounds.yMax },
+      { min: materialsFullBounds.yMin, max: materialsFullBounds.yMax },
+      dataY,
+      factor,
+      0.06,
+    );
+    materialsViewBounds = fitEqualAspectBounds(
+      xRange.min,
+      xRange.max,
+      yRange.min,
+      yRange.max,
+      MATERIALS_CONFIG,
+      materialsPlot.viewBox.baseVal.width,
+      materialsPlot.viewBox.baseVal.height,
+    );
+    drawMaterialsFrame(materialsViewBounds);
+    drawMaterialsStaticScene();
+    initializeMaterialsDynamicScene();
+    renderMaterialsState(materialsCurrentFrameIndex);
+  }
+
+  function resetMaterialsMainZoom() {
+    if (!materialsFullBounds || !materialsMotionData) {
+      return;
+    }
+    materialsViewBounds = cloneViewBounds(materialsFullBounds);
+    drawMaterialsFrame(materialsViewBounds);
+    drawMaterialsStaticScene();
+    initializeMaterialsDynamicScene();
+    renderMaterialsState(materialsCurrentFrameIndex);
+  }
+
+  function zoomMaterialsTrendPlot(event, trendKey) {
+    if (!materialsTrendBounds || !materialsMotionData) {
+      return;
+    }
+    const lookup = {
+      y: { plot: materialsYTrendPlot, view: materialsYTrendView, fullY: materialsTrendBounds.y },
+      theta: { plot: materialsThetaTrendPlot, view: materialsThetaTrendView, fullY: materialsTrendBounds.theta },
+      moment: { plot: materialsMomentTrendPlot, view: materialsMomentTrendView, fullY: materialsTrendBounds.moment },
+    };
+    const target = lookup[trendKey];
+    if (!target || !target.plot || !target.view) {
+      return;
+    }
+    const point = getSvgPointFromEvent(target.plot, event);
+    const width = target.plot.viewBox.baseVal.width;
+    const height = target.plot.viewBox.baseVal.height;
+    const marginLeft = 42;
+    const marginRight = 10;
+    const marginTop = 16;
+    const marginBottom = 30;
+    const left = marginLeft;
+    const right = width - marginRight;
+    const top = marginTop;
+    const bottom = height - marginBottom;
+    if (point.x < left || point.x > right || point.y < top || point.y > bottom) {
+      return;
+    }
+    event.preventDefault();
+    const xRatio = (point.x - left) / (right - left);
+    const yRatio = (bottom - point.y) / (bottom - top);
+    const dataX = target.view.x.min + xRatio * (target.view.x.max - target.view.x.min);
+    const dataY = target.view.y.min + yRatio * (target.view.y.max - target.view.y.min);
+    const factor = event.deltaY < 0 ? 0.86 : 1.16;
+    target.view.x = zoomRangeAroundPoint(target.view.x, materialsTrendBounds.time, dataX, factor, 0.08);
+    target.view.y = zoomRangeAroundPoint(target.view.y, target.fullY, dataY, factor, 0.08);
+    renderMaterialsTrendPlots();
+    renderMaterialsState(materialsCurrentFrameIndex);
+  }
+
+  function resetMaterialsTrendZoom(trendKey) {
+    if (!materialsTrendBounds || !materialsMotionData) {
+      return;
+    }
+    if (trendKey === "y") {
+      materialsYTrendView = { x: cloneRange(materialsTrendBounds.time), y: cloneRange(materialsTrendBounds.y) };
+    } else if (trendKey === "theta") {
+      materialsThetaTrendView = { x: cloneRange(materialsTrendBounds.time), y: cloneRange(materialsTrendBounds.theta) };
+    } else {
+      materialsMomentTrendView = { x: cloneRange(materialsTrendBounds.time), y: cloneRange(materialsTrendBounds.moment) };
+    }
+    renderMaterialsTrendPlots();
+    renderMaterialsState(materialsCurrentFrameIndex);
+  }
+
+  function computeMechanismErrorSummary(data) {
+    const feaScale = 1 / Number(data.prb_scale_to_fea || 1);
+    let maxQx = 0;
+    let maxQy = 0;
+    let maxQMagnitude = 0;
+    let maxTheta = 0;
+
+    data.fea_frames.forEach((frame) => {
+      const prbIndex = Number.isFinite(Number(frame.matched_prb_index))
+        ? clamp(Number(frame.matched_prb_index), 0, Math.max(0, data.prb_motion.angle_deg.length - 1))
+        : findNearestPrbStateIndex(Number(frame.crank_angle_deg));
+      const feaFlex = frame.parts["FLEX-1"].deformed_xy.map((point) => point.map((value) => Number(value) * feaScale));
+      const feaQ = feaFlex[feaFlex.length - 1];
+      const prbQ = data.prb_motion.Q[prbIndex].map(Number);
+      const feaMagnitude = computePositionMagnitude(feaQ);
+      const prbMagnitude = computePositionMagnitude(prbQ);
+      const feaTheta = computeFeaTipAngleDegrees(feaFlex);
+      const prbTheta = radiansToDegrees(data.prb_motion.theta[prbIndex].reduce((sum, value) => sum + Number(value), 0));
+
+      maxQx = Math.max(maxQx, Math.abs(Number(prbQ[0]) - Number(feaQ[0])) * 100);
+      maxQy = Math.max(maxQy, Math.abs(Number(prbQ[1]) - Number(feaQ[1])) * 100);
+      maxQMagnitude = Math.max(maxQMagnitude, Math.abs(prbMagnitude - feaMagnitude) * 100);
+      maxTheta = Math.max(maxTheta, Math.abs(prbTheta - feaTheta));
+    });
+
+    return { maxQx, maxQy, maxQMagnitude, maxTheta };
+  }
+
+  function renderMechanismComparisonMatrix(rows) {
+    if (!mechanismComparisonBody) {
+      return;
+    }
+    mechanismComparisonBody.replaceChildren();
+    rows.forEach((row) => {
+      const tr = document.createElement("tr");
+      [
+        row.label,
+        row.maxQx.toFixed(3),
+        row.maxQy.toFixed(3),
+        row.maxQMagnitude.toFixed(3),
+        row.maxTheta.toFixed(3),
+      ].forEach((value) => {
+        const cell = document.createElement(tr.children.length === 0 ? "th" : "td");
+        cell.textContent = value;
+        tr.appendChild(cell);
+      });
+      mechanismComparisonBody.appendChild(tr);
+    });
   }
 
   function initializeMaterialsDynamicScene() {
@@ -2610,6 +2899,7 @@
     if (!materialsMotionData || !materialsBounds || !materialsDynamic) {
       return;
     }
+    const activeBounds = materialsViewBounds || materialsBounds;
 
     materialsCurrentFrameIndex = clamp(frameIndex, 0, materialsMotionData.frames.length - 1);
     const frame = materialsMotionData.frames[materialsCurrentFrameIndex];
@@ -2621,7 +2911,7 @@
     const targetTracePoints = materialsMotionData.target_path.slice(0, materialsCurrentFrameIndex + 1);
     materialsTargetTracePath.setAttribute(
       "d",
-      targetTracePoints.length > 1 ? buildMaterialsPath(targetTracePoints, materialsBounds) : "",
+      targetTracePoints.length > 1 ? buildMaterialsPath(targetTracePoints, activeBounds) : "",
     );
 
     const actualTracePoints = Array.isArray(materialsMotionData.actual_path)
@@ -2629,9 +2919,9 @@
       : [];
     materialsActualTracePath.setAttribute(
       "d",
-      actualTracePoints.length > 1 ? buildMaterialsPath(actualTracePoints, materialsBounds) : "",
+      actualTracePoints.length > 1 ? buildMaterialsPath(actualTracePoints, activeBounds) : "",
     );
-    materialsChainPath.setAttribute("d", buildMaterialsPath(frame.chain, materialsBounds));
+    materialsChainPath.setAttribute("d", buildMaterialsPath(frame.chain, activeBounds));
 
     const jointPoints = frame.chain.slice(1);
     ensureCirclePool(materialsDynamic, materialsJointPool, jointPoints.length, () => ({
@@ -2641,15 +2931,15 @@
     }));
     jointPoints.forEach((point, pointIndex) => {
       const node = materialsJointPool[pointIndex];
-      node.setAttribute("cx", materialsMapX(Number(point[0]), materialsBounds));
-      node.setAttribute("cy", materialsMapY(Number(point[1]), materialsBounds));
+      node.setAttribute("cx", materialsMapX(Number(point[0]), activeBounds));
+      node.setAttribute("cy", materialsMapY(Number(point[1]), activeBounds));
     });
-    materialsTargetPoint.setAttribute("cx", materialsMapX(Number(frame.target_x), materialsBounds));
-    materialsTargetPoint.setAttribute("cy", materialsMapY(Number(frame.target_y), materialsBounds));
-    materialsTipPoint.setAttribute("cx", materialsMapX(Number(frame.tip_x), materialsBounds));
-    materialsTipPoint.setAttribute("cy", materialsMapY(Number(frame.tip_y), materialsBounds));
-    const tipX = materialsMapX(Number(frame.tip_x), materialsBounds);
-    const tipY = materialsMapY(Number(frame.tip_y), materialsBounds);
+    materialsTargetPoint.setAttribute("cx", materialsMapX(Number(frame.target_x), activeBounds));
+    materialsTargetPoint.setAttribute("cy", materialsMapY(Number(frame.target_y), activeBounds));
+    materialsTipPoint.setAttribute("cx", materialsMapX(Number(frame.tip_x), activeBounds));
+    materialsTipPoint.setAttribute("cy", materialsMapY(Number(frame.tip_y), activeBounds));
+    const tipX = materialsMapX(Number(frame.tip_x), activeBounds);
+    const tipY = materialsMapY(Number(frame.tip_y), activeBounds);
     const fxValue = Number(frame.force_x || 0);
     const fyValue = Number(frame.force_y || 0);
     const tipMomentValue = Number(frame.tip_moment || 0);
@@ -2834,8 +3124,13 @@
       const data = materialsExperimentCache;
       materialsMotionData = data;
       materialsBounds = computeMaterialsBounds(data);
+      materialsFullBounds = cloneViewBounds(materialsBounds);
+      materialsViewBounds = cloneViewBounds(materialsBounds);
       materialsTrendBounds = computeMaterialsTrendBounds(data);
-      drawMaterialsFrame(materialsBounds);
+      materialsYTrendView = { x: cloneRange(materialsTrendBounds.time), y: cloneRange(materialsTrendBounds.y) };
+      materialsThetaTrendView = { x: cloneRange(materialsTrendBounds.time), y: cloneRange(materialsTrendBounds.theta) };
+      materialsMomentTrendView = { x: cloneRange(materialsTrendBounds.time), y: cloneRange(materialsTrendBounds.moment) };
+      drawMaterialsFrame(materialsViewBounds || materialsBounds);
       drawMaterialsStaticScene();
       initializeMaterialsDynamicScene();
       renderMaterialsTrendPlots();
@@ -2885,8 +3180,13 @@
         materialsExperimentCacheKey = endpoint;
         materialsMotionData = data;
         materialsBounds = computeMaterialsBounds(data);
+        materialsFullBounds = cloneViewBounds(materialsBounds);
+        materialsViewBounds = cloneViewBounds(materialsBounds);
         materialsTrendBounds = computeMaterialsTrendBounds(data);
-        drawMaterialsFrame(materialsBounds);
+        materialsYTrendView = { x: cloneRange(materialsTrendBounds.time), y: cloneRange(materialsTrendBounds.y) };
+        materialsThetaTrendView = { x: cloneRange(materialsTrendBounds.time), y: cloneRange(materialsTrendBounds.theta) };
+        materialsMomentTrendView = { x: cloneRange(materialsTrendBounds.time), y: cloneRange(materialsTrendBounds.moment) };
+        drawMaterialsFrame(materialsViewBounds || materialsBounds);
         drawMaterialsStaticScene();
         initializeMaterialsDynamicScene();
         renderMaterialsTrendPlots();
@@ -3042,6 +3342,10 @@
           scheduleMaterialsReload();
         });
       });
+      registerDataZoom(materialsPlot, zoomMaterialsMainPlot, resetMaterialsMainZoom);
+      registerDataZoom(materialsYTrendPlot, (event) => zoomMaterialsTrendPlot(event, "y"), () => resetMaterialsTrendZoom("y"));
+      registerDataZoom(materialsThetaTrendPlot, (event) => zoomMaterialsTrendPlot(event, "theta"), () => resetMaterialsTrendZoom("theta"));
+      registerDataZoom(materialsMomentTrendPlot, (event) => zoomMaterialsTrendPlot(event, "moment"), () => resetMaterialsTrendZoom("moment"));
       materialsPanelInitialized = true;
     }
 
@@ -3053,13 +3357,15 @@
   }
 
   function mechanismMapX(value) {
-    const ratio = (value - mechanismBounds.xMin) / (mechanismBounds.xMax - mechanismBounds.xMin);
-    return mechanismBounds.plotLeft + ratio * (mechanismBounds.plotRight - mechanismBounds.plotLeft);
+    const bounds = mechanismViewBounds || mechanismBounds;
+    const ratio = (value - bounds.xMin) / (bounds.xMax - bounds.xMin);
+    return bounds.plotLeft + ratio * (bounds.plotRight - bounds.plotLeft);
   }
 
   function mechanismMapY(value) {
-    const ratio = (value - mechanismBounds.yMin) / (mechanismBounds.yMax - mechanismBounds.yMin);
-    return mechanismBounds.plotBottom - ratio * (mechanismBounds.plotBottom - mechanismBounds.plotTop);
+    const bounds = mechanismViewBounds || mechanismBounds;
+    const ratio = (value - bounds.yMin) / (bounds.yMax - bounds.yMin);
+    return bounds.plotBottom - ratio * (bounds.plotBottom - bounds.plotTop);
   }
 
   function buildMechanismPath(points) {
@@ -3150,6 +3456,16 @@
           : "Qy vs crank angle";
     }
     if (mechanismOverlayData && mechanismTrendBounds) {
+      mechanismTopTrendView = {
+        x: { min: 0, max: 360 },
+        y: cloneRange(
+          mechanismTopTrendMode === "x"
+            ? mechanismTrendBounds.qxBounds
+            : mechanismTopTrendMode === "m"
+              ? mechanismTrendBounds.positionBounds
+              : mechanismTrendBounds.qyBounds,
+        ),
+      };
       renderMechanismTrendPlots();
       const frame = mechanismOverlayData.fea_frames[mechanismCurrentFrameIndex] || mechanismOverlayData.fea_frames[0];
       if (frame) {
@@ -3178,6 +3494,125 @@
         );
       }
     }
+  }
+
+  function getMechanismTopTrendFullYBounds() {
+    if (!mechanismTrendBounds) {
+      return { min: -1, max: 1 };
+    }
+    return mechanismTopTrendMode === "x"
+      ? mechanismTrendBounds.qxBounds
+      : mechanismTopTrendMode === "m"
+        ? mechanismTrendBounds.positionBounds
+        : mechanismTrendBounds.qyBounds;
+  }
+
+  function zoomMechanismMainPlot(event) {
+    if (!mechanismPlot || !mechanismViewBounds || !mechanismFullBounds) {
+      return;
+    }
+    const point = getSvgPointFromEvent(mechanismPlot, event);
+    if (
+      point.x < mechanismViewBounds.plotLeft || point.x > mechanismViewBounds.plotRight
+      || point.y < mechanismViewBounds.plotTop || point.y > mechanismViewBounds.plotBottom
+    ) {
+      return;
+    }
+    event.preventDefault();
+    const xRatio = (point.x - mechanismViewBounds.plotLeft) / (mechanismViewBounds.plotRight - mechanismViewBounds.plotLeft);
+    const yRatio = (mechanismViewBounds.plotBottom - point.y) / (mechanismViewBounds.plotBottom - mechanismViewBounds.plotTop);
+    const dataX = mechanismViewBounds.xMin + xRatio * (mechanismViewBounds.xMax - mechanismViewBounds.xMin);
+    const dataY = mechanismViewBounds.yMin + yRatio * (mechanismViewBounds.yMax - mechanismViewBounds.yMin);
+    const factor = event.deltaY < 0 ? 0.86 : 1.16;
+    const xRange = zoomRangeAroundPoint(
+      { min: mechanismViewBounds.xMin, max: mechanismViewBounds.xMax },
+      { min: mechanismFullBounds.xMin, max: mechanismFullBounds.xMax },
+      dataX,
+      factor,
+      0.06,
+    );
+    const yRange = zoomRangeAroundPoint(
+      { min: mechanismViewBounds.yMin, max: mechanismViewBounds.yMax },
+      { min: mechanismFullBounds.yMin, max: mechanismFullBounds.yMax },
+      dataY,
+      factor,
+      0.06,
+    );
+    mechanismViewBounds = fitEqualAspectBounds(
+      xRange.min,
+      xRange.max,
+      yRange.min,
+      yRange.max,
+      MECHANISM_CONFIG,
+      mechanismPlot.viewBox.baseVal.width,
+      mechanismPlot.viewBox.baseVal.height,
+    );
+    drawMechanismFrame();
+    renderMechanismFrameIndex(mechanismCurrentFrameIndex);
+  }
+
+  function resetMechanismMainZoom() {
+    if (!mechanismFullBounds) {
+      return;
+    }
+    mechanismViewBounds = cloneViewBounds(mechanismFullBounds);
+    drawMechanismFrame();
+    renderMechanismFrameIndex(mechanismCurrentFrameIndex);
+  }
+
+  function zoomMechanismTrendPlot(event, trendKey) {
+    if (!mechanismTrendBounds) {
+      return;
+    }
+    const plotElement = trendKey === "top" ? mechanismYTrendPlot : mechanismXTrendPlot;
+    const currentView = trendKey === "top" ? mechanismTopTrendView : mechanismBottomTrendView;
+    const fullYBounds = trendKey === "top" ? getMechanismTopTrendFullYBounds() : mechanismTrendBounds.thetaBounds;
+    if (!plotElement || !currentView) {
+      return;
+    }
+    const point = getSvgPointFromEvent(plotElement, event);
+    const width = plotElement.viewBox.baseVal.width;
+    const height = plotElement.viewBox.baseVal.height;
+    const marginLeft = 42;
+    const marginRight = 10;
+    const marginTop = 16;
+    const marginBottom = 30;
+    const left = marginLeft;
+    const right = width - marginRight;
+    const top = marginTop;
+    const bottom = height - marginBottom;
+    if (point.x < left || point.x > right || point.y < top || point.y > bottom) {
+      return;
+    }
+    event.preventDefault();
+    const xRatio = (point.x - left) / (right - left);
+    const yRatio = (bottom - point.y) / (bottom - top);
+    const dataX = currentView.x.min + xRatio * (currentView.x.max - currentView.x.min);
+    const dataY = currentView.y.min + yRatio * (currentView.y.max - currentView.y.min);
+    const factor = event.deltaY < 0 ? 0.86 : 1.16;
+    currentView.x = zoomRangeAroundPoint(currentView.x, { min: 0, max: 360 }, dataX, factor, 0.08);
+    currentView.y = zoomRangeAroundPoint(currentView.y, fullYBounds, dataY, factor, 0.08);
+    renderMechanismTrendPlots();
+    renderMechanismFrameIndex(mechanismCurrentFrameIndex);
+  }
+
+  function resetMechanismTrendZoom(trendKey) {
+    if (!mechanismTrendBounds) {
+      return;
+    }
+    if (trendKey === "top") {
+      mechanismTopTrendView = {
+        x: { min: 0, max: 360 },
+        y: cloneRange(getMechanismTopTrendFullYBounds()),
+      };
+    } else {
+      mechanismBottomTrendView = {
+        x: { min: 0, max: 360 },
+        y: cloneRange(mechanismTrendBounds.thetaBounds),
+      };
+    }
+    renderMechanismTrendPlots();
+    renderMechanismFrameIndex(mechanismCurrentFrameIndex);
   }
 
   function interpolateScalar(leftValue, rightValue, blend) {
@@ -3325,7 +3760,7 @@
     return { fea, prb };
   }
 
-  function buildTrendPath(points, bounds, plotElement) {
+  function buildTrendPath(points, xBounds, yBounds, plotElement) {
     const width = plotElement.viewBox.baseVal.width;
     const height = plotElement.viewBox.baseVal.height;
     const marginLeft = 42;
@@ -3334,8 +3769,8 @@
     const marginBottom = 30;
     const usableWidth = width - marginLeft - marginRight;
     const usableHeight = height - marginTop - marginBottom;
-    const mapX = (angleValue) => marginLeft + (wrapAngleDegrees(angleValue) / 360) * usableWidth;
-    const mapY = (value) => height - marginBottom - ((value - bounds.min) / (bounds.max - bounds.min)) * usableHeight;
+    const mapX = (angleValue) => marginLeft + ((Number(angleValue) - xBounds.min) / (xBounds.max - xBounds.min)) * usableWidth;
+    const mapY = (value) => height - marginBottom - ((value - yBounds.min) / (yBounds.max - yBounds.min)) * usableHeight;
 
     return points.map((point, index) => {
       const command = index === 0 ? "M" : "L";
@@ -3343,7 +3778,7 @@
     }).join(" ");
   }
 
-  function drawMechanismTrendFrame(gridNode, axesNode, plotElement, yBounds, yLabel) {
+  function drawMechanismTrendFrame(gridNode, axesNode, plotElement, xBounds, yBounds, yLabel) {
     if (!gridNode || !axesNode || !plotElement) {
       return;
     }
@@ -3363,10 +3798,11 @@
     const bottom = height - marginBottom;
     const usableWidth = width - marginLeft - marginRight;
     const usableHeight = height - marginTop - marginBottom;
-    const xTicks = buildTickValues(0, 360, 60);
+    const xStep = chooseNiceStep(xBounds.max - xBounds.min);
+    const xTicks = buildTickValues(xBounds.min, xBounds.max, xStep);
     const yStep = chooseNiceStep(yBounds.max - yBounds.min);
     const yTicks = buildTickValues(yBounds.min, yBounds.max, yStep);
-    const mapX = (angleValue) => marginLeft + (wrapAngleDegrees(angleValue) / 360) * usableWidth;
+    const mapX = (angleValue) => marginLeft + ((Number(angleValue) - xBounds.min) / (xBounds.max - xBounds.min)) * usableWidth;
     const mapY = (value) => height - marginBottom - ((value - yBounds.min) / (yBounds.max - yBounds.min)) * usableHeight;
     const axisY = mapY(yBounds.min <= 0 && yBounds.max >= 0 ? 0 : yBounds.min);
 
@@ -3451,37 +3887,59 @@
       mechanismYTrendGrid,
       mechanismYTrendAxes,
       mechanismYTrendPlot,
-      trendBounds,
+      mechanismTopTrendView?.x || { min: 0, max: 360 },
+      mechanismTopTrendView?.y || trendBounds,
       trendLabel,
     );
     drawMechanismTrendFrame(
       mechanismXTrendGrid,
       mechanismXTrendAxes,
       mechanismXTrendPlot,
-      mechanismTrendBounds.thetaBounds,
+      mechanismBottomTrendView?.x || { min: 0, max: 360 },
+      mechanismBottomTrendView?.y || mechanismTrendBounds.thetaBounds,
       "\u03b80 (\u00b0)",
     );
 
     if (mechanismYTrendFEA) {
-      mechanismYTrendFEA.setAttribute("d", buildTrendPath(feaPositionPoints, trendBounds, mechanismYTrendPlot));
+      mechanismYTrendFEA.setAttribute("d", buildTrendPath(
+        feaPositionPoints,
+        mechanismTopTrendView?.x || { min: 0, max: 360 },
+        mechanismTopTrendView?.y || trendBounds,
+        mechanismYTrendPlot,
+      ));
     }
     if (mechanismYTrendPRB) {
-      mechanismYTrendPRB.setAttribute("d", buildTrendPath(prbPositionPoints, trendBounds, mechanismYTrendPlot));
+      mechanismYTrendPRB.setAttribute("d", buildTrendPath(
+        prbPositionPoints,
+        mechanismTopTrendView?.x || { min: 0, max: 360 },
+        mechanismTopTrendView?.y || trendBounds,
+        mechanismYTrendPlot,
+      ));
     }
     if (mechanismXTrendFEA) {
-      mechanismXTrendFEA.setAttribute("d", buildTrendPath(feaThetaPoints, mechanismTrendBounds.thetaBounds, mechanismXTrendPlot));
+      mechanismXTrendFEA.setAttribute("d", buildTrendPath(
+        feaThetaPoints,
+        mechanismBottomTrendView?.x || { min: 0, max: 360 },
+        mechanismBottomTrendView?.y || mechanismTrendBounds.thetaBounds,
+        mechanismXTrendPlot,
+      ));
     }
     if (mechanismXTrendPRB) {
-      mechanismXTrendPRB.setAttribute("d", buildTrendPath(prbThetaPoints, mechanismTrendBounds.thetaBounds, mechanismXTrendPlot));
+      mechanismXTrendPRB.setAttribute("d", buildTrendPath(
+        prbThetaPoints,
+        mechanismBottomTrendView?.x || { min: 0, max: 360 },
+        mechanismBottomTrendView?.y || mechanismTrendBounds.thetaBounds,
+        mechanismXTrendPlot,
+      ));
     }
   }
 
   function updateMechanismTrendSelection(feaAngleDeg, prbAngleDeg, feaQx, prbQx, feaQy, prbQy, feaQMagnitude, prbQMagnitude, feaTheta0Deg, prbTheta0Deg) {
-    const topBounds = mechanismTopTrendMode === "x"
+    const topBounds = mechanismTopTrendView?.y || (mechanismTopTrendMode === "x"
       ? mechanismTrendBounds?.qxBounds
       : mechanismTopTrendMode === "m"
         ? mechanismTrendBounds?.positionBounds
-        : mechanismTrendBounds?.qyBounds;
+        : mechanismTrendBounds?.qyBounds);
     const feaTopValue = mechanismTopTrendMode === "x"
       ? feaQx
       : mechanismTopTrendMode === "m"
@@ -3510,8 +3968,12 @@
       const marginBottom = 30;
       const usableWidth = width - marginLeft - marginRight;
       const usableHeight = height - marginTop - marginBottom;
-      const mapX = (angleValue) => marginLeft + (wrapAngleDegrees(angleValue) / 360) * usableWidth;
-      const mapY = (value) => height - marginBottom - ((value - bounds.min) / (bounds.max - bounds.min)) * usableHeight;
+      const xBounds = plotElement === mechanismYTrendPlot
+        ? (mechanismTopTrendView?.x || { min: 0, max: 360 })
+        : (mechanismBottomTrendView?.x || { min: 0, max: 360 });
+      const yBounds = bounds;
+      const mapX = (angleValue) => marginLeft + ((Number(angleValue) - xBounds.min) / (xBounds.max - xBounds.min)) * usableWidth;
+      const mapY = (value) => height - marginBottom - ((value - yBounds.min) / (yBounds.max - yBounds.min)) * usableHeight;
       const cursorX = mapX(feaAngleDeg);
 
       if (cursorNode) {
@@ -3554,19 +4016,20 @@
   }
 
   function drawMechanismFrame() {
-    if (!mechanismPlot || !mechanismGrid || !mechanismAxes || !mechanismBounds) {
+    const bounds = mechanismViewBounds || mechanismBounds;
+    if (!mechanismPlot || !mechanismGrid || !mechanismAxes || !bounds) {
       return;
     }
 
     mechanismGrid.replaceChildren();
     mechanismAxes.replaceChildren();
 
-    const xTicks = buildTickValues(mechanismBounds.xMin, mechanismBounds.xMax, MECHANISM_CONFIG.gridStep);
-    const yTicks = buildTickValues(mechanismBounds.yMin, mechanismBounds.yMax, MECHANISM_CONFIG.gridStep);
-    const right = mechanismBounds.plotRight;
-    const top = mechanismBounds.plotTop;
-    const left = mechanismBounds.plotLeft;
-    const bottom = mechanismBounds.plotBottom;
+    const xTicks = buildTickValues(bounds.xMin, bounds.xMax, MECHANISM_CONFIG.gridStep);
+    const yTicks = buildTickValues(bounds.yMin, bounds.yMax, MECHANISM_CONFIG.gridStep);
+    const right = bounds.plotRight;
+    const top = bounds.plotTop;
+    const left = bounds.plotLeft;
+    const bottom = bounds.plotBottom;
     const axisX = mechanismMapX(0);
     const axisY = mechanismMapY(0);
 
@@ -3867,6 +4330,35 @@
     }
   }
 
+  function loadMechanismComparisonMatrix() {
+    if (mechanismComparisonLoaded) {
+      return;
+    }
+    mechanismComparisonLoaded = true;
+    Promise.all([
+      requestJson(`${MECHANISM_CONFIG.endpoint}?kbar_source=computed`),
+      requestJson(`${MECHANISM_CONFIG.endpoint}?kbar_source=report`),
+    ])
+      .then(([computedData, reportData]) => {
+        renderMechanismComparisonMatrix([
+          { label: "Computed", ...computeMechanismErrorSummary(computedData) },
+          { label: "Report", ...computeMechanismErrorSummary(reportData) },
+        ]);
+      })
+      .catch((error) => {
+        console.error(error);
+        if (mechanismComparisonBody) {
+          mechanismComparisonBody.replaceChildren();
+          const row = document.createElement("tr");
+          const cell = document.createElement("td");
+          cell.colSpan = 5;
+          cell.textContent = "Unavailable";
+          row.appendChild(cell);
+          mechanismComparisonBody.appendChild(row);
+        }
+      });
+  }
+
   function loadMechanismPanelData() {
     if (!mechanismPlot) {
       return;
@@ -3885,9 +4377,25 @@
           mechanismParameterSource.textContent = String(data.parameter_source);
         }
         mechanismBounds = buildMechanismBounds(data);
+        mechanismFullBounds = cloneViewBounds(mechanismBounds);
+        mechanismViewBounds = cloneViewBounds(mechanismBounds);
         drawMechanismFrame();
         try {
           mechanismTrendBounds = buildMechanismTrendBounds(data);
+          mechanismTopTrendView = {
+            x: { min: 0, max: 360 },
+            y: cloneRange(
+              mechanismTopTrendMode === "x"
+                ? mechanismTrendBounds.qxBounds
+                : mechanismTopTrendMode === "m"
+                  ? mechanismTrendBounds.positionBounds
+                  : mechanismTrendBounds.qyBounds,
+            ),
+          };
+          mechanismBottomTrendView = {
+            x: { min: 0, max: 360 },
+            y: cloneRange(mechanismTrendBounds.thetaBounds),
+          };
           renderMechanismTrendPlots();
         } catch (trendError) {
           mechanismTrendBounds = null;
@@ -4023,10 +4531,14 @@
           reloadMechanismPanel();
         });
       });
+      registerDataZoom(mechanismPlot, zoomMechanismMainPlot, resetMechanismMainZoom);
+      registerDataZoom(mechanismYTrendPlot, (event) => zoomMechanismTrendPlot(event, "top"), () => resetMechanismTrendZoom("top"));
+      registerDataZoom(mechanismXTrendPlot, (event) => zoomMechanismTrendPlot(event, "bottom"), () => resetMechanismTrendZoom("bottom"));
       mechanismPanelInitialized = true;
     }
 
     updateMechanismKbarSourceButtons();
+    loadMechanismComparisonMatrix();
     if (!mechanismLoaded) {
       loadMechanismPanelData();
     }

@@ -1490,6 +1490,40 @@ body {
   margin-top: 14px;
 }
 
+.mechanism-comparison-wrap {
+  margin-top: 12px;
+  overflow: auto;
+  border-radius: 14px;
+  border: 1px solid rgba(34, 52, 78, 0.1);
+  background: #ffffff;
+}
+
+.mechanism-comparison-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.74rem;
+}
+
+.mechanism-comparison-table th,
+.mechanism-comparison-table td {
+  padding: 8px 9px;
+  border-bottom: 1px solid rgba(34, 52, 78, 0.08);
+  text-align: right;
+}
+
+.mechanism-comparison-table th:first-child,
+.mechanism-comparison-table td:first-child {
+  text-align: left;
+}
+
+.mechanism-comparison-table thead th {
+  color: var(--muted);
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  background: #ffffff;
+}
+
 body.plot-zoom-open::before {
   content: "";
   position: fixed;
