@@ -48,7 +48,7 @@
     "#c17c1f", "#6a5acd", "#0f766e", "#d45d5d", "#43536e",
   ];
   const PRB_SERIES_COLORS = ["#0c8aa4", "#ef8c54", "#2f8f6d"];
-  const STATIC_VERSION = "20260501c";
+  const STATIC_VERSION = "20260501d";
   const MATERIAL_PRESETS = {
     pebax: {
       displayName: "PEBAX",
@@ -3509,15 +3509,25 @@
     return bestIndex;
   }
 
-  function renderMechanismState(angleDeg) {
+  function renderMechanismFrameIndex(frameIndex) {
     if (!mechanismOverlayData || !mechanismBounds) {
       return;
     }
 
-    const feaIndex = findNearestMechanismFrameIndex(angleDeg);
+    const feaIndex = clamp(
+      Math.round(frameIndex),
+      0,
+      Math.max(0, mechanismOverlayData.fea_frames.length - 1),
+    );
     const frame = mechanismOverlayData.fea_frames[feaIndex];
     const feaScale = 1 / Number(mechanismOverlayData.prb_scale_to_fea || 1);
-    const prbIndex = findNearestPrbStateIndex(angleDeg);
+    const prbIndex = Number.isFinite(Number(frame.matched_prb_index))
+      ? clamp(
+        Number(frame.matched_prb_index),
+        0,
+        Math.max(0, mechanismOverlayData.prb_motion.angle_deg.length - 1),
+      )
+      : findNearestPrbStateIndex(Number(frame.crank_angle_deg));
     const prbMotion = mechanismOverlayData.prb_motion;
     const chain = prbMotion.chain[prbIndex];
     const qPoint = prbMotion.Q[prbIndex];
@@ -3539,6 +3549,7 @@
     const aError = Math.hypot(Number(aPoint[0]) - Number(feaA[0]), Number(aPoint[1]) - Number(feaA[1]));
     const qError = Math.hypot(Number(qPoint[0]) - Number(feaQ[0]), Number(qPoint[1]) - Number(feaQ[1]));
 
+    mechanismCurrentFrameIndex = feaIndex;
     mechanismCurrentAngleDeg = feaAngleDeg;
 
     mechanismFEACrank.setAttribute("d", buildMechanismPath(feaCrank));
@@ -3584,8 +3595,8 @@
     mechanismCrankPoint.setAttribute("cx", mechanismMapX(Number(crankPoint[0])));
     mechanismCrankPoint.setAttribute("cy", mechanismMapY(Number(crankPoint[1])));
 
-    const displayAngle = wrapAngleDegrees(angleDeg);
-    mechanismAngleSlider.value = displayAngle.toFixed(1);
+    const displayAngle = wrapAngleDegrees(feaAngleDeg);
+    mechanismAngleSlider.value = String(feaIndex);
     mechanismAngleInput.value = displayAngle.toFixed(1);
     if (mechanismFrameAngles) {
       mechanismFrameAngles.textContent = `${formatDegrees(feaAngleDeg)} / ${formatDegrees(prbAngleDeg)}`;
@@ -3607,15 +3618,16 @@
     applyMechanismVisibility();
   }
 
+  function renderMechanismState(angleDeg) {
+    renderMechanismFrameIndex(findNearestMechanismFrameIndex(angleDeg));
+  }
+
   function setMechanismFrame(value) {
     if (!mechanismOverlayData || !mechanismAngleSlider || !mechanismAngleInput) {
       return;
     }
-    const minValue = Number(mechanismAngleSlider.min);
-    const maxValue = Number(mechanismAngleSlider.max);
-    const stepValue = Number(mechanismAngleSlider.step || 0.5);
-    const normalizedValue = snapToStep(clamp(value, minValue, maxValue), minValue, stepValue);
-    renderMechanismState(normalizedValue);
+    const normalizedValue = findNearestMechanismFrameIndex(value);
+    renderMechanismFrameIndex(normalizedValue);
   }
 
   function stopMechanismAnimation() {
@@ -3644,8 +3656,8 @@
     }
 
     mechanismAnimationTimer = window.setInterval(() => {
-      const nextAngle = wrapAngleDegrees(mechanismCurrentAngleDeg + 0.5);
-      renderMechanismState(nextAngle);
+      const nextFrame = (mechanismCurrentFrameIndex + 1) % mechanismOverlayData.fea_frames.length;
+      renderMechanismFrameIndex(nextFrame);
     }, 80);
   }
 
@@ -3685,19 +3697,19 @@
 
         if (mechanismAngleSlider && mechanismAngleInput) {
           mechanismAngleSlider.min = "0";
-          mechanismAngleSlider.max = "360";
-          mechanismAngleSlider.step = "0.5";
-          mechanismAngleInput.min = mechanismAngleSlider.min;
-          mechanismAngleInput.max = mechanismAngleSlider.max;
+          mechanismAngleSlider.max = String(Math.max(0, data.fea_frames.length - 1));
+          mechanismAngleSlider.step = "1";
+          mechanismAngleInput.min = "0";
+          mechanismAngleInput.max = "360";
           mechanismAngleInput.step = "0.5";
 
           mechanismAngleSlider.addEventListener("input", () => {
-            setMechanismFrame(Number(mechanismAngleSlider.value));
+            renderMechanismFrameIndex(Number(mechanismAngleSlider.value));
           });
           mechanismAngleInput.addEventListener("input", () => {
             const typedValue = Number(mechanismAngleInput.value);
             if (Number.isFinite(typedValue)) {
-              setMechanismFrame(typedValue);
+              renderMechanismState(typedValue);
             }
           });
           mechanismAngleInput.addEventListener("keydown", (event) => {
@@ -3717,7 +3729,7 @@
           mechanismAnimateButton.addEventListener("click", toggleMechanismAnimation);
         }
 
-        renderMechanismState(0);
+        renderMechanismFrameIndex(0);
         mechanismLoaded = true;
       })
       .catch((error) => {
