@@ -36,10 +36,7 @@ body {
 
 .app-header {
   padding: 8px 20px 0;
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 12px;
+  position: relative;
 }
 
 .eyebrow {
@@ -56,12 +53,14 @@ body {
   gap: 8px;
   overflow-x: auto;
   padding-bottom: 0;
-  flex: 1 1 auto;
-  min-width: 0;
+  padding-right: 126px;
 }
 
 .header-link-button {
-  flex: 0 0 auto;
+  position: absolute;
+  right: 20px;
+  top: 8px;
+  z-index: 4;
   display: inline-flex;
   align-items: center;
   justify-content: center;
